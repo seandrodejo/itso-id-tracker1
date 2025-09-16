@@ -1,334 +1,1383 @@
 import { useState, useEffect } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams, useLocation } from "react-router-dom";
+import API_URL from "../api";
 import LoginModal from "../components/LoginModal";
-import SignupModal from "../components/SignupModal";
+import nuLogo from "../assets/images/nu-logo.png";
+import landingBackground from "../assets/images/landingbackground.png";
+import calendarIcon from "../assets/images/calendar.png";
+import { FaCalendarAlt, FaEnvelope, FaBuilding, FaCheckCircle } from "react-icons/fa";
+import { FiArrowUpRight } from "react-icons/fi";
 
 function LandingPage() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isSignupOpen, setIsSignupOpen] = useState(false);
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [error, setError] = useState("");
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const openLogin = () => setIsLoginOpen(true);
   const closeLogin = () => setIsLoginOpen(false);
-  const openSignup = () => setIsSignupOpen(true);
-  const closeSignup = () => setIsSignupOpen(false);
 
-  // Handle Google OAuth callback and redirects
+  // Latest announcements for landing page
+  const [latestAnnouncements, setLatestAnnouncements] = useState([]);
   useEffect(() => {
-    const token = searchParams.get("token");
-    const source = searchParams.get("source");
-    const action = searchParams.get("action");
+    const run = async () => {
+      try {
+        const res = await fetch(`${API_URL}/announcements?limit=3`);
+        if (res.ok) {
+          const data = await res.json();
+          setLatestAnnouncements(data.items || []);
+        }
+      } catch (e) {
+        console.error('Failed to load latest announcements', e);
+      }
+    };
+    run();
+  }, []);
 
-    // Handle Google signup completion redirect
-    if (action === "complete_signup") {
-      navigate(`/google-signup-complete?${searchParams.toString()}`);
-      return;
-    }
-
-    if (token && source === "google") {
-      // Store the token
-      localStorage.setItem("token", token);
-
-      // Check if this was a Google sign-up
-      const pendingSignup = localStorage.getItem("pendingGoogleSignup");
-
-      if (pendingSignup) {
-        // This was a Google sign-up, complete the registration
-        completeGoogleSignup(token, JSON.parse(pendingSignup));
-      } else {
-        // This was a Google sign-in, redirect to dashboard
-        navigate("/dashboard");
+  // Check if user is already logged in and redirect accordingly
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    
+    if (token) {
+      try {
+        // Decode the token
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        console.log('LandingPage: User already logged in', decoded);
+        
+        // Check if admin and redirect accordingly
+        if (decoded.role === 'admin') {
+          console.log('LandingPage: Redirecting admin to admin dashboard');
+          navigate("/admin");
+        } else {
+          console.log('LandingPage: Redirecting user to dashboard');
+          navigate("/dashboard");
+        }
+      } catch (err) {
+        console.error('LandingPage: Error decoding token', err);
+        // Invalid token, remove it
+        localStorage.removeItem("token");
       }
     }
-  }, [searchParams, navigate]);
+  }, [navigate]);
 
-  const completeGoogleSignup = async (token, signupData) => {
-    try {
-      // Call backend to complete Google sign-up with student ID
-      const res = await fetch("/api/google/auth/google/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          student_id: signupData.student_id
-        })
-      });
 
-      if (res.ok) {
-        localStorage.removeItem("pendingGoogleSignup");
-        navigate("/dashboard");
-      } else {
-        throw new Error("Failed to complete registration");
-      }
-    } catch (error) {
-      console.error("Failed to complete Google signup:", error);
-      // Handle error - maybe show a message to user
-    }
-  };
+
+
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Top Navigation */}
-      <nav className="bg-white shadow-lg border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            {/* Logo and Name */}
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <img 
-                  className="h-12 w-12" 
-                  src="/nu-logo.png" 
-                  alt="NU Logo"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'block';
-                  }}
-                />
-                <div className="hidden h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl">
-                  NU
-                </div>
+    <div className="fade-in" style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Background decorative elements */}
+      <div style={{
+        position: 'absolute',
+        top: '8%',
+        right: '12%',
+        width: '400px',
+        height: '400px',
+        background: 'radial-gradient(circle, rgba(40, 73, 208, 0.04) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 20s ease-in-out infinite'
+      }}></div>
+      <div style={{
+        position: 'absolute',
+        bottom: '15%',
+        left: '8%',
+        width: '300px',
+        height: '300px',
+        background: 'radial-gradient(circle, rgba(251, 191, 36, 0.06) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 16s ease-in-out infinite reverse'
+      }}></div>
+      <div style={{
+        position: 'absolute',
+        top: '40%',
+        left: '5%',
+        width: '200px',
+        height: '200px',
+        background: 'radial-gradient(circle, rgba(118, 75, 162, 0.05) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 12s ease-in-out infinite'
+      }}></div>
+
+      {/* Modern Navigation */}
+      <nav style={{
+        background: 'rgba(40, 73, 208, 0.95)',
+        backdropFilter: 'blur(20px)',
+        padding: '0 24px',
+        boxShadow: '0 8px 32px rgba(40, 73, 208, 0.2)',
+        border: '1px solid rgba(255, 255, 255, 0.1)',
+        position: 'relative',
+        zIndex: 10
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr auto 1fr',
+          alignItems: 'center',
+          height: '80px',
+          maxWidth: '1280px',
+          width: '100%',
+          margin: '0 auto',
+          gap: '24px'
+        }}>
+          {/* Left: Logo and Brand */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'flex-start'
+          }}>
+            <div style={{
+              width: '48px',
+              height: '48px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '12px'
+            }}>
+              <img src={nuLogo} alt="NU Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
+            </div>
+            <div>
+              <div style={{ color: '#fde047', fontWeight: 'bold', fontSize: '18px', whiteSpace: 'nowrap' }}>
+                NU Dasmarinas
               </div>
-              <div className="ml-3">
-                <h1 className="text-xl font-bold text-gray-900">
-                  NU Dasmarinas ITSO ID Tracker
-                </h1>
+              <div style={{ color: '#fde047', fontSize: '18px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+                ITSO ID Tracker
               </div>
             </div>
+          </div>
 
-            {/* Navigation Links */}
-            <div className="hidden md:block">
-              <div className="ml-10 flex items-baseline space-x-4">
-                <Link to="/" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                  Home
-                </Link>
-                <Link to="/calendar" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                  Calendar
-                </Link>
-                <Link to="/about" className="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
-                  About Us
-                </Link>
-              </div>
-            </div>
+          {/* Center: Navigation Links */}
+          <div style={{ 
+            display: 'flex', 
+            gap: '32px', 
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}>
+            <Link to="/" className="link-underline" style={{
+              color: location.pathname === '/' ? '#fde047' : '#93c5fd',
+              textDecoration: 'none',
+              fontWeight: '600',
+              whiteSpace: 'nowrap'
+            }}>Home</Link>
+            <Link to="/calendar-public" className="link-underline" style={{
+              color: location.pathname === '/calendar-public' ? '#fde047' : '#93c5fd',
+              textDecoration: 'none',
+              fontWeight: '600',
+              whiteSpace: 'nowrap'
+            }}>Calendar</Link>
+            <Link to="/announcements-public" className="link-underline" style={{
+              color: location.pathname === '/announcements-public' ? '#fde047' : '#93c5fd',
+              textDecoration: 'none',
+              fontWeight: '600',
+              whiteSpace: 'nowrap'
+            }}>Announcements</Link>
+            <Link to="/about-public" className="link-underline" style={{
+              color: location.pathname === '/about-public' ? '#fde047' : '#93c5fd',
+              textDecoration: 'none',
+              fontWeight: '600',
+              whiteSpace: 'nowrap'
+            }}>About Us</Link>
+          </div>
 
-            {/* Right Side - Auth Buttons & Profile */}
-            <div className="flex items-center space-x-4">
-              {/* Login Button */}
-              <button
-                onClick={openLogin}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition duration-300"
-              >
-                Login
-              </button>
-              
-              {/* Sign Up Button */}
-              <button
-                onClick={openSignup}
-                className="bg-white hover:bg-gray-50 text-blue-600 border border-blue-600 px-4 py-2 rounded-lg text-sm font-medium transition duration-300"
-              >
-                Sign Up
-              </button>
+          {/* Right: Login/Signup Buttons */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px', 
+            justifyContent: 'flex-end'
+          }}>
+            <button
+              onClick={openLogin}
+              style={{
+                backgroundColor: '#fde047',
+                color: '#2849D0',
+                padding: '8px 20px',
+                borderRadius: '6px',
+                border: 'none',
+                cursor: 'pointer',
+                fontWeight: '500',
+                fontSize: '14px',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              Log In
+            </button>
 
-              {/* User Profile Icon (Hidden when not logged in) */}
-              <div className="hidden">
-                <button
-                  onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center space-x-2 text-gray-700 hover:text-blue-600"
-                >
-                  <div className="h-8 w-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-gray-700">U</span>
-                  </div>
-                </button>
-              </div>
-            </div>
+
           </div>
         </div>
       </nav>
 
+      {/* Error Message */}
+      {error && (
+        <div style={{
+          backgroundColor: '#fef2f2',
+          border: '1px solid #fecaca',
+          borderRadius: '8px',
+          padding: '16px',
+          margin: '16px',
+          marginBottom: '16px'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            maxWidth: '1200px',
+            margin: '0 auto'
+          }}>
+            <div style={{
+              backgroundColor: '#dc2626',
+              borderRadius: '50%',
+              width: '24px',
+              height: '24px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginRight: '12px'
+            }}>
+              <span style={{ color: 'white', fontSize: '14px', fontWeight: 'bold' }}>!</span>
+            </div>
+            <div>
+              <p style={{ color: '#dc2626', margin: '0', fontWeight: '500' }}>
+                {error}
+              </p>
+            </div>
+            <button
+              onClick={() => setError('')}
+              style={{
+                marginLeft: 'auto',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: '#dc2626',
+                cursor: 'pointer',
+                fontSize: '18px',
+                fontWeight: 'bold'
+              }}
+            >
+              ×
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Hero Section */}
-      <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Welcome to
-            <span className="block text-blue-600">ITSO ID Tracker!</span>
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Manage your student ID appointment with ease! Streamline your ID requests, 
-            track status updates, and never miss an important deadline.
-          </p>
-          
-          {/* Get Started Button */}
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-4 rounded-lg text-lg font-semibold transition duration-300 shadow-lg hover:shadow-xl mb-12">
-            Get Started
-          </button>
+      <section style={{
+        backgroundImage: `url(${landingBackground})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'right center',
+        backgroundRepeat: 'no-repeat',
+        // marginRight: '50px',
+        minHeight: '600px',
+        height: '600px',
+        display: 'flex',
+        alignItems: 'center',
+        position: 'relative'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0 20px',
+          width: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'flex-end',
+          marginLeft: '310px'
+        }}>
+          {/* Right side - Text content */}
+          <div className="slide-up" style={{ 
+            maxWidth: '600px',
+            textAlign: 'left',
+            position: 'relative'
+          }}>
+            {/* Decorative background elements */}
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              left: '-20px',
+              width: '120px',
+              height: '120px',
+              background: 'linear-gradient(135deg, rgba(40, 73, 208, 0.1), rgba(59, 130, 246, 0.1))',
+              borderRadius: '50%',
+              filter: 'blur(40px)',
+              zIndex: -1,
+              animation: 'float 6s ease-in-out infinite'
+            }}></div>
+            
+            <div style={{
+              position: 'absolute',
+              bottom: '50px',
+              right: '-50px',
+              width: '80px',
+              height: '80px',
+              background: 'linear-gradient(135deg, rgba(253, 224, 71, 0.2), rgba(251, 191, 36, 0.2))',
+              borderRadius: '50%',
+              filter: 'blur(30px)',
+              zIndex: -1,
+              animation: 'float 4s ease-in-out infinite reverse'
+            }}></div>
 
-          {/* Features Grid */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
-            <div className="flex items-center justify-center">
-              <img 
-                src="/nu-logo.png" 
-                alt="NU Logo" 
-                className="h-16 w-16"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'block';
-                }}
-              />
-              <div className="hidden h-16 w-16 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                NU
-              </div>
+            {/* Main heading with gradient text */}
+            <h1 style={{
+              fontSize: 'clamp(60px, 8vw, 100px)',
+              fontWeight: '900',
+              marginBottom: '8px',
+              lineHeight: '0.95',
+              background: 'linear-gradient(135deg, #2849D0 0%, #3b82f6 50%, #1e40af 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              textShadow: '0 4px 20px rgba(40, 73, 208, 0.3)',
+              letterSpacing: '-0.02em',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+            }}>
+              Welcome
+            </h1>
+            
+            {/* Subtitle with modern typography */}
+            <div style={{
+              marginBottom: '24px',
+              marginLeft: '4px'
+            }}>
+              <h2 style={{
+                fontSize: 'clamp(24px, 3vw, 32px)',
+                color: '#1e293b',
+                marginBottom: '0',
+                fontWeight: '600',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                letterSpacing: '-0.01em'
+              }}>
+                to{' '}
+                <span style={{
+                  background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
+                  WebkitBackgroundClip: 'text',
+                  WebkitTextFillColor: 'transparent',
+                  backgroundClip: 'text',
+                  fontWeight: '700'
+                }}>
+                  ITSO ID Tracker
+                </span>
+                !
+              </h2>
             </div>
-            <div className="text-center">
-              <p className="text-gray-600 font-medium">Synced with</p>
-              <div className="flex items-center justify-center space-x-2 mt-2">
-                <img 
-                  src="/google-calendar-logo.png" 
-                  alt="Google Calendar" 
-                  className="h-8 w-8"
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                    e.target.nextSibling.style.display = 'block';
-                  }}
-                />
-                <div className="hidden h-8 w-8 bg-red-500 rounded-lg flex items-center justify-center text-white font-bold text-xs">
-                  GC
+            
+            {/* Description with better spacing and typography */}
+            <p style={{
+              fontSize: '20px',
+              color: '#64748b',
+              marginBottom: '32px',
+              marginLeft: '4px',
+              lineHeight: '1.6',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+              fontWeight: '400',
+              maxWidth: '480px'
+            }}>
+              Streamline your student ID appointments with our modern, 
+              <span style={{ color: '#2849D0', fontWeight: '500' }}> intuitive platform</span> 
+              {' '}designed for efficiency and convenience.
+            </p>
+            
+            {/* Modern CTA button with enhanced styling */}
+            <div style={{ marginLeft: '4px' }}>
+              <button
+                onClick={openLogin}
+                className="hover-pop modern-button"
+                style={{
+                  background: 'linear-gradient(135deg, #2849D0 0%, #3b82f6 100%)',
+                  color: 'white',
+                  padding: '16px 32px',
+                  borderRadius: '16px',
+                  fontSize: '18px',
+                  fontWeight: '600',
+                  border: 'none',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '12px',
+                  boxShadow: '0 8px 32px rgba(40, 73, 208, 0.3), 0 4px 16px rgba(40, 73, 208, 0.2)',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                  letterSpacing: '-0.01em',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.target.style.boxShadow = '0 12px 40px rgba(40, 73, 208, 0.4), 0 8px 24px rgba(40, 73, 208, 0.3)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0) scale(1)';
+                  e.target.style.boxShadow = '0 8px 32px rgba(40, 73, 208, 0.3), 0 4px 16px rgba(40, 73, 208, 0.2)';
+                }}
+              >
+                <span>Get Started</span>
+                <div style={{
+                  background: 'rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <FiArrowUpRight size={18} />
                 </div>
-                <span className="text-gray-700 font-semibold">Google Calendar</span>
+              </button>
+              
+              {/* Secondary action */}
+              <div style={{
+                marginTop: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                color: '#64748b',
+                fontSize: '14px',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  borderRadius: '50%',
+                  animation: 'pulse 2s infinite'
+                }}></div>
+                <span>Trusted by NU Dasmarinas students</span>
               </div>
             </div>
-            <div className="flex items-center justify-center">
-              <img 
-                src="/google-calendar-logo.png" 
-                alt="Google Calendar Logo" 
-                className="h-16 w-16"
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                  e.target.nextSibling.style.display = 'block';
+          </div>
+        </div>
+      </section>
+
+      {/* Calendar Section - Modernized */}
+      <section className="fade-in" style={{
+        background: 'linear-gradient(135deg, #2849D0 0%, #1e40af 50%, #1e3a8a 100%)',
+        padding: '80px 20px',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background decorative elements */}
+        <div style={{
+          position: 'absolute',
+          top: '20%',
+          left: '10%',
+          width: '200px',
+          height: '200px',
+          background: 'radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float 6s ease-in-out infinite reverse'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          bottom: '20%',
+          right: '15%',
+          width: '150px',
+          height: '150px',
+          background: 'radial-gradient(circle, rgba(253, 224, 71, 0.2) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float 6s ease-in-out infinite reverse'
+        }}></div>
+
+        <div className="fade-in" style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 2
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr auto 2fr auto 1fr',
+            alignItems: 'center',
+            gap: '48px'
+            
+          }}>
+            {/* NU Logo with modern styling and animation */}
+            <div className="slide-up" style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}>
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '24px',
+                padding: '24px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                animation: 'floatSlow 6s ease-in-out infinite'
+              }}>
+                <img 
+                  src={nuLogo} 
+                  alt="NU Logo" 
+                  className="wiggle-hover"
+                  style={{ 
+                    width: '120px', 
+                    height: '120px', 
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))',
+                    transition: 'transform 0.3s ease'
+                  }} 
+                />
+              </div>
+              {/* Decorative glow effect */}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '180px',
+                height: '180px',
+                background: 'radial-gradient(circle, rgba(253, 224, 71, 0.2) 0%, transparent 70%)',
+                borderRadius: '50%',
+                animation: 'pulse 4s ease-in-out infinite',
+                zIndex: -1
+              }}></div>
+            </div>
+
+            {/* Modern connector line */}
+            <div className="slide-up" style={{
+              width: '3px',
+              height: '100px',
+              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(253, 224, 71, 0.8), rgba(255, 255, 255, 0.6))',
+              borderRadius: '2px',
+              boxShadow: '0 0 20px rgba(253, 224, 71, 0.3)'
+              
+            }}></div>
+
+            {/* Center Text with enhanced styling */}
+            <div className="slide-up" style={{ 
+              textAlign: 'center',
+              background: 'rgba(255, 255, 255, 0.05)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '20px',
+              padding: '32px',
+              border: '1px solid rgba(255, 255, 255, 0.1)'
+            }}>
+              <div style={{ 
+                color: '#fde047', 
+                fontSize: '18px', 
+                marginBottom: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '12px',
+                fontWeight: '500',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                <div style={{
+                  width: '8px',
+                  height: '8px',
+                  background: 'linear-gradient(135deg, #10b981, #059669)',
+                  borderRadius: '50%',
+                  animation: 'pulse 2s infinite'
+                }}></div>
+                Seamlessly Synced with
+              </div>
+              <div style={{ 
+                fontSize: 'clamp(28px, 4vw, 36px)', 
+                fontWeight: '800', 
+                color: 'white', 
+                marginBottom: '20px',
+                background: 'linear-gradient(135deg, #ffffff, #fde047)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                letterSpacing: '-0.01em'
+              }}>
+                Google Calendar
+              </div>
+              <div style={{ 
+                color: '#e0e7ff', 
+                fontSize: '16px',
+                lineHeight: '1.6',
+                maxWidth: '420px',
+                margin: '0 auto',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                fontWeight: '400'
+              }}>
+                Your appointments are automatically synced to your Google Calendar and maintained by the 
+                <span style={{ color: '#fde047', fontWeight: '500' }}> ITSO Department</span> of NU Dasmarinas 
+                to make your life easier and more convenient.
+              </div>
+            </div>
+
+            {/* Modern connector line */}
+            <div className="slide-up" style={{
+              width: '3px',
+              height: '100px',
+              background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(253, 224, 71, 0.8), rgba(255, 255, 255, 0.6))',
+              borderRadius: '2px',
+              boxShadow: '0 0 20px rgba(253, 224, 71, 0.3)'
+            }}></div>
+
+            {/* Calendar Icon with modern styling and enhanced animation */}
+            <div className="slide-up" style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative'
+            }}>
+              <div style={{
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '24px',
+                padding: '24px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                animation: 'floatSlow 7s ease-in-out infinite reverse'
+              }}>
+                <img 
+                  src={calendarIcon} 
+                  alt="Google Calendar" 
+                  className="wiggle-hover"
+                  style={{ 
+                    width: '100px', 
+                    height: '100px', 
+                    objectFit: 'contain',
+                    filter: 'drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1))',
+                    transition: 'transform 0.3s ease'
+                  }} 
+                />
+              </div>
+              {/* Decorative glow effect */}
+              <div style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                width: '160px',
+                height: '160px',
+                background: 'radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%)',
+                borderRadius: '50%',
+                animation: 'pulse 3s ease-in-out infinite',
+                zIndex: -1
+              }}></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* How It Works Section - Modernized */}
+      <section style={{
+        padding: '100px 20px',
+        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 50%, #e2e8f0 100%)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background decorative elements */}
+        <div style={{
+          position: 'absolute',
+          top: '10%',
+          right: '5%',
+          width: '300px',
+          height: '300px',
+          background: 'radial-gradient(circle, rgba(40, 73, 208, 0.05) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float 10s ease-in-out infinite'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          bottom: '15%',
+          left: '8%',
+          width: '200px',
+          height: '200px',
+          background: 'radial-gradient(circle, rgba(251, 191, 36, 0.08) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float 7s ease-in-out infinite reverse'
+        }}></div>
+
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 2
+        }}>
+          {/* Modern Title */}
+          <div style={{ textAlign: 'center', marginBottom: '80px' }}>
+            <h2 style={{
+              fontSize: 'clamp(36px, 5vw, 48px)',
+              fontWeight: '900',
+              textAlign: 'center',
+              marginBottom: '16px',
+              background: 'linear-gradient(135deg, #2849D0 0%, #3b82f6 50%, #1e40af 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+              letterSpacing: '-0.02em'
+            }}>
+              How It Works
+            </h2>
+            <p style={{
+              fontSize: '18px',
+              color: '#64748b',
+              maxWidth: '600px',
+              margin: '0 auto',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+              lineHeight: '1.6'
+            }}>
+              Get your student ID in just four simple steps. Our streamlined process makes it quick and convenient.
+            </p>
+          </div>
+
+          {/* Modern Progress Line with Enhanced Dots */}
+          <div style={{
+            position: 'relative',
+            marginBottom: '60px',
+            height: '6px'
+          }}>
+            {/* Gradient Background Line */}
+            <div style={{
+              position: 'absolute',
+              top: '50%',
+              left: '12.5%',
+              right: '12.5%',
+              height: '6px',
+              background: 'linear-gradient(90deg, #2849D0, #3b82f6, #fbbf24, #10b981)',
+              transform: 'translateY(-50%)',
+              borderRadius: '3px',
+              boxShadow: '0 2px 10px rgba(40, 73, 208, 0.3)'
+            }}></div>
+            
+            {/* Enhanced Start Dot */}
+            <div style={{
+              position: 'absolute',
+              left: '12.5%',
+              top: '50%',
+              width: '20px',
+              height: '20px',
+              background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
+              borderRadius: '50%',
+              transform: 'translate(-50%, -50%)',
+              boxShadow: '0 4px 15px rgba(40, 73, 208, 0.4), 0 0 0 4px rgba(40, 73, 208, 0.1)',
+              animation: 'pulse 3s infinite'
+            }}></div>
+            
+            {/* Enhanced End Dot */}
+            <div style={{
+              position: 'absolute',
+              right: '12.5%',
+              top: '50%',
+              width: '20px',
+              height: '20px',
+              background: 'linear-gradient(135deg, #10b981, #059669)',
+              borderRadius: '50%',
+              transform: 'translate(50%, -50%)',
+              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4), 0 0 0 4px rgba(16, 185, 129, 0.1)',
+              animation: 'pulse 3s infinite 1.5s'
+            }}></div>
+          </div>
+
+          {/* Modern Steps Cards */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '32px',
+            marginTop: '40px'
+          }}>
+            {/* Step 1: Book - Enhanced */}
+            <div className="hover-pop slide-in-up" style={{
+              background: 'linear-gradient(135deg, #2849D0 0%, #3b82f6 100%)',
+              borderRadius: '24px',
+              padding: '40px 32px',
+              textAlign: 'center',
+              boxShadow: '0 10px 40px rgba(40, 73, 208, 0.2), 0 4px 16px rgba(40, 73, 208, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              animationDelay: '0.1s'
+            }}>
+              {/* Step number */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                width: '32px',
+                height: '32px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: '700',
+                color: 'white'
+              }}>1</div>
+              
+              <div style={{
+                width: '80px',
+                height: '80px',
+                background: 'rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px auto',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <FaCalendarAlt style={{ fontSize: '32px', color: 'white' }} />
+              </div>
+              <h3 style={{
+                fontWeight: '700',
+                fontSize: '22px',
+                marginBottom: '16px',
+                color: 'white',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                Book Appointment
+              </h3>
+              <p style={{
+                fontSize: '16px',
+                color: 'rgba(255, 255, 255, 0.9)',
+                lineHeight: '1.6',
+                margin: '0',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                Select your preferred date and time through our intuitive online booking system.
+              </p>
+            </div>
+
+            {/* Step 2: Get Email - Enhanced */}
+            <div className="hover-pop slide-in-up" style={{
+              background: 'linear-gradient(135deg, #7c3aed 0%, #8b5cf6 100%)',
+              borderRadius: '24px',
+              padding: '40px 32px',
+              textAlign: 'center',
+              boxShadow: '0 10px 40px rgba(124, 58, 237, 0.2), 0 4px 16px rgba(124, 58, 237, 0.1)',
+              animationDelay: '0.2s',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}>
+              {/* Step number */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                width: '32px',
+                height: '32px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: '700',
+                color: 'white'
+              }}>2</div>
+              
+              <div style={{
+                width: '80px',
+                height: '80px',
+                background: 'rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px auto',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <FaEnvelope style={{ fontSize: '32px', color: 'white' }} />
+              </div>
+              <h3 style={{
+                fontWeight: '700',
+                fontSize: '22px',
+                marginBottom: '16px',
+                color: 'white',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                Receive Confirmation
+              </h3>
+              <p style={{
+                fontSize: '16px',
+                color: 'rgba(255, 255, 255, 0.9)',
+                lineHeight: '1.6',
+                margin: '0',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                Get instant email confirmation with all appointment details and instructions.
+              </p>
+            </div>
+
+            {/* Step 3: Visit ITSO - Enhanced */}
+            <div className="hover-pop slide-in-up" style={{
+              background: 'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+              borderRadius: '24px',
+              padding: '40px 32px',
+              textAlign: 'center',
+              boxShadow: '0 10px 40px rgba(245, 158, 11, 0.2), 0 4px 16px rgba(245, 158, 11, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              position: 'relative',
+              overflow: 'hidden',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              animationDelay: '0.3s'
+            }}>
+              {/* Step number */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                width: '32px',
+                height: '32px',
+                background: 'rgba(255, 255, 255, 0.24)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: '700',
+                color: '#ffffffff'
+              }}>3</div>
+              
+              <div style={{
+                width: '80px',
+                height: '80px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px auto',
+                border: '1px solid rgba(255, 255, 255, 0.24)'
+              }}>
+                <FaBuilding style={{ fontSize: '32px', color: '#ffffffff' }} />
+              </div>
+              <h3 style={{
+                fontWeight: '700',
+                fontSize: '22px',
+                marginBottom: '16px',
+                color: '#ffffffff',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                Visit ITSO Office
+              </h3>
+              <p style={{
+                fontSize: '16px',
+                color: '#ffffffff',
+                lineHeight: '1.6',
+                margin: '0',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                Arrive at the ITSO office on your scheduled appointment date and time.
+              </p>
+            </div>
+
+            {/* Step 4: Claim - Enhanced */}
+            <div className="hover-pop slide-in-up" style={{
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              borderRadius: '24px',
+              padding: '40px 32px',
+              textAlign: 'center',
+              boxShadow: '0 10px 40px rgba(255, 255, 255, 0.2), 0 4px 16px rgba(16, 185, 129, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              position: 'relative',
+              overflow: 'hidden',
+              animationDelay: '0.4s',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}>
+              {/* Step number */}
+              <div style={{
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                width: '32px',
+                height: '32px',
+                background: 'rgba(255, 255, 255, 0.2)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: '700',
+                color: 'white'
+              }}>4</div>
+              
+              <div style={{
+                width: '80px',
+                height: '80px',
+                background: 'rgba(255, 255, 255, 0.15)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 24px auto',
+                border: '1px solid rgba(255, 255, 255, 0.2)'
+              }}>
+                <FaCheckCircle style={{ fontSize: '32px', color: 'white' }} />
+              </div>
+              <h3 style={{
+                fontWeight: '700',
+                fontSize: '22px',
+                marginBottom: '16px',
+                color: 'white',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                Claim Your ID
+              </h3>
+              <p style={{
+                fontSize: '16px',
+                color: 'rgba(255, 255, 255, 0.9)',
+                lineHeight: '1.6',
+                margin: '0',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                Complete the process and receive your brand new student ID card.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Announcements Section - Modernized */}
+      <section style={{
+        padding: '100px 20px',
+        background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)',
+        position: 'relative',
+        overflow: 'hidden'
+      }}>
+        {/* Background decorative elements */}
+        <div style={{
+          position: 'absolute',
+          top: '15%',
+          left: '5%',
+          width: '250px',
+          height: '250px',
+          background: 'radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float 9s ease-in-out infinite'
+        }}></div>
+        <div style={{
+          position: 'absolute',
+          bottom: '10%',
+          right: '10%',
+          width: '180px',
+          height: '180px',
+          background: 'radial-gradient(circle, rgba(40, 73, 208, 0.15) 0%, transparent 70%)',
+          borderRadius: '50%',
+          animation: 'float 6s ease-in-out infinite reverse'
+        }}></div>
+
+        <div style={{
+          maxWidth: '900px',
+          margin: '0 auto',
+          position: 'relative',
+          zIndex: 2
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+            <h2 style={{
+              fontSize: 'clamp(36px, 5vw, 48px)',
+              fontWeight: '900',
+              textAlign: 'center',
+              marginBottom: '16px',
+              color: '#1f2937',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+              letterSpacing: '-0.02em',
+              textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
+            }}>
+              Latest Announcements
+            </h2>
+            <p style={{
+              fontSize: '18px',
+              color: '#374151',
+              maxWidth: '600px',
+              margin: '0 auto',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+              lineHeight: '1.6'
+            }}>
+              Stay updated with the latest news and important information from ITSO.
+            </p>
+          </div>
+
+          {/* Modern Container with Glass Effect */}
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '24px',
+            padding: '40px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.05)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}>
+            {latestAnnouncements.length === 0 && (
+              <div style={{ 
+                color: '#6b7280', 
+                textAlign: 'center',
+                fontSize: '18px',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                padding: '40px 0'
+              }}>
+                No announcements yet.
+              </div>
+            )}
+            {latestAnnouncements.map((item, idx) => (
+              <div key={item._id} className="hover-pop" style={{
+                background: idx % 2 === 0 
+                  ? 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' 
+                  : 'linear-gradient(135deg, #2849D0 0%, #3b82f6 100%)',
+                borderRadius: '20px',
+                padding: '28px',
+                marginBottom: idx === latestAnnouncements.length - 1 ? '0' : '20px',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '20px',
+                border: idx % 2 === 0 
+                  ? '1px solid rgba(40, 73, 208, 0.1)' 
+                  : '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: idx % 2 === 0 
+                  ? '0 4px 20px rgba(40, 73, 208, 0.08)' 
+                  : '0 4px 20px rgba(40, 73, 208, 0.2)',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                {/* Modern indicator dot */}
+                <div style={{
+                  width: '16px',
+                  height: '16px',
+                  background: idx % 2 === 0 
+                    ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' 
+                    : 'linear-gradient(135deg, #fde047, #fbbf24)',
+                  borderRadius: '50%',
+                  marginTop: '8px',
+                  flexShrink: 0,
+                  boxShadow: '0 2px 8px rgba(251, 191, 36, 0.3)',
+                  animation: 'pulse 3s infinite'
+                }}></div>
+                
+                <div style={{ flex: 1 }}>
+                  <h3 style={{
+                    fontSize: '20px',
+                    fontWeight: '700',
+                    color: idx % 2 === 0 ? '#1f2937' : 'white',
+                    marginBottom: '12px',
+                    margin: '0 0 12px 0',
+                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                    letterSpacing: '-0.01em'
+                  }}>
+                    {item.title}
+                  </h3>
+                  <p style={{
+                    fontSize: '16px',
+                    color: idx % 2 === 0 ? '#64748b' : 'rgba(255, 255, 255, 0.9)',
+                    lineHeight: '1.6',
+                    margin: '0 0 16px 0',
+                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+                  }}>
+                    {item.content?.length > 140 ? item.content.slice(0, 140) + '…' : item.content}
+                  </p>
+                  <div style={{
+                    fontSize: '14px',
+                    color: idx % 2 === 0 ? '#9ca3af' : 'rgba(255, 255, 255, 0.7)',
+                    marginBottom: '16px',
+                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                    fontWeight: '500'
+                  }}>
+                    📅 {new Date(item.publishedAt || item.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => navigate(`/announcements-public/${item._id}`)} 
+                  className="modern-button"
+                  style={{
+                    background: idx % 2 === 0 
+                      ? 'linear-gradient(135deg, #2849D0, #3b82f6)' 
+                      : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+                    color: idx % 2 === 0 ? 'white' : '#1f2937',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '12px 20px',
+                    fontSize: '14px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    flexShrink: 0,
+                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                    boxShadow: idx % 2 === 0 
+                      ? '0 4px 12px rgba(40, 73, 208, 0.3)' 
+                      : '0 4px 12px rgba(251, 191, 36, 0.3)'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.target.style.transform = 'translateY(-2px) scale(1.05)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.target.style.transform = 'translateY(0) scale(1)';
+                  }}
+                >
+                  Read More
+                </button>
+              </div>
+            ))}
+
+            {/* Modern View All Button */}
+            <div style={{ textAlign: 'center', marginTop: '32px' }}>
+              <button 
+                onClick={() => navigate('/announcements-public')} 
+                className="modern-button hover-pop"
+                style={{
+                  background: 'linear-gradient(135deg, #64748b, #475569)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '16px',
+                  padding: '16px 32px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                  boxShadow: '0 4px 16px rgba(100, 116, 139, 0.3)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
-              />
-              <div className="hidden h-16 w-16 bg-red-500 rounded-lg flex items-center justify-center text-white font-bold text-2xl">
-                GC
-              </div>
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-2px) scale(1.02)';
+                  e.target.style.boxShadow = '0 8px 24px rgba(100, 116, 139, 0.4)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0) scale(1)';
+                  e.target.style.boxShadow = '0 4px 16px rgba(100, 116, 139, 0.3)';
+                }}
+              >
+                <span>View All Announcements</span>
+                <FiArrowUpRight size={16} />
+              </button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
-            How It Works
-          </h2>
-          
-          <div className="grid md:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="bg-blue-100 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">📅</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Book</h3>
-              <p className="text-gray-600">Schedule your ID appointment online</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-green-100 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">📧</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Get Email</h3>
-              <p className="text-gray-600">Receive confirmation and updates</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-yellow-100 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🏢</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Visit ITSO</h3>
-              <p className="text-gray-600">Go to ITSO office on appointment day</p>
-            </div>
-            
-            <div className="text-center">
-              <div className="bg-purple-100 rounded-full h-20 w-20 flex items-center justify-center mx-auto mb-4">
-                <span className="text-3xl">🆔</span>
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Claim</h3>
-              <p className="text-gray-600">Collect your new ID card</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ITSO Announcements Section */}
-      <section className="py-20 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">
-            ITSO Announcements
-          </h2>
-          <div className="text-center text-gray-500 text-lg">
-            <p>Leave it blank for now</p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-8">
-            {/* Logo and Name */}
-            <div className="col-span-2">
-              <div className="flex items-center mb-4">
-                <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-xl mr-3">
-                  NU
-                </div>
-                <h3 className="text-xl font-bold">
-                  NU Dasmarinas ITSO ID Tracker
-                </h3>
+      <footer style={{
+        backgroundColor: '#4a5568',
+        color: 'white',
+        padding: '32px 20px 16px 20px'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr 1fr',
+            gap: '40px',
+            alignItems: 'center',
+            marginBottom: '24px'
+          }}>
+            {/* Contact Section */}
+            <div>
+              <h4 style={{ 
+                fontWeight: '600', 
+                marginBottom: '12px',
+                fontSize: '16px',
+                color: '#e2e8f0'
+              }}>Contact</h4>
+              <p style={{ 
+                color: '#3b82f6', 
+                fontSize: '14px',
+                marginBottom: '16px',
+                textDecoration: 'underline'
+              }}>itso@nu-dasma.edu.ph</p>
+              
+              <h4 style={{ 
+                fontWeight: '600', 
+                marginBottom: '12px',
+                fontSize: '16px',
+                color: '#e2e8f0'
+              }}>Careers</h4>
+              <p style={{ 
+                color: '#cbd5e0', 
+                fontSize: '14px'
+              }}>nu-dasmarinas.edu.ph</p>
+            </div>
+
+            {/* Address Section */}
+            <div>
+              <h4 style={{ 
+                fontWeight: '600', 
+                marginBottom: '12px',
+                fontSize: '16px',
+                color: '#e2e8f0'
+              }}>Address</h4>
+              <p style={{ 
+                color: '#cbd5e0', 
+                fontSize: '14px', 
+                lineHeight: '1.6'
+              }}>
+                Paliparan III, Bridge SM<br />
+                Dasmariñas, Governor's<br />
+                Dr. Dasmariñas,<br />
+                Dasmariñas<br />
+                Philippines
+              </p>
+            </div>
+
+            {/* Logo Section */}
+            <div style={{ 
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              gap: '16px'
+            }}>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <img src={nuLogo} alt="NU Logo" style={{ 
+                  width: '60px', 
+                  height: '60px', 
+                  objectFit: 'contain' 
+                }} />
               </div>
-              <p className="text-gray-300">
-                Streamlining student ID management for a better university experience.
-              </p>
-            </div>
-            
-            {/* Contact Info */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Contact</h4>
-              <p className="text-gray-300 mb-2">
-                <a href="mailto:itso@nu-dasma.edu.ph" className="hover:text-white">
-                  itso@nu-dasma.edu.ph
-                </a>
-              </p>
-              <p className="text-gray-300 mb-2">
-                <a href="/careers" className="hover:text-white">Careers</a>
-              </p>
-              <p className="text-gray-300">
-                NU Dasmarinas Campus
-              </p>
-            </div>
-            
-            {/* Quick Links */}
-            <div>
-              <h4 className="text-lg font-semibold mb-4">Quick Links</h4>
-              <ul className="space-y-2">
-                <li><a href="/" className="text-gray-300 hover:text-white">Home</a></li>
-                <li><a href="/calendar" className="text-gray-300 hover:text-white">Calendar</a></li>
-                <li><a href="/about" className="text-gray-300 hover:text-white">About Us</a></li>
-              </ul>
+              <div>
+                <h3 style={{ 
+                  fontWeight: 'bold',
+                  fontSize: '18px',
+                  color: '#fbbf24',
+                  margin: '0 0 4px 0'
+                }}>NU Dasmarinas</h3>
+                <p style={{ 
+                  color: '#fbbf24',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  margin: '0'
+                }}>ITSO ID Tracker</p>
+              </div>
             </div>
           </div>
-          
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-            <p className="text-gray-400">
-              © 2025. Group 2. All Rights Reserved.
+
+          {/* Copyright */}
+          <div style={{
+            borderTop: '1px solid #64748b',
+            paddingTop: '16px',
+            textAlign: 'center'
+          }}>
+            <p style={{
+              color: '#94a3b8',
+              fontSize: '12px',
+              margin: '0'
+            }}>
+              © 2025 NU Dasmariñas ITSO ID Tracker
             </p>
           </div>
         </div>
       </footer>
 
       {/* Modals */}
-      <LoginModal isOpen={isLoginOpen} onClose={closeLogin} onSignupClick={openSignup} />
-      <SignupModal isOpen={isSignupOpen} onClose={closeSignup} onLoginClick={openLogin} />
+      <LoginModal isOpen={isLoginOpen} onClose={closeLogin} />
     </div>
   );
 }

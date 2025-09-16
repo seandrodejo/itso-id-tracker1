@@ -162,7 +162,24 @@ export const getCalendarEvents = async (timeMin, timeMax) => {
       orderBy: 'startTime',
     });
 
-    return response.data.items;
+    // Transform events to a consistent format
+    const events = response.data.items?.map(event => ({
+      id: event.id,
+      summary: event.summary || 'No Title',
+      description: event.description || '',
+      start: event.start?.dateTime || event.start?.date,
+      end: event.end?.dateTime || event.end?.date,
+      location: event.location || '',
+      status: event.status || 'confirmed',
+      htmlLink: event.htmlLink,
+      creator: event.creator,
+      attendees: event.attendees || [],
+      isAllDay: !event.start?.dateTime, // If no dateTime, it's an all-day event
+      colorId: event.colorId,
+      source: 'google'
+    })) || [];
+
+    return events;
   } catch (error) {
     console.error('Error getting calendar events:', error);
     throw error;

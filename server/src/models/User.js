@@ -41,6 +41,21 @@ const userSchema = new mongoose.Schema(
       access_token: String,
       refresh_token: String,
       expiry_date: Number,
+    },
+    resetPasswordToken: {
+      type: String,
+    },
+    resetPasswordExpires: {
+      type: Date,
+    },
+    enrollment_status: {
+      type: String,
+      enum: ["enrolled", "registered", "not-enrolled"],
+      default: "enrolled"
+    },
+    needsStudentIdUpdate: {
+      type: Boolean,
+      default: false
     }
 
   },

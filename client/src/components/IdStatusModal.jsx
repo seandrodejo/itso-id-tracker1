@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { FaCalendarAlt, FaCheckCircle, FaHourglassHalf, FaInfoCircle, FaTimesCircle } from 'react-icons/fa';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -64,20 +65,20 @@ function IdStatusModal({ isOpen, onClose }) {
   const getStatusIcon = (statusType) => {
     switch (statusType) {
       case "NO_APPOINTMENT":
-        return "📅";
+        return <FaCalendarAlt className="text-blue-600" />;
       case "APPOINTMENT_CONFIRMED":
-        return "✅";
+        return <FaCheckCircle className="text-green-600" />;
       case "ID_PROCESSING":
-        return "⏳";
+        return <FaHourglassHalf className="text-yellow-600" />;
       case "ID_READY":
-        return "🎉";
+        return <FaCheckCircle className="text-green-600" />;
       case "ID_ISSUED":
-        return "✅";
+        return <FaCheckCircle className="text-green-600" />;
       case "APPOINTMENT_MISSED":
       case "APPOINTMENT_CANCELLED":
-        return "❌";
+        return <FaTimesCircle className="text-red-600" />;
       default:
-        return "ℹ️";
+        return <FaInfoCircle className="text-gray-600" />;
     }
   };
 
@@ -233,7 +234,7 @@ function IdStatusModal({ isOpen, onClose }) {
                   {status.appointment && (
                     <div className="flex items-center">
                       <div className="flex-shrink-0 w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                        <span className="text-blue-600 text-sm">✓</span>
+                        <FaCheckCircle className="text-blue-600" />
                       </div>
                       <div className="ml-3">
                         <p className="text-sm font-medium text-gray-900">Appointment Booked</p>
@@ -248,7 +249,7 @@ function IdStatusModal({ isOpen, onClose }) {
                   {status.appointment?.status === "CLAIMED" && (
                     <div className="flex items-center">
                       <div className="flex-shrink-0 w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                        <span className="text-yellow-600 text-sm">⏳</span>
+                        <FaHourglassHalf className="text-yellow-600" />
                       </div>
                       <div className="ml-3">
                         <p className="text-sm font-medium text-gray-900">ID Processing</p>
@@ -261,7 +262,7 @@ function IdStatusModal({ isOpen, onClose }) {
                   {status.idCard?.status === "CLAIMED" && (
                     <div className="flex items-center">
                       <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <span className="text-green-600 text-sm">🎉</span>
+                        <FaCheckCircle className="text-green-600" />
                       </div>
                       <div className="ml-3">
                         <p className="text-sm font-medium text-gray-900">ID Ready for Pickup</p>
@@ -276,7 +277,7 @@ function IdStatusModal({ isOpen, onClose }) {
                   {status.idCard?.status === "RETURNED" && (
                     <div className="flex items-center">
                       <div className="flex-shrink-0 w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <span className="text-green-600 text-sm">✅</span>
+                        <FaCheckCircle className="text-green-600" />
                       </div>
                       <div className="ml-3">
                         <p className="text-sm font-medium text-gray-900">ID Issued Successfully</p>

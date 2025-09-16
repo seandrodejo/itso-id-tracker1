@@ -68,29 +68,30 @@ function SignupModal({ isOpen, onClose, onLoginClick }) {
 
   const handleGoogleSignUp = async () => {
     try {
-      // For Google sign-up, we need student ID first
-      if (!formData.student_id) {
-        setError("Please enter your Student Number for Google sign-up");
-        return;
-      }
+      console.log('Attempting Google signup with URL:', `${API_URL}/google/auth/google`);
       
       // Get Google OAuth URL from backend
       const res = await fetch(`${API_URL}/google/auth/google`);
-      const data = await res.json();
       
+      console.log('Response status:', res.status);
+      console.log('Response ok:', res.ok);
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
+      const data = await res.json();
+      console.log('Response data:', data);
+
       if (data.authUrl) {
-        // Store student ID in localStorage for the callback
-        localStorage.setItem("pendingGoogleSignup", JSON.stringify({
-          student_id: formData.student_id
-        }));
-        
-        // Redirect to Google OAuth
+        // Redirect to Google OAuth directly (student ID will be collected after Google auth)
         window.location.href = data.authUrl;
       } else {
         setError("Failed to get Google OAuth URL");
       }
     } catch (err) {
-      setError("Google sign-up failed. Please try again.");
+      console.error('Google signup error:', err);
+      setError(`Google sign-up failed: ${err.message}. Please try again.`);
     }
   };
 

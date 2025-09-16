@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
-function BookingModal({ isOpen, onClose, onSuccess }) {
+function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
   const [step, setStep] = useState(1); // 1: Select Purpose, 2: Select Date/Time, 3: Confirm
   const [purpose, setPurpose] = useState("");
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(preSelectedDate || "");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -67,6 +67,12 @@ function BookingModal({ isOpen, onClose, onSuccess }) {
       fetchAvailableSlots(selectedDate, purpose);
     }
   }, [selectedDate, purpose]);
+
+  useEffect(() => {
+    if (preSelectedDate) {
+      setSelectedDate(preSelectedDate);
+    }
+  }, [preSelectedDate]);
 
   const handlePurposeNext = () => {
     if (!purpose) {

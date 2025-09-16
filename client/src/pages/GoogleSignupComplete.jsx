@@ -69,23 +69,101 @@ function GoogleSignupComplete() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 bg-blue-600 rounded-lg flex items-center justify-center">
-            <span className="text-white text-2xl font-bold">NU</span>
-          </div>
-        </div>
-        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-          Complete Your Google Sign Up
-        </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
-          Please enter your Student ID to complete your registration
-        </p>
-      </div>
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: '48px 24px',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      {/* Background decorative elements */}
+      <div style={{
+        position: 'absolute',
+        top: '15%',
+        left: '10%',
+        width: '200px',
+        height: '200px',
+        background: 'radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 8s ease-in-out infinite'
+      }}></div>
+      <div style={{
+        position: 'absolute',
+        bottom: '20%',
+        right: '15%',
+        width: '150px',
+        height: '150px',
+        background: 'radial-gradient(circle, rgba(251, 191, 36, 0.15) 0%, transparent 70%)',
+        borderRadius: '50%',
+        animation: 'float 6s ease-in-out infinite reverse'
+      }}></div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+      <div style={{
+        width: '100%',
+        maxWidth: '480px',
+        position: 'relative',
+        zIndex: 2
+      }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '24px'
+          }}>
+            <div style={{
+              width: '80px',
+              height: '80px',
+              background: 'rgba(255, 255, 255, 0.2)',
+              backdropFilter: 'blur(10px)',
+              borderRadius: '20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '2px solid rgba(255, 255, 255, 0.3)',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
+            }}>
+              <span style={{
+                color: 'white',
+                fontSize: '32px',
+                fontWeight: '900',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>NU</span>
+            </div>
+          </div>
+          <h2 style={{
+            fontSize: '36px',
+            fontWeight: '900',
+            color: 'white',
+            margin: '0 0 16px 0',
+            fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+            textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+            letterSpacing: '-0.02em'
+          }}>
+            🎓 Complete Your Google Sign Up
+          </h2>
+          <p style={{
+            fontSize: '18px',
+            color: 'rgba(255, 255, 255, 0.9)',
+            margin: '0',
+            fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+            fontWeight: '500'
+          }}>
+            Please enter your Student ID to complete your registration
+          </p>
+        </div>
+
+        <div style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '24px',
+          padding: '40px',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
+          border: '1px solid rgba(255, 255, 255, 0.3)'
+        }}>
           {/* Google Account Info */}
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <div className="flex items-center space-x-3">
