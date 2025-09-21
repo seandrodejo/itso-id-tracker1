@@ -26,6 +26,7 @@ const AppointmentSchema = new Schema(
     googleEventId: String, // ID from Google Calendar API
     qrData: String,        // QR code data string
     notes: String,
+    contactEmail: { type: String }, // Student's Gmail provided at booking
     // Admin remarks and tracking
     adminRemarks: { type: String, default: "" }, // Admin comments/reasons for status changes
     statusUpdatedAt: { type: Date }, // When status was last updated

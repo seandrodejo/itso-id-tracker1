@@ -196,6 +196,80 @@ export const sendAppointmentConfirmationEmail = async (email, { purposeLabel, da
   }
 };
 
+// Send appointment status update email with remarks
+export const sendAppointmentStatusUpdateEmail = async (email, {
+  status,
+  remarks,
+  date,
+  startTime,
+  endTime,
+  location,
+  studentName
+}) => {
+  try {
+    const transporter = createTransporter();
+
+    // If email not configured, simulate sending for testing
+    if (!transporter) {
+      console.log('\n✅ APPOINTMENT STATUS UPDATE (Simulated)');
+      console.log(`To: ${email}`);
+      console.log(`Status: ${status}`);
+      if (remarks) console.log(`Remarks: ${remarks}`);
+      if (date) console.log(`When: ${date} ${startTime || ''}${endTime ? ` - ${endTime}` : ''}`.trim());
+      if (location) console.log(`Where: ${location}`);
+      return { success: true, messageId: 'simulated-for-testing' };
+    }
+
+    const subject = `Your ITSO Appointment Status Update: ${status}`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Appointment Status Update</title>
+        </head>
+        <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f5f5f5;">
+          <div style="max-width:600px;margin:0 auto;background:#ffffff;padding:24px 20px;">
+            <div style="text-align:center;margin-bottom:24px;">
+              <div style="background:#4f46e5;color:#ffffff;padding:16px;border-radius:8px;">
+                <h1 style="margin:0;font-size:20px;">📣 Appointment Status Update</h1>
+              </div>
+            </div>
+            <p style="color:#111827;font-size:16px;">Hello${studentName ? ` ${studentName}` : ''},</p>
+            <p style="color:#374151;font-size:14px;line-height:1.6;">
+              The status of your appointment with NU Dasmariñas ITSO has been updated.
+            </p>
+            <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;">
+              <p style="margin:6px 0;color:#111827;"><strong>Status:</strong> ${status}</p>
+              ${remarks ? `<p style="margin:6px 0;color:#111827;"><strong>Remarks:</strong> ${remarks}</p>` : ''}
+              ${date ? `<p style=\"margin:6px 0;color:#111827;\"><strong>Date:</strong> ${date}</p>` : ''}
+              ${startTime ? `<p style=\"margin:6px 0;color:#111827;\"><strong>Time:</strong> ${startTime}${endTime ? ` - ${endTime}` : ''}</p>` : ''}
+              ${location ? `<p style=\"margin:6px 0;color:#111827;\"><strong>Location:</strong> ${location}</p>` : ''}
+            </div>
+            <p style="color:#6b7280;font-size:12px;margin-top:24px;border-top:1px solid #e5e7eb;padding-top:12px;">
+              © ${new Date().getFullYear()} NU Dasmariñas ITSO ID Tracker
+            </p>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Appointment status update email sent:', result.messageId);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('❌ Error sending appointment status update email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Test email configuration
 export const testEmailConfig = async () => {
   try {

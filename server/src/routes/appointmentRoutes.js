@@ -4,7 +4,7 @@ import Slot from "../models/Slot.js";
 import User from "../models/User.js";
 import { authenticateToken } from "../middleware/auth.js";
 import { createCalendarEvent, setCredentials } from "../config/google.js";
-import { sendAppointmentConfirmationEmail } from "../services/emailService.js";
+import { sendAppointmentConfirmationEmail, sendAppointmentStatusUpdateEmail } from "../services/emailService.js";
 
 const router = express.Router();
 
@@ -95,6 +95,7 @@ router.post("/", authenticateToken, async (req, res) => {
       appointmentStartTime: finalStartTime,
       appointmentEndTime: finalEndTime,
       notes: notes || "",
+      contactEmail: gmail, // store student's provided Gmail for future notifications
       status: status || "pending-approval"
     });
     
@@ -198,11 +199,13 @@ router.patch("/:id", authenticateToken, async (req, res) => {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
     
-    const appointment = await Appointment.findById(req.params.id);
+    const appointment = await Appointment.findById(req.params.id).populate("userId").populate("slotId");
     
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found" });
     }
+
+    const previousStatus = appointment.status;
     
     // Update appointment fields
     if (status) appointment.status = status;
@@ -215,6 +218,36 @@ router.patch("/:id", authenticateToken, async (req, res) => {
     const updatedAppointment = await Appointment.findById(req.params.id)
       .populate("userId", "name student_id personal_email")
       .populate("slotId");
+
+    // Send status update email if status changed or remarks provided
+    try {
+      const shouldNotify = Boolean(status && status !== previousStatus) || Boolean(adminRemarks);
+      if (shouldNotify) {
+        // Use the student's provided Gmail saved on the appointment; fallback to school email if missing
+        const recipientEmail = updatedAppointment.contactEmail || updatedAppointment.userId?.personal_email;
+        if (recipientEmail) {
+          // Prefer slot date/time if available; else fallback to direct fields
+          const date = updatedAppointment.slotId?.date || updatedAppointment.appointmentDate || '';
+          const startTime = updatedAppointment.slotId?.start || updatedAppointment.appointmentStartTime || '';
+          const endTime = updatedAppointment.slotId?.end || updatedAppointment.appointmentEndTime || '';
+          const location = 'NU Dasmarinas ITSO Office';
+          const studentName = updatedAppointment.userId?.name || '';
+
+          await sendAppointmentStatusUpdateEmail(recipientEmail, {
+            status: appointment.status,
+            remarks: appointment.adminRemarks || '',
+            date,
+            startTime,
+            endTime,
+            location,
+            studentName
+          });
+        }
+      }
+    } catch (emailErr) {
+      console.error('Error sending status update email:', emailErr);
+      // Do not fail the request if email fails
+    }
     
     res.json({
       message: "Appointment updated successfully",

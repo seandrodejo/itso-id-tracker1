@@ -2342,14 +2342,14 @@ function AdminDashboard() {
                         <div className="flex justify-between text-sm mb-1">
                           <span className="text-gray-600">System Utilization</span>
                           <span className="font-medium">
-                            {stats.totalUsers > 0 ? Math.round(((stats.pendingAppointments + stats.completedAppointments) / stats.totalUsers) * 100) : 0}%
+                            {stats.totalUsers > 0 ? Math.min(100, Math.round(((stats.pendingAppointments + stats.completedAppointments) / stats.totalUsers) * 100)) : 0}%
                           </span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div 
                             className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
                             style={{ 
-                              width: `${stats.totalUsers > 0 ? ((stats.pendingAppointments + stats.completedAppointments) / stats.totalUsers) * 100 : 0}%` 
+                              width: `${stats.totalUsers > 0 ? Math.min(100, ((stats.pendingAppointments + stats.completedAppointments) / stats.totalUsers) * 100) : 0}%` 
                             }}
                           ></div>
                         </div>
