@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, Link } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import nuLogo from "../assets/images/nu-logo.png";
 import ChangePasswordModal from "../components/ChangePasswordModal";
+import Toast from "../components/Toast";
 import { FaCalendarAlt, FaBullhorn, FaInfoCircle, FaUser } from 'react-icons/fa';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -25,6 +26,10 @@ function Dashboard() {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState(null);
   const [closures, setClosures] = useState([]); // dates when office is closed
   const [showAppointments, setShowAppointments] = useState(false); // collapsible appointments panel
+  const [gmail, setGmail] = useState('');
+  const [gmailError, setGmailError] = useState('');
+  const [toast, setToast] = useState(null); // { message, type }
+  const validateGmail = (email) => /^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -1782,6 +1787,26 @@ function Dashboard() {
                 <p className="text-gray-700">{selectedTimeSlot}</p>
               </div>
 
+              {/* Gmail input (required) */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Gmail Account *
+                </label>
+                <input
+                  type="email"
+                  value={gmail}
+                  onChange={(e) => {
+                    setGmail(e.target.value);
+                    setGmailError('');
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="yourname@gmail.com"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Only Gmail accounts are accepted for notifications</p>
+                {gmailError && <p className="text-red-600 text-sm mt-1">{gmailError}</p>}
+              </div>
+
               <div className="flex gap-3">
                 <button 
                   className="flex-1 py-3 px-4 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
@@ -1795,6 +1820,17 @@ function Dashboard() {
                   onClick={async () => {
                     try {
                       const token = localStorage.getItem("token");
+
+                      // Gmail validation
+                      if (!gmail.trim()) {
+                        setGmailError('Please enter your Gmail account');
+                        return;
+                      }
+                      if (!validateGmail(gmail)) {
+                        setGmailError('Please enter a valid Gmail account (e.g., example@gmail.com)');
+                        return;
+                      }
+                      setGmailError('');
                       
                       // Parse time slot to get start and end times
                       const parseTimeSlot = (timeSlot) => {
@@ -1893,7 +1929,8 @@ function Dashboard() {
                         // Include date and time as backup
                         appointmentDate: formatDateForAPI(selectedDate),
                         appointmentStartTime: start,
-                        appointmentEndTime: end
+                        appointmentEndTime: end,
+                        gmail
                       };
                       
                       console.log('Creating appointment with data:', appointmentData);
@@ -1920,16 +1957,25 @@ function Dashboard() {
                         setAppointmentType(null);
                         setPictureOption(null);
                         setSelectedTimeSlot(null);
-                        
-                        alert('Appointment confirmed successfully!');
+
+                        setToast({
+                          message: "Appointment confirmed! Details and the calendar invite were sent to your Gmail.",
+                          type: "success",
+                        });
                       } else {
                         const errorData = await res.json();
                         console.error('Failed to create appointment:', errorData);
-                        alert(`Failed to create appointment: ${errorData.message || 'Please try again.'}`);
+                        setToast({
+                          message: `Failed to create appointment: ${errorData.message || 'Please try again.'}`,
+                          type: 'error',
+                        });
                       }
                     } catch (error) {
                       console.error('Error creating appointment:', error);
-                      alert('Error creating appointment. Please try again.');
+                      setToast({
+                        message: 'Error creating appointment. Please try again.',
+                        type: 'error',
+                      });
                     }
                   }}
                 >
@@ -1943,6 +1989,11 @@ function Dashboard() {
 
       {/* Footer */}
 
+
+      {/* Toast Notifications */}
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />
+      )}
 
       {/* Change Password Modal */}
       <ChangePasswordModal 

@@ -131,6 +131,71 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
   }
 };
 
+// Send appointment confirmation email
+export const sendAppointmentConfirmationEmail = async (email, { purposeLabel, date, startTime, endTime, location }) => {
+  try {
+    const transporter = createTransporter();
+
+    // If email not configured, simulate sending for testing
+    if (!transporter) {
+      console.log('\n✅ APPOINTMENT CONFIRMED (Simulated)');
+      console.log(`To: ${email}`);
+      console.log(`When: ${date} ${startTime} - ${endTime}`);
+      console.log(`Where: ${location}`);
+      console.log(`Purpose: ${purposeLabel}\n`);
+      return { success: true, messageId: 'simulated-for-testing' };
+    }
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Your ITSO Appointment is Confirmed',
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Appointment Confirmation</title>
+        </head>
+        <body style="margin:0;padding:0;font-family:Arial,sans-serif;background:#f5f5f5;">
+          <div style="max-width:600px;margin:0 auto;background:#ffffff;padding:24px 20px;">
+            <div style="text-align:center;margin-bottom:24px;">
+              <div style="background:#2563eb;color:#ffffff;padding:16px;border-radius:8px;">
+                <h1 style="margin:0;font-size:20px;">✅ Appointment Confirmed</h1>
+              </div>
+            </div>
+            <p style="color:#111827;font-size:16px;">Hello,</p>
+            <p style="color:#374151;font-size:14px;line-height:1.6;">
+              Your appointment with NU Dasmariñas ITSO has been confirmed. Here are the details:
+            </p>
+            <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:16px 0;">
+              <p style="margin:6px 0;color:#111827;"><strong>Purpose:</strong> ${purposeLabel}</p>
+              <p style="margin:6px 0;color:#111827;"><strong>Date:</strong> ${date}</p>
+              <p style="margin:6px 0;color:#111827;"><strong>Time:</strong> ${startTime} - ${endTime}</p>
+              <p style="margin:6px 0;color:#111827;"><strong>Location:</strong> ${location}</p>
+            </div>
+            <p style="color:#374151;font-size:14px;line-height:1.6;">
+              A reminder will be sent before your appointment. If you need to make changes, please contact the ITSO office.
+            </p>
+            <p style="color:#6b7280;font-size:12px;margin-top:24px;border-top:1px solid #e5e7eb;padding-top:12px;">
+              © ${new Date().getFullYear()} NU Dasmariñas ITSO ID Tracker
+            </p>
+          </div>
+        </body>
+        </html>
+      `
+    };
+
+    const result = await transporter.sendMail(mailOptions);
+    console.log('✅ Appointment confirmation email sent:', result.messageId);
+    return { success: true, messageId: result.messageId };
+  } catch (error) {
+    console.error('❌ Error sending appointment confirmation email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 // Test email configuration
 export const testEmailConfig = async () => {
   try {

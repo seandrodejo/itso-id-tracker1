@@ -18,7 +18,7 @@ const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 const SCOPES = [
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/userinfo.email',
-  'https://www.googleapis.com/auth/calendar',
+  // For creating/adding attendees to events in the user's calendar
   'https://www.googleapis.com/auth/calendar.events'
 ];
 
@@ -85,6 +85,7 @@ export const createCalendarEvent = async (eventData) => {
         timeZone: 'Asia/Manila',
       },
       location: 'NU Dasmarinas ITSO Office',
+      attendees: eventData.attendees || [],
       reminders: {
         useDefault: false,
         overrides: [
@@ -97,6 +98,7 @@ export const createCalendarEvent = async (eventData) => {
     const response = await calendar.events.insert({
       calendarId: 'primary',
       resource: event,
+      sendUpdates: 'all' // send email invites to attendees
     });
 
     return response.data;
@@ -121,12 +123,14 @@ export const updateCalendarEvent = async (eventId, eventData) => {
         timeZone: 'Asia/Manila',
       },
       location: 'NU Dasmarinas ITSO Office',
+      attendees: eventData.attendees || [],
     };
 
     const response = await calendar.events.update({
       calendarId: 'primary',
       eventId: eventId,
       resource: event,
+      sendUpdates: 'all'
     });
 
     return response.data;
@@ -142,6 +146,7 @@ export const deleteCalendarEvent = async (eventId) => {
     await calendar.events.delete({
       calendarId: 'primary',
       eventId: eventId,
+      sendUpdates: 'all'
     });
     return true;
   } catch (error) {

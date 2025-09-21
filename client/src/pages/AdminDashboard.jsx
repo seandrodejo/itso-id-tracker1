@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import { FiLock, FiUser, FiUsers, FiCheckCircle, FiEdit3, FiXCircle, FiCalendar, FiBell, FiBarChart2 } from 'react-icons/fi';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -1053,7 +1054,7 @@ function AdminDashboard() {
             color: '#1f2937',
             margin: '0 0 8px 0',
             fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
-          }}>🔐 Admin Dashboard</h2>
+          }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><FiLock aria-hidden /> <span>Admin Dashboard</span></span></h2>
           <p style={{
             fontSize: '16px',
             color: '#64748b',
@@ -1158,7 +1159,7 @@ function AdminDashboard() {
                   fontSize: '16px',
                   fontWeight: '600',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
-                }}>🔐 Admin Control Center</div>
+                }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><FiLock aria-hidden /> <span>Admin Control Center</span></span></div>
               </div>
             </div>
             
@@ -1176,7 +1177,10 @@ function AdminDashboard() {
                   fontWeight: '600',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                 }}>
-                  👤 {admin?.email?.split('@')[0] || "Admin"}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                    <FiUser aria-hidden />
+                    <span>{admin?.email?.split('@')[0] || "Admin"}</span>
+                  </span>
                 </span>
               </div>
               <button 
@@ -1258,7 +1262,7 @@ function AdminDashboard() {
               display: 'flex',
               alignItems: 'center',
               gap: '8px'
-            }}>👥 User Accounts</h3>
+            }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><FiUsers aria-hidden /> <span>User Accounts</span></span></h3>
             <p style={{
               fontSize: '48px',
               fontWeight: '900',
@@ -1276,9 +1280,9 @@ function AdminDashboard() {
               fontWeight: '600',
               fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
             }}>
-              <span style={{ color: '#22c55e' }}>✅ Enrolled: {stats.enrolledUsers}</span>
-              <span style={{ color: '#3b82f6' }}>📝 Registered: {stats.registeredUsers}</span>
-              <span style={{ color: '#ef4444' }}>❌ Not Enrolled: {stats.notEnrolledUsers}</span>
+              <span style={{ color: '#22c55e', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FiCheckCircle aria-hidden /> <span>Enrolled: {stats.enrolledUsers}</span></span>
+              <span style={{ color: '#3b82f6', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FiEdit3 aria-hidden /> <span>Registered: {stats.registeredUsers}</span></span>
+              <span style={{ color: '#ef4444', display: 'inline-flex', alignItems: 'center', gap: '6px' }}><FiXCircle aria-hidden /> <span>Not Enrolled: {stats.notEnrolledUsers}</span></span>
             </div>
           </div>
           
@@ -1391,11 +1395,11 @@ function AdminDashboard() {
         }}>
           <nav style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
             {[
-              { key: 'appointments', label: '📅 Appointments', icon: '📅' },
-              { key: 'users', label: '👥 Users', icon: '👥' },
-              { key: 'calendar', label: '📆 Calendar', icon: '📆' },
-              { key: 'announcements', label: '📢 Announcements', icon: '📢' },
-              { key: 'analytics', label: '📊 Analytics', icon: '📊' }
+              { key: 'appointments', label: 'Appointments', icon: <FiCalendar aria-hidden /> },
+              { key: 'users', label: 'Users', icon: <FiUsers aria-hidden /> },
+              { key: 'calendar', label: 'Calendar', icon: <FiCalendar aria-hidden /> },
+              { key: 'announcements', label: 'Announcements', icon: <FiBell aria-hidden /> },
+              { key: 'analytics', label: 'Analytics', icon: <FiBarChart2 aria-hidden /> }
             ].map((tab) => (
               <button
                 key={tab.key}
@@ -1423,21 +1427,23 @@ function AdminDashboard() {
                 onClick={() => setActiveTab(tab.key)}
                 onMouseEnter={(e) => {
                   if (activeTab !== tab.key) {
-                    e.target.style.background = 'rgba(40, 73, 208, 0.1)';
-                    e.target.style.color = '#2849D0';
-                    e.target.style.transform = 'translateY(-2px)';
+                    const btn = e.currentTarget; // ensure we style the button, not child spans
+                    btn.style.background = 'rgba(40, 73, 208, 0.1)';
+                    btn.style.color = '#2849D0';
+                    btn.style.transform = 'translateY(-2px)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (activeTab !== tab.key) {
-                    e.target.style.background = 'transparent';
-                    e.target.style.color = '#64748b';
-                    e.target.style.transform = 'translateY(0)';
+                    const btn = e.currentTarget;
+                    btn.style.background = 'transparent';
+                    btn.style.color = '#64748b';
+                    btn.style.transform = 'translateY(0)';
                   }
                 }}
               >
-                <span style={{ fontSize: '18px' }}>{tab.icon}</span>
-                {tab.label.replace(tab.icon + ' ', '')}
+                <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: '18px', color: (activeTab === tab.key ? '#ffffff' : '#64748b') }}>{tab.icon}</span>
+                <span style={{ color: (activeTab === tab.key ? '#ffffff' : '#64748b') }}>{tab.label}</span>
               </button>
             ))}
           </nav>
@@ -1869,21 +1875,31 @@ function AdminDashboard() {
                         : null;
                       const closed = dateObj ? isDateClosed(dateObj) : false;
                       const label = d || '';
+
+                      // Determine if the date is in the past (not including today)
+                      const today = new Date();
+                      today.setHours(0, 0, 0, 0);
+                      const isPast = dateObj ? dateObj < today : false;
+
+                      const baseClasses = 'border rounded p-2 h-20 flex flex-col items-start justify-between';
+                      const stateClasses = isPast
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-60'
+                        : (closed ? 'bg-red-50 border-red-300 cursor-pointer' : 'bg-white cursor-pointer');
+
                       return (
                         <div
                           key={idx}
-                          className={`border rounded p-2 h-20 flex flex-col items-start justify-between ${closed ? 'bg-red-50 border-red-300' : 'bg-white'}`}
+                          className={`${baseClasses} ${stateClasses}`}
                           onClick={() => {
-                            if (!dateObj) return;
+                            if (!dateObj || isPast) return; // disable past dates
                             setSelectedClosureDate(dateObj);
                             setClosureRemarks(getClosureRemarks(dateObj));
                             setShowClosureModal(true);
                           }}
-                          style={{ cursor: dateObj ? 'pointer' : 'default' }}
                         >
-                          <div className="text-xs text-gray-700">{label}</div>
+                          <div className={`text-xs ${isPast ? 'text-gray-400' : 'text-gray-700'}`}>{label}</div>
                           {closed && (
-                            <div className="text-[10px] text-red-700 font-medium">Closed</div>
+                            <div className={`text-[10px] font-medium ${isPast ? 'text-gray-400' : 'text-red-700'}`}>Closed</div>
                           )}
                         </div>
                       );

@@ -4,6 +4,7 @@ import Slot from "../models/Slot.js";
 import User from "../models/User.js";
 import { authenticateToken } from "../middleware/auth.js";
 import { createCalendarEvent, setCredentials } from "../config/google.js";
+import { sendAppointmentConfirmationEmail } from "../services/emailService.js";
 
 const router = express.Router();
 
@@ -42,7 +43,13 @@ router.get("/", authenticateToken, async (req, res) => {
 // Create new appointment
 router.post("/", authenticateToken, async (req, res) => {
   try {
-    const { slotId, purpose, notes, type, pictureOption, status, appointmentDate, appointmentStartTime, appointmentEndTime } = req.body;
+    const { slotId, purpose, notes, type, pictureOption, status, appointmentDate, appointmentStartTime, appointmentEndTime, gmail } = req.body;
+
+    // Validate gmail
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    if (!gmail || !gmailRegex.test(gmail)) {
+      return res.status(400).json({ message: "Please provide a valid Gmail address (example@gmail.com)" });
+    }
     
     // Check if slot exists and has capacity (if slotId is provided)
     let slot = null;
@@ -105,12 +112,16 @@ router.post("/", authenticateToken, async (req, res) => {
       if (user && user.googleTokens) {
         setCredentials(user.googleTokens);
 
+        const purposeLabel = purpose === "NEW_ID" ? "New ID" :
+                             purpose === "RENEWAL" ? "ID Renewal" :
+                             purpose === "LOST_REPLACEMENT" ? "Lost/Replacement" : String(purpose || '').toString();
+
         const eventData = {
-          summary: `ITSO ID Appointment - ${purpose === "NEW_ID" ? "New ID" :
-                    purpose === "RENEWAL" ? "ID Renewal" : "Lost/Replacement"}`,
-          description: `Student ID appointment at ITSO office.\n\nService: ${purpose}\nNotes: ${notes || "None"}`,
-          startTime: `${slot.date}T${slot.start}:00+08:00`,
-          endTime: `${slot.date}T${slot.end}:00+08:00`
+          summary: `ITSO ID Appointment - ${purposeLabel}`,
+          description: `Student ID appointment at ITSO office.\n\nService: ${purposeLabel}\nNotes: ${notes || "None"}`,
+          startTime: `${finalDate}T${finalStartTime}:00+08:00`,
+          endTime: `${finalDate}T${finalEndTime}:00+08:00`,
+          attendees: [{ email: gmail }]
         };
 
         const googleEvent = await createCalendarEvent(eventData);
@@ -120,6 +131,23 @@ router.post("/", authenticateToken, async (req, res) => {
     } catch (googleError) {
       console.error("Google Calendar integration error:", googleError);
       // Don't fail the appointment creation if Google Calendar fails
+    }
+
+    // Send confirmation email
+    try {
+      const purposeLabel = purpose === "NEW_ID" ? "New ID" :
+                           purpose === "RENEWAL" ? "ID Renewal" :
+                           purpose === "LOST_REPLACEMENT" ? "Lost/Replacement" : String(purpose || '').toString();
+
+      await sendAppointmentConfirmationEmail(gmail, {
+        purposeLabel,
+        date: finalDate,
+        startTime: finalStartTime,
+        endTime: finalEndTime,
+        location: 'NU Dasmarinas ITSO Office'
+      });
+    } catch (emailErr) {
+      console.error('Error sending confirmation email:', emailErr);
     }
 
     res.status(201).json({

@@ -3,11 +3,12 @@ import { useState, useEffect } from "react";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
-  const [step, setStep] = useState(1); // 1: Select Purpose, 2: Select Date/Time, 3: Confirm
+  const [step, setStep] = useState(1); // 1: Select Purpose, 2: Select Date/Time, 3: Gmail, 4: Confirm
   const [purpose, setPurpose] = useState("");
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [availableSlots, setAvailableSlots] = useState([]);
   const [selectedDate, setSelectedDate] = useState(preSelectedDate || "");
+  const [gmail, setGmail] = useState("");
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -92,6 +93,24 @@ function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
     setStep(3);
   };
 
+  const validateGmail = (email) => {
+    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    return gmailRegex.test(email);
+  };
+
+  const handleGmailNext = () => {
+    if (!gmail.trim()) {
+      setError("Please enter your Gmail account");
+      return;
+    }
+    if (!validateGmail(gmail)) {
+      setError("Please enter a valid Gmail account (e.g., example@gmail.com)");
+      return;
+    }
+    setError("");
+    setStep(4);
+  };
+
   const handleBooking = async () => {
     try {
       setLoading(true);
@@ -108,7 +127,8 @@ function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
         body: JSON.stringify({
           slotId: selectedSlot._id,
           purpose: purpose,
-          notes: notes
+          notes: notes,
+          gmail: gmail
         })
       });
 
@@ -116,6 +136,8 @@ function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
       
       if (res.ok) {
         onSuccess(data.appointment);
+        // Show success popup to the user
+        window.alert("Appointment confirmed! Your booking is successful and the details have been sent to your Gmail.");
         resetModal();
         onClose();
       } else {
@@ -135,6 +157,7 @@ function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
     setSelectedSlot(null);
     setAvailableSlots([]);
     setSelectedDate("");
+    setGmail("");
     setNotes("");
     setError("");
   };
@@ -186,6 +209,13 @@ function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
               <div className={`flex items-center ${step >= 3 ? 'text-blue-600' : 'text-gray-400'}`}>
                 <span className={`flex items-center justify-center w-8 h-8 border-2 rounded-full ${step >= 3 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
                   3
+                </span>
+                <span className="ml-2 text-sm font-medium">Gmail</span>
+              </div>
+              <div className={`flex-1 h-1 mx-4 ${step >= 4 ? 'bg-blue-600' : 'bg-gray-300'}`}></div>
+              <div className={`flex items-center ${step >= 4 ? 'text-blue-600' : 'text-gray-400'}`}>
+                <span className={`flex items-center justify-center w-8 h-8 border-2 rounded-full ${step >= 4 ? 'border-blue-600 bg-blue-600 text-white' : 'border-gray-300'}`}>
+                  4
                 </span>
                 <span className="ml-2 text-sm font-medium">Confirm</span>
               </div>
@@ -309,8 +339,52 @@ function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
             </div>
           )}
 
-          {/* Step 3: Confirm Booking */}
-          {step === 3 && selectedSlot && (
+          {/* Step 3: Gmail Input */}
+          {step === 3 && (
+            <div>
+              <h4 className="text-md font-medium text-gray-900 mb-4">
+                Enter your Gmail account
+              </h4>
+              <p className="text-sm text-gray-600 mb-4">
+                We'll send your appointment confirmation and details to this email address.
+              </p>
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Gmail Account *
+                </label>
+                <input
+                  type="email"
+                  value={gmail}
+                  onChange={(e) => setGmail(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="yourname@gmail.com"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Only Gmail accounts are accepted for notifications
+                </p>
+              </div>
+
+              <div className="flex justify-between">
+                <button
+                  onClick={() => setStep(2)}
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium"
+                >
+                  Back
+                </button>
+                <button
+                  onClick={handleGmailNext}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Confirm Booking */}
+          {step === 4 && selectedSlot && (
             <div>
               <h4 className="text-md font-medium text-gray-900 mb-4">
                 Confirm your appointment
@@ -345,6 +419,10 @@ function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
                     <span className="font-medium text-gray-700">Location:</span>
                     <p className="text-gray-900">NU Dasmarinas ITSO Office</p>
                   </div>
+                  <div>
+                    <span className="font-medium text-gray-700">Email:</span>
+                    <p className="text-gray-900">{gmail}</p>
+                  </div>
                 </div>
               </div>
 
@@ -363,7 +441,7 @@ function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
 
               <div className="flex justify-between">
                 <button
-                  onClick={() => setStep(2)}
+                  onClick={() => setStep(3)}
                   className="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-md text-sm font-medium"
                 >
                   Back
