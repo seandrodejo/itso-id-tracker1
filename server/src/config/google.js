@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Google OAuth2 configuration
 const redirectUri = (process.env.GOOGLE_REDIRECT_URI || '').trim();
 const oauth2Client = new google.auth.OAuth2(
   process.env.GOOGLE_CLIENT_ID,
@@ -11,20 +10,17 @@ const oauth2Client = new google.auth.OAuth2(
   redirectUri
 );
 
-// Google Calendar API configuration
 const calendar = google.calendar({ version: 'v3', auth: oauth2Client });
 
-// Scopes for Google Calendar access
 const SCOPES = [
   'https://www.googleapis.com/auth/userinfo.profile',
   'https://www.googleapis.com/auth/userinfo.email',
-  // For creating/adding attendees to events in the user's calendar
+ 
   'https://www.googleapis.com/auth/calendar.events'
 ];
 
-// Generate OAuth2 authorization URL
 export const generateAuthUrl = () => {
-  // Debug logging
+ 
   console.log("🔍 Generating OAuth URL with:");
   console.log("Client ID:", process.env.GOOGLE_CLIENT_ID);
   console.log("Redirect URI:", redirectUri);
@@ -40,7 +36,6 @@ export const generateAuthUrl = () => {
   return authUrl;
 };
 
-// Exchange authorization code for tokens
 export const getTokensFromCode = async (code) => {
   try {
     const { tokens } = await oauth2Client.getToken(code);
@@ -52,12 +47,10 @@ export const getTokensFromCode = async (code) => {
   }
 };
 
-// Set credentials for API calls
 export const setCredentials = (tokens) => {
   oauth2Client.setCredentials(tokens);
 };
 
-// Get user profile from Google
 export const getUserProfile = async (accessToken) => {
   try {
     oauth2Client.setCredentials({ access_token: accessToken });
@@ -70,7 +63,6 @@ export const getUserProfile = async (accessToken) => {
   }
 };
 
-// Create Google Calendar event
 export const createCalendarEvent = async (eventData) => {
   try {
     const event = {
@@ -89,8 +81,8 @@ export const createCalendarEvent = async (eventData) => {
       reminders: {
         useDefault: false,
         overrides: [
-          { method: 'email', minutes: 24 * 60 }, // 1 day before
-          { method: 'popup', minutes: 60 }, // 1 hour before
+          { method: 'email', minutes: 24 * 60 },
+          { method: 'popup', minutes: 60 },
         ],
       },
     };
@@ -98,7 +90,7 @@ export const createCalendarEvent = async (eventData) => {
     const response = await calendar.events.insert({
       calendarId: 'primary',
       resource: event,
-      sendUpdates: 'all' // send email invites to attendees
+      sendUpdates: 'all'
     });
 
     return response.data;
@@ -108,7 +100,6 @@ export const createCalendarEvent = async (eventData) => {
   }
 };
 
-// Update Google Calendar event
 export const updateCalendarEvent = async (eventId, eventData) => {
   try {
     const event = {
@@ -140,7 +131,6 @@ export const updateCalendarEvent = async (eventId, eventData) => {
   }
 };
 
-// Delete Google Calendar event
 export const deleteCalendarEvent = async (eventId) => {
   try {
     await calendar.events.delete({
@@ -155,7 +145,6 @@ export const deleteCalendarEvent = async (eventId) => {
   }
 };
 
-// Get user's calendar events
 export const getCalendarEvents = async (timeMin, timeMax) => {
   try {
     const response = await calendar.events.list({
@@ -167,7 +156,7 @@ export const getCalendarEvents = async (timeMin, timeMax) => {
       orderBy: 'startTime',
     });
 
-    // Transform events to a consistent format
+   
     const events = response.data.items?.map(event => ({
       id: event.id,
       summary: event.summary || 'No Title',
@@ -179,7 +168,7 @@ export const getCalendarEvents = async (timeMin, timeMax) => {
       htmlLink: event.htmlLink,
       creator: event.creator,
       attendees: event.attendees || [],
-      isAllDay: !event.start?.dateTime, // If no dateTime, it's an all-day event
+      isAllDay: !event.start?.dateTime,
       colorId: event.colorId,
       source: 'google'
     })) || [];
@@ -201,3 +190,4 @@ export default {
   deleteCalendarEvent,
   getCalendarEvents
 };
+

@@ -19,3 +19,4 @@ const IdCardSchema = new Schema(
 );
 
 export default model("IdCard", IdCardSchema);
+

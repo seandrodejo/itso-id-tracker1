@@ -14,18 +14,15 @@ const __dirname = path.dirname(__filename);
 
 const router = express.Router();
 
-// Test route
 router.get("/test", (req, res) => {
   res.json({ message: "Auth routes working!" });
 });
 
-// Test login route
 router.post("/test-login", (req, res) => {
   console.log('🔍 Test login received:', req.body);
   res.json({ message: "Test login received", body: req.body });
 });
 
-// Function to read and parse CSV file
 const readStudentCSV = () => {
   try {
     const csvPath = path.join(__dirname, '../../../student_ids.csv');
@@ -33,14 +30,14 @@ const readStudentCSV = () => {
     const lines = csvContent.split(/\r?\n/).filter(line => line.trim());
     const students = [];
     
-    // Skip header row
+   
     for (let i = 1; i < lines.length; i++) {
       const [student_id, email, password] = lines[i].split(',');
       if (student_id && student_id.trim()) {
         students.push({
           student_id: student_id.trim(),
           email: email ? email.trim() : '',
-          password: password ? password.trim() : '12345' // default password
+          password: password ? password.trim() : '12345'
         });
       }
     }
@@ -52,7 +49,6 @@ const readStudentCSV = () => {
   }
 };
 
-// Function to validate student credentials against CSV
 const validateStudentCredentials = (student_id, password) => {
   const students = readStudentCSV();
   const student = students.find(s => s.student_id === student_id);
@@ -68,24 +64,18 @@ const validateStudentCredentials = (student_id, password) => {
   return { valid: true, student };
 };
 
-// REGISTER - Disabled (login-only system)
-// router.post("/register", async (req, res) => {
-//   res.status(404).json({ message: "Registration is disabled. Please use login only." });
-// });
-
-// LOGIN
 router.post("/login", async (req, res) => {
   try {
     console.log('🔍 Login attempt:', req.body);
     const { email, student_id, password } = req.body;
 
-    // Validate email format (must be @nu-dasma.edu.ph)
+   
     if (!email || !email.endsWith('@nu-dasma.edu.ph')) {
       console.log('❌ Invalid email format:', email);
       return res.status(400).json({ message: "Email must be a valid @nu-dasma.edu.ph address" });
     }
 
-    // Validate student ID and password against CSV
+   
     console.log('🔍 Validating credentials for student_id:', student_id);
     const validation = validateStudentCredentials(student_id, password);
     console.log('🔍 Validation result:', validation);
@@ -94,7 +84,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: validation.message });
     }
 
-    // Check if user exists in database, if not create them
+   
     console.log('🔍 Looking for user with student_id:', student_id);
     let user = await User.findOne({ 
       $or: [
@@ -105,11 +95,11 @@ router.post("/login", async (req, res) => {
     console.log('🔍 Found existing user:', user ? 'Yes' : 'No');
     
     if (!user) {
-      // Create new user with CSV data
+     
       console.log('🔍 Creating new user...');
       const hashedPassword = await bcrypt.hash(password, 10);
       user = new User({
-        name: `Student ${student_id}`, // Default name, can be updated later
+        name: `Student ${student_id}`,
         student_id,
         personal_email: email,
         password: hashedPassword,
@@ -119,7 +109,7 @@ router.post("/login", async (req, res) => {
       await user.save();
       console.log('✅ User saved to database');
     } else {
-      // Update user information if different
+     
       let needsUpdate = false;
       
       if (user.personal_email !== email) {
@@ -140,7 +130,7 @@ router.post("/login", async (req, res) => {
       }
     }
 
-    // Create token
+   
     console.log('🔍 Creating JWT token for user:', { id: user._id, role: user.role, email: user.personal_email });
     const token = jwt.sign(
       {
@@ -171,14 +161,11 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
-
-// Get user details
 router.get("/user/:userId", authenticateToken, async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Check if user is requesting their own data or is admin
+   
     if (req.user.id !== userId && req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -196,18 +183,17 @@ router.get("/user/:userId", authenticateToken, async (req, res) => {
   }
 });
 
-// Create admin user (for testing)
 router.post("/create-admin", async (req, res) => {
   try {
     const { name, student_id, personal_email, password } = req.body;
 
-    // Check if admin already exists
+   
     const existing = await User.findOne({ personal_email });
     if (existing) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-    // Hash password
+   
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const admin = new User({
@@ -236,7 +222,6 @@ router.post("/create-admin", async (req, res) => {
   }
 });
 
-// FORGOT PASSWORD - Send reset email
 router.post("/forgot-password", async (req, res) => {
   try {
     console.log("🔍 Forgot password request received for:", req.body);
@@ -247,28 +232,28 @@ router.post("/forgot-password", async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    // Find user by email
+   
     console.log("🔍 Looking for user with email:", personal_email);
     const user = await User.findOne({ personal_email });
     if (!user) {
       console.log("❌ User not found for email:", personal_email);
-      // Don't reveal if user exists or not for security
+     
       return res.status(200).json({
         message: "If an account with that email exists, we've sent a password reset link."
       });
     }
     console.log("✅ User found:", user.name);
 
-    // Generate reset token
+   
     const resetToken = crypto.randomBytes(32).toString('hex');
 
-    // Set token and expiration (1 hour from now)
+   
     user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+    user.resetPasswordExpires = Date.now() + 3600000;
 
     await user.save();
 
-    // Send email
+   
     console.log("📧 Attempting to send email to:", personal_email);
     const emailResult = await sendPasswordResetEmail(personal_email, resetToken);
     console.log("📧 Email result:", emailResult);
@@ -290,7 +275,6 @@ router.post("/forgot-password", async (req, res) => {
   }
 });
 
-// RESET PASSWORD - Verify token and update password
 router.post("/reset-password", async (req, res) => {
   try {
     const { token, newPassword } = req.body;
@@ -299,7 +283,7 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ message: "Token and new password are required" });
     }
 
-    // Find user with valid reset token
+   
     const user = await User.findOne({
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() }
@@ -309,10 +293,10 @@ router.post("/reset-password", async (req, res) => {
       return res.status(400).json({ message: "Invalid or expired reset token" });
     }
 
-    // Hash new password
+   
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
-    // Update user password and clear reset token
+   
     user.password = hashedPassword;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
@@ -327,7 +311,6 @@ router.post("/reset-password", async (req, res) => {
   }
 });
 
-// VERIFY RESET TOKEN - Check if token is valid
 router.get("/verify-reset-token/:token", async (req, res) => {
   try {
     const { token } = req.params;
@@ -352,10 +335,9 @@ router.get("/verify-reset-token/:token", async (req, res) => {
   }
 });
 
-// Get all users (admin only)
 router.get("/users", authenticateToken, async (req, res) => {
   try {
-    // Check if user is admin
+   
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
@@ -368,10 +350,9 @@ router.get("/users", authenticateToken, async (req, res) => {
   }
 });
 
-// Update user (admin only)
 router.patch("/user/:id", authenticateToken, async (req, res) => {
   try {
-    // Check if user is admin
+   
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
@@ -383,7 +364,7 @@ router.patch("/user/:id", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     
-    // Add enrollment_status field if it doesn't exist
+   
     if (enrollment_status) {
       user.enrollment_status = enrollment_status;
     }
@@ -403,15 +384,14 @@ router.patch("/user/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Admin endpoint to fix users with Google IDs as student IDs
 router.post("/admin/fix-google-student-ids", authenticateToken, async (req, res) => {
   try {
-    // Check if user is admin
+   
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
 
-    // Find users with Google IDs as student IDs
+   
     const usersWithGoogleIds = await User.find({
       student_id: { $regex: /^GOOGLE_/ }
     });
@@ -428,7 +408,7 @@ router.post("/admin/fix-google-student-ids", authenticateToken, async (req, res)
 
     for (const user of usersWithGoogleIds) {
       try {
-        // Generate a temporary student ID or mark for manual review
+       
         const tempStudentId = `TEMP_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
         
         results.push({
@@ -440,9 +420,9 @@ router.post("/admin/fix-google-student-ids", authenticateToken, async (req, res)
           action: "marked_for_manual_review"
         });
 
-        // Update the user with temporary ID
+       
         user.student_id = tempStudentId;
-        user.needsStudentIdUpdate = true; // Add flag for manual review
+        user.needsStudentIdUpdate = true;
         await user.save();
         
         fixedCount++;
@@ -469,10 +449,9 @@ router.post("/admin/fix-google-student-ids", authenticateToken, async (req, res)
   }
 });
 
-// Admin endpoint to get users that need student ID updates
 router.get("/admin/users-needing-student-id-update", authenticateToken, async (req, res) => {
   try {
-    // Check if user is admin
+   
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
@@ -496,10 +475,9 @@ router.get("/admin/users-needing-student-id-update", authenticateToken, async (r
   }
 });
 
-// Admin endpoint to manually update a user's student ID
 router.patch("/admin/update-user-student-id/:userId", authenticateToken, async (req, res) => {
   try {
-    // Check if user is admin
+   
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
@@ -511,7 +489,7 @@ router.patch("/admin/update-user-student-id/:userId", authenticateToken, async (
       return res.status(400).json({ message: "Student ID is required" });
     }
 
-    // Check if student ID is already taken
+   
     const existingUser = await User.findOne({ 
       student_id: student_id.trim(),
       _id: { $ne: userId }
@@ -521,7 +499,7 @@ router.patch("/admin/update-user-student-id/:userId", authenticateToken, async (
       return res.status(400).json({ message: "Student ID is already taken by another user" });
     }
 
-    // Update the user
+   
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -549,33 +527,32 @@ router.patch("/admin/update-user-student-id/:userId", authenticateToken, async (
   }
 });
 
-// Admin endpoint to delete a user account
 router.delete("/admin/delete-user/:userId", authenticateToken, async (req, res) => {
   try {
-    // Check if user is admin
+   
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
 
     const { userId } = req.params;
 
-    // Prevent admin from deleting themselves
+   
     if (userId === req.user.id) {
       return res.status(400).json({ message: "Cannot delete your own admin account" });
     }
 
-    // Find the user
+   
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Prevent deletion of other admin accounts
+   
     if (user.role === "admin") {
       return res.status(400).json({ message: "Cannot delete admin accounts" });
     }
 
-    // Store user info for response
+   
     const deletedUserInfo = {
       id: user._id,
       name: user.name,
@@ -584,11 +561,11 @@ router.delete("/admin/delete-user/:userId", authenticateToken, async (req, res) 
       role: user.role
     };
 
-    // Delete related appointments first (cascade delete)
+   
     const Appointment = (await import("../models/Appointment.js")).default;
     const deletedAppointments = await Appointment.deleteMany({ userId: userId });
 
-    // Delete the user
+   
     await User.findByIdAndDelete(userId);
 
     res.json({
@@ -603,7 +580,6 @@ router.delete("/admin/delete-user/:userId", authenticateToken, async (req, res) 
   }
 });
 
-// Change password route (consolidated and CSV-synced)
 router.post("/change-password", authenticateToken, async (req, res) => {
   try {
     console.log("🔍 Change password request received for user:", req.user.id);
@@ -617,13 +593,13 @@ router.post("/change-password", authenticateToken, async (req, res) => {
       return res.status(400).json({ message: "New password must be at least 6 characters long" });
     }
 
-    // Find the user
+   
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-    // Verify current password (DB if hashed, else CSV)
+   
     let valid = false;
     if (user.password) {
       valid = await bcrypt.compare(currentPassword, user.password);
@@ -634,11 +610,11 @@ router.post("/change-password", authenticateToken, async (req, res) => {
     }
     if (!valid) return res.status(400).json({ message: "Current password is incorrect" });
 
-    // Update DB
+   
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-    // Update CSV too (keeps login consistent with CSV validation)
+   
     try {
       const csvPath = path.join(__dirname, "../../../student_ids.csv");
       const csvContent = fs.readFileSync(csvPath, "utf8");
@@ -653,7 +629,7 @@ router.post("/change-password", authenticateToken, async (req, res) => {
       }
       fs.writeFileSync(csvPath, lines.join("\n"));
     } catch (csvError) {
-      console.error("Error updating CSV file:", csvError); // don't fail the request
+      console.error("Error updating CSV file:", csvError);
     }
 
     console.log("✅ Password changed successfully for user:", user.student_id);
@@ -666,3 +642,4 @@ router.post("/change-password", authenticateToken, async (req, res) => {
 });
 
 export default router;
+

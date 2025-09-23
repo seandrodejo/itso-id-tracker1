@@ -4,7 +4,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// User schema (simplified)
 const userSchema = new mongoose.Schema({
   name: { type: String, required: true },
   student_id: { type: String, required: true, unique: true },
@@ -18,21 +17,21 @@ const User = mongoose.model('User', userSchema);
 
 async function createTestUser() {
   try {
-    // Connect to MongoDB
+   
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Connected to MongoDB');
 
-    // Check if test user already exists
+   
     const existingUser = await User.findOne({ personal_email: 'test@student.com' });
     if (existingUser) {
       console.log('✅ Test user already exists');
       process.exit(0);
     }
 
-    // Hash password
+   
     const hashedPassword = await bcrypt.hash('password123', 10);
 
-    // Create test user
+   
     const testUser = new User({
       name: 'Test Student',
       student_id: '2024-12345',
@@ -46,7 +45,7 @@ async function createTestUser() {
     console.log('📧 Email: test@student.com');
     console.log('🔑 Password: password123');
 
-    // Create admin user too
+   
     const existingAdmin = await User.findOne({ personal_email: 'admin@nu-dasma.edu.ph' });
     if (!existingAdmin) {
       const adminPassword = await bcrypt.hash('admin123', 10);
@@ -71,3 +70,4 @@ async function createTestUser() {
 }
 
 createTestUser();
+

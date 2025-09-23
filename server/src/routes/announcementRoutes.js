@@ -4,7 +4,43 @@ import { authenticateToken, requireAdmin } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Public: list announcements with search, tag filter, pagination
+import multer from "multer";
+import fs from "fs";
+import path from "path";
+
+const uploadsDir = path.resolve("uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadsDir);
+  },
+  filename: function (req, file, cb) {
+    const safeOriginal = file.originalname.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const unique = Date.now() + "-" + Math.round(Math.random() * 1e9);
+    cb(null, unique + "-" + safeOriginal);
+  },
+});
+
+const imageFilter = (req, file, cb) => {
+  if (/^image\//.test(file.mimetype)) cb(null, true);
+  else cb(new Error("Only image files are allowed"));
+};
+
+const upload = multer({ storage, fileFilter: imageFilter, limits: { fileSize: 5 * 1024 * 1024 } });
+
+router.post("/upload-image", authenticateToken, requireAdmin, upload.single("image"), (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file uploaded" });
+    const url = `${req.protocol}://${req.get("host")}/uploads/${req.file.filename}`;
+    return res.json({ url, filename: req.file.filename, mimetype: req.file.mimetype, size: req.file.size });
+  } catch (err) {
+    return res.status(500).json({ message: "Error uploading image", error: err.message });
+  }
+});
+
 router.get("/", async (req, res) => {
   try {
     const { q, tag, page = 1, limit = 10 } = req.query;
@@ -38,7 +74,6 @@ router.get("/", async (req, res) => {
   }
 });
 
-// Admin: list all (published + drafts) with search
 router.get("/all", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { q, tag, page = 1, limit = 10 } = req.query;
@@ -67,7 +102,6 @@ router.get("/all", authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Admin: get by id (including drafts)
 router.get("/admin/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const item = await Announcement.findById(req.params.id);
@@ -78,7 +112,6 @@ router.get("/admin/:id", authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Public: single announcement by id
 router.get("/:id", async (req, res) => {
   try {
     const item = await Announcement.findById(req.params.id);
@@ -91,7 +124,6 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Admin: create
 router.post("/", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { title, content, images = [], links = [], tags = [], isPublished = true } = req.body;
@@ -112,7 +144,6 @@ router.post("/", authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Admin: update
 router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const updates = req.body;
@@ -127,7 +158,6 @@ router.patch("/:id", authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// Admin: delete
 router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const removed = await Announcement.findByIdAndDelete(req.params.id);

@@ -4,7 +4,6 @@ import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Get all available slots
 router.get("/available", async (req, res) => {
   try {
     const { date, purpose } = req.query;
@@ -19,7 +18,7 @@ router.get("/available", async (req, res) => {
       query.purpose = purpose;
     }
 
-    // Use aggregation to filter slots where bookedCount < capacity
+   
     const slots = await Slot.aggregate([
       { $match: query },
       { $addFields: {
@@ -35,7 +34,6 @@ router.get("/available", async (req, res) => {
   }
 });
 
-// Get all slots (admin only)
 router.get("/all", authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -51,7 +49,6 @@ router.get("/all", authenticateToken, async (req, res) => {
   }
 });
 
-// Create new slot (admin only)
 router.post("/", authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -60,12 +57,12 @@ router.post("/", authenticateToken, async (req, res) => {
     
     const { date, start, end, purpose, capacity, isEnrollmentHour } = req.body;
     
-    // Validate required fields
+   
     if (!date || !start || !end || !purpose) {
       return res.status(400).json({ message: "Missing required fields" });
     }
     
-    // Check if slot already exists for this time
+   
     const existingSlot = await Slot.findOne({
       date,
       start,
@@ -99,7 +96,6 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Update slot (admin only)
 router.put("/:id", authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -113,7 +109,7 @@ router.put("/:id", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Slot not found" });
     }
     
-    // Update fields
+   
     if (date) slot.date = date;
     if (start) slot.start = start;
     if (end) slot.end = end;
@@ -133,7 +129,6 @@ router.put("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Delete slot (admin only)
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -145,7 +140,7 @@ router.delete("/:id", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Slot not found" });
     }
     
-    // Check if slot has any appointments
+   
     if (slot.bookedCount > 0) {
       return res.status(400).json({ 
         message: "Cannot delete slot with existing appointments" 
@@ -161,7 +156,6 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Get slots by date range
 router.get("/range", async (req, res) => {
   try {
     const { startDate, endDate, purpose } = req.query;
@@ -185,7 +179,6 @@ router.get("/range", async (req, res) => {
   }
 });
 
-// Create default slots for the next 7 days (for testing)
 router.post("/create-defaults", authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -203,18 +196,18 @@ router.post("/create-defaults", authenticateToken, async (req, res) => {
       { start: "15:00", end: "16:00" }
     ];
 
-    // Create slots for the next 7 days
+   
     for (let i = 1; i <= 7; i++) {
       const date = new Date();
       date.setDate(date.getDate() + i);
       const dateStr = date.toISOString().split('T')[0];
 
-      // Skip weekends
+     
       if (date.getDay() === 0 || date.getDay() === 6) continue;
 
       for (const purpose of purposes) {
         for (const timeSlot of timeSlots) {
-          // Check if slot already exists
+         
           const existingSlot = await Slot.findOne({
             date: dateStr,
             start: timeSlot.start,
@@ -251,3 +244,4 @@ router.post("/create-defaults", authenticateToken, async (req, res) => {
 });
 
 export default router;
+

@@ -3,37 +3,57 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Create transporter
 const createTransporter = () => {
   console.log('🔍 Checking email credentials...');
   console.log('EMAIL_USER:', process.env.EMAIL_USER);
   console.log('EMAIL_PASS length:', process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 'undefined');
+  console.log('GMAIL_OAUTH_REFRESH_TOKEN set:', !!process.env.GMAIL_OAUTH_REFRESH_TOKEN);
 
-  // Check if email credentials are configured
-  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS ||
-      process.env.EMAIL_USER === 'your-gmail@gmail.com' ||
-      process.env.EMAIL_PASS === 'your-app-password') {
-    console.log('⚠️  Email credentials not configured. Using console output for testing.');
-    return null;
+  const emailUser = (process.env.EMAIL_USER || '').trim();
+  const emailPass = (process.env.EMAIL_PASS || '').trim();
+  const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
+  const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
+  const refreshToken = (process.env.GMAIL_OAUTH_REFRESH_TOKEN || '').trim();
+
+  // Prefer OAuth2 if refresh token is provided (works without app passwords)
+  if (emailUser && clientId && clientSecret && refreshToken) {
+    console.log('✅ Using Gmail OAuth2 for Nodemailer');
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: emailUser,
+        clientId,
+        clientSecret,
+        refreshToken,
+      },
+    });
   }
 
-  console.log('✅ Email credentials found, creating transporter...');
-  return nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS
-    }
-  });
+  // Fallback: password/app password auth if provided
+  if (emailUser && emailPass &&
+      emailUser !== 'your-gmail@gmail.com' &&
+      emailPass !== 'your-app-password') {
+    console.log('✅ Using SMTP password authentication for Gmail');
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPass,
+      },
+    });
+  }
+
+  console.log('⚠️  Email credentials not configured. Using console output for testing.');
+  return null;
 };
 
-// Send password reset email
 export const sendPasswordResetEmail = async (email, resetToken) => {
   try {
     const transporter = createTransporter();
     const resetUrl = `${process.env.FRONTEND_URL}/?reset-token=${resetToken}`;
 
-    // If email not configured, simulate sending for testing
+   
     if (!transporter) {
       console.log('\n🔗 PASSWORD RESET LINK (Copy this to test):');
       console.log(`${resetUrl}`);
@@ -131,26 +151,25 @@ export const sendPasswordResetEmail = async (email, resetToken) => {
   }
 };
 
-// Send appointment confirmation email
-export const sendAppointmentConfirmationEmail = async (email, { purposeLabel, date, startTime, endTime, location }) => {
+export const sendAppointmentConfirmationEmail = async (email, { purposeLabel, date, startTime, endTime, location, qrPayload, qrPng }) => {
   try {
     const transporter = createTransporter();
 
-    // If email not configured, simulate sending for testing
+   
     if (!transporter) {
       console.log('\n✅ APPOINTMENT CONFIRMED (Simulated)');
       console.log(`To: ${email}`);
       console.log(`When: ${date} ${startTime} - ${endTime}`);
       console.log(`Where: ${location}`);
-      console.log(`Purpose: ${purposeLabel}\n`);
+      console.log(`Purpose: ${purposeLabel}`);
+      if (qrPayload) {
+        console.log('QR Payload:', qrPayload);
+      }
+      console.log('');
       return { success: true, messageId: 'simulated-for-testing' };
     }
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Your ITSO Appointment is Confirmed',
-      html: `
+    const htmlTop = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -175,7 +194,17 @@ export const sendAppointmentConfirmationEmail = async (email, { purposeLabel, da
               <p style="margin:6px 0;color:#111827;"><strong>Time:</strong> ${startTime} - ${endTime}</p>
               <p style="margin:6px 0;color:#111827;"><strong>Location:</strong> ${location}</p>
             </div>
-            <p style="color:#374151;font-size:14px;line-height:1.6;">
+    `;
+
+    const htmlQr = qrPng ? `
+            <div style="margin-top:20px;text-align:center;">
+              <p style="color:#374151;font-size:14px;">Show this QR at the ITSO desk for check-in/claim:</p>
+              <img src="cid:itso-qr" alt="ITSO QR" style="width:200px;height:200px;border:1px solid #e5e7eb;border-radius:8px;" />
+            </div>
+    ` : '';
+
+    const htmlBottom = `
+            <p style="color:#374151;font-size:14px;line-height:1.6;margin-top:16px;">
               A reminder will be sent before your appointment. If you need to make changes, please contact the ITSO office.
             </p>
             <p style="color:#6b7280;font-size:12px;margin-top:24px;border-top:1px solid #e5e7eb;padding-top:12px;">
@@ -183,8 +212,23 @@ export const sendAppointmentConfirmationEmail = async (email, { purposeLabel, da
             </p>
           </div>
         </body>
-        </html>
-      `
+        </html>`;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Your ITSO Appointment is Confirmed',
+      html: htmlTop + htmlQr + htmlBottom,
+      attachments: qrPng
+        ? [
+            {
+              filename: 'itso-qr.png',
+              content: qrPng,
+              cid: 'itso-qr',
+              contentType: 'image/png',
+            },
+          ]
+        : [],
     };
 
     const result = await transporter.sendMail(mailOptions);
@@ -196,7 +240,6 @@ export const sendAppointmentConfirmationEmail = async (email, { purposeLabel, da
   }
 };
 
-// Send appointment status update email with remarks
 export const sendAppointmentStatusUpdateEmail = async (email, {
   status,
   remarks,
@@ -204,12 +247,14 @@ export const sendAppointmentStatusUpdateEmail = async (email, {
   startTime,
   endTime,
   location,
-  studentName
+  studentName,
+  qrPayload,
+  qrPng,
 }) => {
   try {
     const transporter = createTransporter();
 
-    // If email not configured, simulate sending for testing
+   
     if (!transporter) {
       console.log('\n✅ APPOINTMENT STATUS UPDATE (Simulated)');
       console.log(`To: ${email}`);
@@ -217,16 +262,13 @@ export const sendAppointmentStatusUpdateEmail = async (email, {
       if (remarks) console.log(`Remarks: ${remarks}`);
       if (date) console.log(`When: ${date} ${startTime || ''}${endTime ? ` - ${endTime}` : ''}`.trim());
       if (location) console.log(`Where: ${location}`);
+      if (qrPayload) console.log('QR Payload:', qrPayload);
       return { success: true, messageId: 'simulated-for-testing' };
     }
 
     const subject = `Your ITSO Appointment Status Update: ${status}`;
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject,
-      html: `
+    const htmlTop = `
         <!DOCTYPE html>
         <html>
         <head>
@@ -252,13 +294,39 @@ export const sendAppointmentStatusUpdateEmail = async (email, {
               ${startTime ? `<p style=\"margin:6px 0;color:#111827;\"><strong>Time:</strong> ${startTime}${endTime ? ` - ${endTime}` : ''}</p>` : ''}
               ${location ? `<p style=\"margin:6px 0;color:#111827;\"><strong>Location:</strong> ${location}</p>` : ''}
             </div>
+    `;
+
+    const htmlQr = qrPng ? `
+            <div style="margin-top:20px;text-align:center;">
+              <p style="color:#374151;font-size:14px;">Show this QR at the ITSO desk for check-in/claim:</p>
+              <img src="cid:itso-qr-status" alt="ITSO QR" style="width:200px;height:200px;border:1px solid #e5e7eb;border-radius:8px;" />
+            </div>
+    ` : '';
+
+    const htmlBottom = `
             <p style="color:#6b7280;font-size:12px;margin-top:24px;border-top:1px solid #e5e7eb;padding-top:12px;">
               © ${new Date().getFullYear()} NU Dasmariñas ITSO ID Tracker
             </p>
           </div>
         </body>
         </html>
-      `
+    `;
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject,
+      html: htmlTop + htmlQr + htmlBottom,
+      attachments: qrPng
+        ? [
+            {
+              filename: 'itso-qr.png',
+              content: qrPng,
+              cid: 'itso-qr-status',
+              contentType: 'image/png',
+            },
+          ]
+        : [],
     };
 
     const result = await transporter.sendMail(mailOptions);
@@ -270,7 +338,6 @@ export const sendAppointmentStatusUpdateEmail = async (email, {
   }
 };
 
-// Test email configuration
 export const testEmailConfig = async () => {
   try {
     const transporter = createTransporter();
@@ -282,3 +349,4 @@ export const testEmailConfig = async () => {
     return false;
   }
 };
+

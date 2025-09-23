@@ -1,10 +1,9 @@
-// server/src/middleware/auth.js
+
 import jwt from "jsonwebtoken";
 
-// Middleware to authenticate JWT tokens
 export const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // Bearer TOKEN
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({ message: "Access token required" });
@@ -19,7 +18,6 @@ export const authenticateToken = (req, res, next) => {
   }
 };
 
-// Middleware to check if user is admin
 export const requireAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== "admin") {
     return res.status(403).json({ message: "Admin access required" });
@@ -27,7 +25,6 @@ export const requireAdmin = (req, res, next) => {
   next();
 };
 
-// Middleware to check if user owns the resource or is admin
 export const requireOwnershipOrAdmin = (req, res, next) => {
   const resourceUserId = req.params.userId || req.body.userId;
   
@@ -41,3 +38,4 @@ export const requireOwnershipOrAdmin = (req, res, next) => {
   
   return res.status(403).json({ message: "Access denied" });
 };
+

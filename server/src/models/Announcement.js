@@ -3,9 +3,9 @@ import { Schema, model } from "mongoose";
 const AnnouncementSchema = new Schema(
   {
     title: { type: String, required: true },
-    content: { type: String, default: "" }, // markdown/plain text
-    images: [{ type: String }], // array of image URLs
-    links: [{ type: String }],  // external links
+    content: { type: String, default: "" },
+    images: [{ type: String }],
+    links: [{ type: String }], 
     tags: [{ type: String }],
     isPublished: { type: Boolean, default: true },
     publishedAt: { type: Date },

@@ -15,7 +15,6 @@ import {
 
 const router = express.Router();
 
-// Initiate Google OAuth
 router.get("/auth/google", (req, res) => {
   try {
     const authUrl = generateAuthUrl();
@@ -26,7 +25,6 @@ router.get("/auth/google", (req, res) => {
   }
 });
 
-// Google OAuth callback
 router.get("/auth/google/callback", async (req, res) => {
   try {
     const { code } = req.query;
@@ -35,43 +33,43 @@ router.get("/auth/google/callback", async (req, res) => {
       return res.status(400).json({ message: "Authorization code is required" });
     }
 
-    // Exchange code for tokens
+   
     const tokens = await getTokensFromCode(code);
     
-    // Get user profile from Google
+   
     const googleProfile = await getUserProfile(tokens.access_token);
 
-    // Check if user exists by email with valid student ID
+   
     let user = await User.findOne({ 
       personal_email: googleProfile.email,
-      student_id: { $not: /^GOOGLE_/ } // Ensure student_id doesn't start with "GOOGLE_"
+      student_id: { $not: /^GOOGLE_/ }
     });
 
     if (!user) {
-      // Check if user exists but has invalid student_id (Google ID)
+     
       const invalidUser = await User.findOne({ 
         personal_email: googleProfile.email,
         student_id: { $regex: /^GOOGLE_/ }
       });
       
       if (invalidUser) {
-        // Redirect to error page for invalid account
+       
         const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}?error=invalid_account&message=${encodeURIComponent('Your account has invalid student ID data. Please contact support.')}`;
         return res.redirect(redirectUrl);
       }
       
-      // This is a new user - redirect to complete signup with student ID
+     
       const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}?google_email=${encodeURIComponent(googleProfile.email)}&google_name=${encodeURIComponent(googleProfile.name)}&google_id=${googleProfile.id}&google_picture=${encodeURIComponent(googleProfile.picture)}&action=complete_signup`;
       return res.redirect(redirectUrl);
     } else {
-      // Existing user with valid student ID - update Google info
+     
       user.googleId = googleProfile.id;
       user.profilePicture = googleProfile.picture;
       user.isGoogleUser = true;
       await user.save();
     }
 
-    // Generate JWT token
+   
     const token = jwt.sign(
       { 
         id: user._id, 
@@ -82,7 +80,7 @@ router.get("/auth/google/callback", async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    // Store tokens in user document (for calendar access)
+   
     user.googleTokens = {
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
@@ -90,7 +88,7 @@ router.get("/auth/google/callback", async (req, res) => {
     };
     await user.save();
 
-    // Redirect to frontend dashboard with token
+   
     const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?token=${token}&source=google`;
     res.redirect(redirectUrl);
 
@@ -100,7 +98,6 @@ router.get("/auth/google/callback", async (req, res) => {
   }
 });
 
-// Google Sign In (alternative endpoint)
 router.post("/auth/google/signin", async (req, res) => {
   try {
     const { accessToken } = req.body;
@@ -109,17 +106,17 @@ router.post("/auth/google/signin", async (req, res) => {
       return res.status(400).json({ message: "Google access token is required" });
     }
 
-    // Get user profile from Google
+   
     const googleProfile = await getUserProfile(accessToken);
     
-    // Check if user exists with proper student ID (not Google ID)
+   
     let user = await User.findOne({ 
       personal_email: googleProfile.email,
-      student_id: { $not: /^GOOGLE_/ } // Ensure student_id doesn't start with "GOOGLE_"
+      student_id: { $not: /^GOOGLE_/ }
     });
     
     if (!user) {
-      // Check if user exists but has invalid student_id (Google ID)
+     
       const invalidUser = await User.findOne({ 
         personal_email: googleProfile.email,
         student_id: { $regex: /^GOOGLE_/ }
@@ -138,7 +135,7 @@ router.post("/auth/google/signin", async (req, res) => {
       });
     }
 
-    // Verify the user has a valid student ID format
+   
     if (!user.student_id || user.student_id.startsWith('GOOGLE_')) {
       return res.status(400).json({ 
         message: "Your account has invalid student ID data. Please contact support.",
@@ -146,13 +143,13 @@ router.post("/auth/google/signin", async (req, res) => {
       });
     }
 
-    // Update user's Google info only if everything is valid
+   
     user.googleId = googleProfile.id;
     user.profilePicture = googleProfile.picture;
     user.isGoogleUser = true;
     await user.save();
 
-    // Generate JWT token
+   
     const token = jwt.sign(
       {
         id: user._id,
@@ -182,7 +179,6 @@ router.post("/auth/google/signin", async (req, res) => {
   }
 });
 
-// Complete Google Sign Up with Student ID
 router.post("/auth/google/complete-signup", async (req, res) => {
   try {
     const { google_email, google_name, google_id, google_picture, student_id } = req.body;
@@ -191,7 +187,7 @@ router.post("/auth/google/complete-signup", async (req, res) => {
       return res.status(400).json({ message: "Google email and Student ID are required" });
     }
 
-    // Check if user already exists
+   
     const existingUser = await User.findOne({
       $or: [
         { personal_email: google_email },
@@ -205,7 +201,7 @@ router.post("/auth/google/complete-signup", async (req, res) => {
       });
     }
 
-    // Create new user
+   
     const hashedPassword = await bcrypt.hash(Math.random().toString(36), 10);
 
     const user = new User({
@@ -221,7 +217,7 @@ router.post("/auth/google/complete-signup", async (req, res) => {
 
     await user.save();
 
-    // Generate JWT token
+   
     const token = jwt.sign(
       {
         id: user._id,
@@ -251,7 +247,6 @@ router.post("/auth/google/complete-signup", async (req, res) => {
   }
 });
 
-// Get user's Google Calendar events
 router.get("/calendar/events", authenticateToken, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
@@ -260,7 +255,7 @@ router.get("/calendar/events", authenticateToken, async (req, res) => {
       return res.status(400).json({ message: "Start and end dates are required" });
     }
 
-    // Get user's Google tokens from database
+   
     const user = await User.findById(req.user.id);
     if (!user || !user.googleTokens) {
       return res.status(400).json({
@@ -271,18 +266,18 @@ router.get("/calendar/events", authenticateToken, async (req, res) => {
     }
 
     try {
-      // Set credentials for Google API
+     
       setCredentials(user.googleTokens);
 
-      // Get calendar events from Google
+     
       const googleEvents = await getCalendarEvents(startDate, endDate);
 
-      // Also get ITSO appointments and merge them
+     
       const appointments = await Appointment.find({ userId: req.user.id })
         .populate("slotId")
         .sort({ createdAt: -1 });
 
-      // Convert appointments to calendar events format
+     
       const itsoEvents = appointments.map(appointment => ({
         id: `itso_${appointment._id}`,
         summary: `ITSO - ${appointment.slotId?.purpose === "NEW_ID" ? "New ID" :
@@ -298,7 +293,7 @@ router.get("/calendar/events", authenticateToken, async (req, res) => {
         isAllDay: false
       }));
 
-      // Merge Google events and ITSO events
+     
       const allEvents = [...googleEvents, ...itsoEvents];
 
       res.json({
@@ -310,7 +305,7 @@ router.get("/calendar/events", authenticateToken, async (req, res) => {
     } catch (googleError) {
       console.error("Google Calendar API error:", googleError);
 
-      // If Google API fails, still return ITSO appointments
+     
       const appointments = await Appointment.find({ userId: req.user.id })
         .populate("slotId")
         .sort({ createdAt: -1 });
@@ -346,3 +341,4 @@ router.get("/calendar/events", authenticateToken, async (req, res) => {
 });
 
 export default router;
+

@@ -4,8 +4,6 @@ import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Get closures in a month range or exact date
-// Query: start=YYYY-MM-01&end=YYYY-MM-31 OR date=YYYY-MM-DD
 router.get("/", authenticateToken, async (req, res) => {
   try {
     const { start, end, date } = req.query;
@@ -24,7 +22,6 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Create or update a closure for a date (admin only)
 router.post("/", authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -51,7 +48,6 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Delete a closure for a date (admin only)
 router.delete("/:date", authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {

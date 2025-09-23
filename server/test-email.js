@@ -15,7 +15,6 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-// Test the connection
 console.log('🔍 Testing SMTP connection...');
 transporter.verify((error, success) => {
   if (error) {
@@ -28,10 +27,10 @@ transporter.verify((error, success) => {
   } else {
     console.log('✅ SMTP Connection successful!');
     
-    // Try sending a test email
+   
     const mailOptions = {
       from: process.env.EMAIL_USER,
-      to: process.env.EMAIL_USER, // Send to yourself for testing
+      to: process.env.EMAIL_USER,
       subject: 'Test Email - ITSO ID Tracker',
       text: 'This is a test email to verify the email configuration is working.'
     };
@@ -47,3 +46,4 @@ transporter.verify((error, success) => {
     });
   }
 });
+

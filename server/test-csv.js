@@ -5,7 +5,6 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Function to read and parse CSV file
 const readStudentCSV = () => {
   try {
     const csvPath = path.join(__dirname, '../student_ids.csv');
@@ -18,14 +17,14 @@ const readStudentCSV = () => {
     const lines = csvContent.split('\n').filter(line => line.trim());
     const students = [];
     
-    // Skip header row
+   
     for (let i = 1; i < lines.length; i++) {
       const [student_id, email, password] = lines[i].split(',');
       if (student_id && student_id.trim()) {
         students.push({
           student_id: student_id.trim(),
           email: email ? email.trim() : '',
-          password: password ? password.trim() : '12345' // default password
+          password: password ? password.trim() : '12345'
         });
       }
     }
@@ -37,7 +36,6 @@ const readStudentCSV = () => {
   }
 };
 
-// Function to validate student credentials against CSV
 const validateStudentCredentials = (student_id, password) => {
   const students = readStudentCSV();
   console.log('Total students loaded:', students.length);
@@ -59,7 +57,6 @@ const validateStudentCredentials = (student_id, password) => {
   return { valid: true, student };
 };
 
-// Test the functions
 console.log('Testing CSV reading...');
 const result = validateStudentCredentials('admin', 'admin123');
 console.log('Validation result:', result);

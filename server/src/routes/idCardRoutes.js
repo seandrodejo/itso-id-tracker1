@@ -6,12 +6,11 @@ import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Get user's ID card status
 router.get("/status", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     
-    // Get user's latest appointment
+   
     const latestAppointment = await Appointment.findOne({ userId })
       .populate("slotId")
       .sort({ createdAt: -1 });
@@ -25,7 +24,7 @@ router.get("/status", authenticateToken, async (req, res) => {
       });
     }
     
-    // Check if ID card exists for this appointment
+   
     const idCard = await IdCard.findOne({ 
       userId, 
       appointmentId: latestAppointment._id 
@@ -36,7 +35,7 @@ router.get("/status", authenticateToken, async (req, res) => {
       idCard: idCard
     };
     
-    // Determine status based on appointment and ID card
+   
     if (latestAppointment.status === "CONFIRMED") {
       if (!idCard) {
         statusInfo.status = "APPOINTMENT_CONFIRMED";
@@ -66,7 +65,6 @@ router.get("/status", authenticateToken, async (req, res) => {
   }
 });
 
-// Get user's ID history
 router.get("/history", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
@@ -88,7 +86,6 @@ router.get("/history", authenticateToken, async (req, res) => {
   }
 });
 
-// Admin: Issue ID card
 router.post("/issue", authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -97,19 +94,19 @@ router.post("/issue", authenticateToken, async (req, res) => {
     
     const { appointmentId, userId } = req.body;
     
-    // Check if appointment exists
+   
     const appointment = await Appointment.findById(appointmentId);
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found" });
     }
     
-    // Check if ID card already exists
+   
     const existingIdCard = await IdCard.findOne({ appointmentId });
     if (existingIdCard) {
       return res.status(400).json({ message: "ID card already issued for this appointment" });
     }
     
-    // Create ID card
+   
     const idCard = new IdCard({
       userId: userId || appointment.userId,
       appointmentId,
@@ -124,7 +121,7 @@ router.post("/issue", authenticateToken, async (req, res) => {
     
     await idCard.save();
     
-    // Update appointment status
+   
     appointment.status = "CLAIMED";
     await appointment.save();
     
@@ -138,7 +135,6 @@ router.post("/issue", authenticateToken, async (req, res) => {
   }
 });
 
-// Admin: Mark ID as returned
 router.patch("/:id/return", authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== "admin") {
@@ -160,7 +156,7 @@ router.patch("/:id/return", authenticateToken, async (req, res) => {
     
     await idCard.save();
     
-    // Update appointment status
+   
     await Appointment.findByIdAndUpdate(idCard.appointmentId, {
       status: "RETURNED"
     });
@@ -176,3 +172,4 @@ router.patch("/:id/return", authenticateToken, async (req, res) => {
 });
 
 export default router;
+

@@ -3,7 +3,6 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-// Slot schema (simplified)
 const slotSchema = new mongoose.Schema({
   date: { type: String, required: true },
   start: { type: String, required: true },
@@ -20,15 +19,15 @@ const Slot = mongoose.model('Slot', slotSchema);
 
 async function createTestSlots() {
   try {
-    // Connect to MongoDB
+   
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✅ Connected to MongoDB');
 
-    // Clear existing slots
+   
     await Slot.deleteMany({});
     console.log('🗑️ Cleared existing slots');
 
-    // Create test slots for the next 30 days
+   
     const today = new Date();
     const slots = [];
 
@@ -36,19 +35,19 @@ async function createTestSlots() {
       const date = new Date(today);
       date.setDate(today.getDate() + i);
       
-      // Skip weekends
+     
       if (date.getDay() === 0 || date.getDay() === 6) continue;
       
       const dateStr = date.toISOString().split('T')[0];
       
-      // Morning slots
+     
       slots.push({
         date: dateStr,
         start: '09:00',
         end: '10:00',
         purpose: 'NEW_ID',
         capacity: 5,
-        bookedCount: Math.floor(Math.random() * 3), // Random booking count
+        bookedCount: Math.floor(Math.random() * 3),
         isAvailable: true
       });
       
@@ -62,7 +61,7 @@ async function createTestSlots() {
         isAvailable: true
       });
       
-      // Afternoon slots
+     
       slots.push({
         date: dateStr,
         start: '14:00',
@@ -84,7 +83,7 @@ async function createTestSlots() {
       });
     }
 
-    // Insert all slots
+   
     await Slot.insertMany(slots);
     console.log(`✅ Created ${slots.length} test slots`);
     console.log('📅 Slots created for the next 30 weekdays');
@@ -99,3 +98,4 @@ async function createTestSlots() {
 }
 
 createTestSlots();
+

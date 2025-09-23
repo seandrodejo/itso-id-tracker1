@@ -11,3 +11,4 @@ const IssueSchema = new Schema(
 );
 
 export default model("Issue", IssueSchema);
+

@@ -12,3 +12,4 @@ const NotificationSchema = new Schema(
 );
 
 export default model("Notification", NotificationSchema);
+

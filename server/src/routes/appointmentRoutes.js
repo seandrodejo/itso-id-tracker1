@@ -5,10 +5,11 @@ import User from "../models/User.js";
 import { authenticateToken } from "../middleware/auth.js";
 import { createCalendarEvent, setCredentials } from "../config/google.js";
 import { sendAppointmentConfirmationEmail, sendAppointmentStatusUpdateEmail } from "../services/emailService.js";
+import { v4 as uuidv4 } from "uuid";
+import QRCode from "qrcode";
 
 const router = express.Router();
 
-// Get all appointments for a user
 router.get("/user/:userId", authenticateToken, async (req, res) => {
   try {
     const appointments = await Appointment.find({ userId: req.params.userId })
@@ -21,10 +22,9 @@ router.get("/user/:userId", authenticateToken, async (req, res) => {
   }
 });
 
-// Get all appointments (admin only)
 router.get("/", authenticateToken, async (req, res) => {
   try {
-    // Check if user is admin
+   
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
@@ -40,20 +40,19 @@ router.get("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Create new appointment
 router.post("/", authenticateToken, async (req, res) => {
   try {
     const { slotId, purpose, notes, type, pictureOption, status, appointmentDate, appointmentStartTime, appointmentEndTime, gmail } = req.body;
 
-    // Validate gmail
+   
     const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
     if (!gmail || !gmailRegex.test(gmail)) {
       return res.status(400).json({ message: "Please provide a valid Gmail address (example@gmail.com)" });
     }
     
-    // Check if slot exists and has capacity (if slotId is provided)
+   
     let slot = null;
-    if (slotId && slotId !== '507f1f77bcf86cd799439011') { // Skip check for mock ID
+    if (slotId && slotId !== '507f1f77bcf86cd799439011') {
       slot = await Slot.findById(slotId);
       if (!slot) {
         return res.status(404).json({ message: "Slot not found" });
@@ -63,7 +62,7 @@ router.post("/", authenticateToken, async (req, res) => {
         return res.status(400).json({ message: "Slot is full" });
       }
       
-      // Check if user already has an appointment for this slot
+     
       const existingAppointment = await Appointment.findOne({
         userId: req.user.id,
         slotId: slotId
@@ -74,7 +73,7 @@ router.post("/", authenticateToken, async (req, res) => {
       }
     }
     
-    // Extract date and time from slot if available, otherwise use provided values
+   
     let finalDate = appointmentDate;
     let finalStartTime = appointmentStartTime;
     let finalEndTime = appointmentEndTime;
@@ -85,7 +84,7 @@ router.post("/", authenticateToken, async (req, res) => {
       finalEndTime = slot.end;
     }
     
-    // Create appointment
+   
     const appointment = new Appointment({
       userId: req.user.id,
       slotId: slotId || null,
@@ -95,19 +94,19 @@ router.post("/", authenticateToken, async (req, res) => {
       appointmentStartTime: finalStartTime,
       appointmentEndTime: finalEndTime,
       notes: notes || "",
-      contactEmail: gmail, // store student's provided Gmail for future notifications
+      contactEmail: gmail,
       status: status || "pending-approval"
     });
     
     await appointment.save();
     
-    // Update slot booked count (if slot exists)
+   
     if (slot) {
       slot.bookedCount += 1;
       await slot.save();
     }
 
-    // Integrate with Google Calendar API
+   
     try {
       const user = await User.findById(req.user.id);
       if (user && user.googleTokens) {
@@ -131,22 +130,46 @@ router.post("/", authenticateToken, async (req, res) => {
       }
     } catch (googleError) {
       console.error("Google Calendar integration error:", googleError);
-      // Don't fail the appointment creation if Google Calendar fails
+     
     }
 
-    // Send confirmation email
+   
     try {
       const purposeLabel = purpose === "NEW_ID" ? "New ID" :
                            purpose === "RENEWAL" ? "ID Renewal" :
                            purpose === "LOST_REPLACEMENT" ? "Lost/Replacement" : String(purpose || '').toString();
 
-      await sendAppointmentConfirmationEmail(gmail, {
-        purposeLabel,
-        date: finalDate,
-        startTime: finalStartTime,
-        endTime: finalEndTime,
-        location: 'NU Dasmarinas ITSO Office'
-      });
+     
+      try {
+        const token = uuidv4();
+        const expires = new Date(Date.now() + 1000 * 60 * 60 * 6);
+        appointment.checkinToken = token;
+        appointment.checkinTokenExpires = expires;
+        const payload = { ref: appointment._id.toString(), t: token };
+        appointment.qrData = JSON.stringify(payload);
+        await appointment.save();
+        const pngBuffer = await QRCode.toBuffer(JSON.stringify(payload));
+
+        await sendAppointmentConfirmationEmail(gmail, {
+          purposeLabel,
+          date: finalDate,
+          startTime: finalStartTime,
+          endTime: finalEndTime,
+          location: 'NU Dasmarinas ITSO Office',
+          qrPayload: payload,
+          qrPng: pngBuffer,
+        });
+      } catch (qrErr) {
+        console.error('Error generating QR for confirmation email:', qrErr);
+       
+        await sendAppointmentConfirmationEmail(gmail, {
+          purposeLabel,
+          date: finalDate,
+          startTime: finalStartTime,
+          endTime: finalEndTime,
+          location: 'NU Dasmarinas ITSO Office',
+        });
+      }
     } catch (emailErr) {
       console.error('Error sending confirmation email:', emailErr);
     }
@@ -161,7 +184,6 @@ router.post("/", authenticateToken, async (req, res) => {
   }
 });
 
-// Update appointment status
 router.patch("/:id/status", authenticateToken, async (req, res) => {
   try {
     const { status } = req.body;
@@ -171,7 +193,7 @@ router.patch("/:id/status", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
     
-    // Only allow status updates if user owns the appointment or is admin
+   
     if (appointment.userId.toString() !== req.user.id && req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -189,12 +211,11 @@ router.patch("/:id/status", authenticateToken, async (req, res) => {
   }
 });
 
-// Update appointment (admin only) - for frontend compatibility
 router.patch("/:id", authenticateToken, async (req, res) => {
   try {
     const { status, adminRemarks, statusUpdatedAt, statusUpdatedBy } = req.body;
     
-    // Check if user is admin
+   
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
@@ -207,7 +228,7 @@ router.patch("/:id", authenticateToken, async (req, res) => {
 
     const previousStatus = appointment.status;
     
-    // Update appointment fields
+   
     if (status) appointment.status = status;
     if (adminRemarks !== undefined) appointment.adminRemarks = adminRemarks;
     if (statusUpdatedAt) appointment.statusUpdatedAt = statusUpdatedAt;
@@ -219,19 +240,40 @@ router.patch("/:id", authenticateToken, async (req, res) => {
       .populate("userId", "name student_id personal_email")
       .populate("slotId");
 
-    // Send status update email if status changed or remarks provided
+   
     try {
       const shouldNotify = Boolean(status && status !== previousStatus) || Boolean(adminRemarks);
       if (shouldNotify) {
-        // Use the student's provided Gmail saved on the appointment; fallback to school email if missing
+       
         const recipientEmail = updatedAppointment.contactEmail || updatedAppointment.userId?.personal_email;
         if (recipientEmail) {
-          // Prefer slot date/time if available; else fallback to direct fields
+         
           const date = updatedAppointment.slotId?.date || updatedAppointment.appointmentDate || '';
           const startTime = updatedAppointment.slotId?.start || updatedAppointment.appointmentStartTime || '';
           const endTime = updatedAppointment.slotId?.end || updatedAppointment.appointmentEndTime || '';
           const location = 'NU Dasmarinas ITSO Office';
           const studentName = updatedAppointment.userId?.name || '';
+
+         
+          let qrPng = null;
+          let qrPayload = null;
+          if (status && status === 'confirmed') {
+            try {
+              const token = uuidv4();
+              const expires = new Date(Date.now() + 1000 * 60 * 60 * 6);
+              appointment.checkinToken = token;
+              appointment.checkinTokenExpires = expires;
+              const payload = { ref: appointment._id.toString(), t: token };
+              appointment.qrData = JSON.stringify(payload);
+              await appointment.save();
+             
+              const pngBuffer = await QRCode.toBuffer(JSON.stringify(payload));
+              qrPng = pngBuffer;
+              qrPayload = payload;
+            } catch (qrErr) {
+              console.error('Error generating QR for confirmed email:', qrErr);
+            }
+          }
 
           await sendAppointmentStatusUpdateEmail(recipientEmail, {
             status: appointment.status,
@@ -240,13 +282,15 @@ router.patch("/:id", authenticateToken, async (req, res) => {
             startTime,
             endTime,
             location,
-            studentName
+            studentName,
+            qrPayload,
+            qrPng
           });
         }
       }
     } catch (emailErr) {
       console.error('Error sending status update email:', emailErr);
-      // Do not fail the request if email fails
+     
     }
     
     res.json({
@@ -259,7 +303,6 @@ router.patch("/:id", authenticateToken, async (req, res) => {
   }
 });
 
-// Cancel appointment
 router.delete("/:id", authenticateToken, async (req, res) => {
   try {
     const appointment = await Appointment.findById(req.params.id);
@@ -268,22 +311,22 @@ router.delete("/:id", authenticateToken, async (req, res) => {
       return res.status(404).json({ message: "Appointment not found" });
     }
     
-    // Only allow cancellation if user owns the appointment or is admin
+   
     if (appointment.userId.toString() !== req.user.id && req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied" });
     }
     
-    // Update slot booked count
+   
     const slot = await Slot.findById(appointment.slotId);
     if (slot) {
       slot.bookedCount = Math.max(0, slot.bookedCount - 1);
       await slot.save();
     }
     
-    // TODO: Remove from Google Calendar if integrated
-    // if (appointment.googleEventId) {
-    //   await deleteGoogleCalendarEvent(appointment.googleEventId);
-    // }
+   
+   
+   
+   
     
     await Appointment.findByIdAndDelete(req.params.id);
     
@@ -294,4 +337,97 @@ router.delete("/:id", authenticateToken, async (req, res) => {
   }
 });
 
+router.post("/:id/generate-qr", authenticateToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const appointment = await Appointment.findById(id).populate("userId");
+    if (!appointment) return res.status(404).json({ message: "Appointment not found" });
+
+   
+    if (appointment.userId._id.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const token = uuidv4();
+    const expires = new Date(Date.now() + 1000 * 60 * 60 * 6);
+
+    appointment.checkinToken = token;
+    appointment.checkinTokenExpires = expires;
+
+   
+    const payload = {
+      ref: appointment._id.toString(),
+      t: token
+    };
+
+   
+    appointment.qrData = JSON.stringify(payload);
+
+    await appointment.save();
+
+   
+    const dataUrl = await QRCode.toDataURL(JSON.stringify(payload));
+
+    res.json({
+      message: "QR generated",
+      appointmentId: appointment._id,
+      token,
+      expires,
+      payload,
+      dataUrl,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error generating QR", error: err.message });
+  }
+});
+
+router.post("/scan", authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Admin only" });
+    }
+
+    const { ref, t, action } = req.body;
+    if (!ref || !t) return res.status(400).json({ message: "Invalid payload" });
+
+    const appointment = await Appointment.findById(ref).populate("userId").populate("slotId");
+    if (!appointment) return res.status(404).json({ message: "Appointment not found" });
+
+    if (!appointment.checkinToken || appointment.checkinToken !== t) {
+      return res.status(400).json({ message: "Invalid token" });
+    }
+
+    if (appointment.checkinTokenExpires && appointment.checkinTokenExpires < new Date()) {
+      return res.status(400).json({ message: "Token expired" });
+    }
+
+   
+    appointment.lastScannedAt = new Date();
+    appointment.scannedBy = req.user.email || req.user.id;
+
+   
+    if (action === "check-in") {
+     
+      appointment.status = appointment.status === "pending-approval" ? "confirmed" : appointment.status;
+    } else if (action === "claim") {
+      appointment.status = "CLAIMED";
+    }
+
+    await appointment.save();
+
+    res.json({
+      message: "Scan processed",
+      appointment: {
+        id: appointment._id,
+        status: appointment.status,
+        lastScannedAt: appointment.lastScannedAt,
+        scannedBy: appointment.scannedBy,
+      }
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Error processing scan", error: err.message });
+  }
+});
+
 export default router;
+
