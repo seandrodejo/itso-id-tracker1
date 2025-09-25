@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
+import nuLogo from '../assets/images/nu-logo-copy.png';
 import { FiLock, FiUser, FiUsers, FiCheckCircle, FiEdit3, FiXCircle, FiCalendar, FiBell, FiBarChart2 } from 'react-icons/fi';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
@@ -399,123 +400,137 @@ function AdminDashboard() {
       pdfContent.style.padding = '20px';
       pdfContent.style.fontFamily = 'Arial, sans-serif';
 
-      // Create header
-      const header = document.createElement('div');
-      header.innerHTML = `
-        <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #2849D0; padding-bottom: 20px;">
-          <h1 style="color: #2849D0; margin: 0; font-size: 24px; font-weight: bold;">NU Dasmarinas ITSO ID Tracker</h1>
-          <h2 style="color: #666; margin: 10px 0 0 0; font-size: 18px;">Analytics Report</h2>
-          <p style="color: #888; margin: 5px 0 0 0; font-size: 12px;">Generated on: ${new Date().toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          })}</p>
-        </div>
-      `;
-
+   const header = document.createElement('div');
+header.innerHTML = `
+  <div style="text-align: center; margin-bottom: 30px; border-bottom: 2px solid #2849D0; padding-bottom: 15px;">
+    <h1 style="color: #2849D0; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: 1px;">
+      ITSO ID TRACKER SUMMARY
+    </h1>
+    <p style="color: #B8860B; margin: 4px 0 0; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+      National University - Dasmariñas
+    </p>
+    <h2 style="color: #444; margin: 10px 0 0; font-size: 18px; font-weight: 600;">Analytics Report</h2>
+    <p style="color: #777; margin: 4px 0 0; font-size: 12px; font-style: italic;">
+      Generated on: ${new Date().toLocaleDateString('en-US', { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })}
+    </p>
+  </div>
+`;
       // Create summary section
-      const summary = document.createElement('div');
-      summary.innerHTML = `
-        <div style="margin-bottom: 30px;">
-          <h3 style="color: #2849D0; margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Executive Summary</h3>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-            <div style="background: #f8fafc; padding: 15px; border-radius: 8px; border-left: 4px solid #3b82f6;">
-              <h4 style="margin: 0 0 5px 0; color: #3b82f6; font-size: 14px;">Total Users</h4>
-              <p style="margin: 0; font-size: 24px; font-weight: bold; color: #1f2937;">${stats.totalUsers}</p>
-            </div>
-            <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border-left: 4px solid #10b981;">
-              <h4 style="margin: 0 0 5px 0; color: #10b981; font-size: 14px;">Enrolled Users</h4>
-              <p style="margin: 0; font-size: 24px; font-weight: bold; color: #1f2937;">${stats.enrolledUsers}</p>
-            </div>
-            <div style="background: #fffbeb; padding: 15px; border-radius: 8px; border-left: 4px solid #f59e0b;">
-              <h4 style="margin: 0 0 5px 0; color: #f59e0b; font-size: 14px;">Pending Appointments</h4>
-              <p style="margin: 0; font-size: 24px; font-weight: bold; color: #1f2937;">${stats.pendingAppointments}</p>
-            </div>
-            <div style="background: #faf5ff; padding: 15px; border-radius: 8px; border-left: 4px solid #8b5cf6;">
-              <h4 style="margin: 0 0 5px 0; color: #8b5cf6; font-size: 14px;">Completed Appointments</h4>
-              <p style="margin: 0; font-size: 24px; font-weight: bold; color: #1f2937;">${stats.completedAppointments}</p>
-            </div>
-          </div>
-        </div>
-      `;
+const summary = document.createElement('div');
+summary.innerHTML = `
+  <div style="margin-bottom: 30px;">
+    <h3 style="color: #2849D0; margin-top: -40px; margin-bottom: 18px; font-size: 16px; font-weight: 600; text-align: center; border-bottom: 2px solid #2849D0; padding-bottom: 6px; letter-spacing: 0.4px;">
+      Executive Summary
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px;">
+      
+      <div style="background: linear-gradient(135deg, #ebf4ff, #dbeafe); padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.06);">
+        <h4 style="margin: 0 0 4px 0; color: #3b82f6; font-size: 13px; font-weight: 600;">Total Users</h4>
+        <p style="margin: 0; font-size: 22px; font-weight: bold; color: #1e293b;">${stats.totalUsers}</p>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #ecfdf5, #d1fae5); padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.06);">
+        <h4 style="margin: 0 0 4px 0; color: #10b981; font-size: 13px; font-weight: 600;">Enrolled Users</h4>
+        <p style="margin: 0; font-size: 22px; font-weight: bold; color: #1e293b;">${stats.enrolledUsers}</p>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #fef9c3, #fef3c7); padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.06);">
+        <h4 style="margin: 0 0 4px 0; color: #f59e0b; font-size: 13px; font-weight: 600;">Pending Appointments</h4>
+        <p style="margin: 0; font-size: 22px; font-weight: bold; color: #1e293b;">${stats.pendingAppointments}</p>
+      </div>
+      
+      <div style="background: linear-gradient(135deg, #ede9fe, #ddd6fe); padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.06);">
+        <h4 style="margin: 0 0 4px 0; color: #8b5cf6; font-size: 13px; font-weight: 600;">Completed Appointments</h4>
+        <p style="margin: 0; font-size: 22px; font-weight: bold; color: #1e293b;">${stats.completedAppointments}</p>
+      </div>
+      
+    </div>
+  </div>
+`;
 
       // Create detailed statistics table
       const detailedStats = document.createElement('div');
-      const enrollmentRate = stats.totalUsers > 0 ? Math.round((stats.enrolledUsers / stats.totalUsers) * 100) : 0;
-      const completionRate = (stats.pendingAppointments + stats.completedAppointments) > 0 ? 
-        Math.round((stats.completedAppointments / (stats.pendingAppointments + stats.completedAppointments)) * 100) : 0;
+const enrollmentRate = stats.totalUsers > 0 ? Math.round((stats.enrolledUsers / stats.totalUsers) * 100) : 0;
+const completionRate = (stats.pendingAppointments + stats.completedAppointments) > 0 ? 
+  Math.round((stats.completedAppointments / (stats.pendingAppointments + stats.completedAppointments)) * 100) : 0;
 
-      detailedStats.innerHTML = `
-        <div style="margin-bottom: 30px;">
-          <h3 style="color: #2849D0; margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Detailed Statistics</h3>
-          <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
-            <thead>
-              <tr style="background: #f9fafb;">
-                <th style="border: 1px solid #d1d5db; padding: 12px; text-align: left; font-weight: bold; color: #374151;">Metric</th>
-                <th style="border: 1px solid #d1d5db; padding: 12px; text-align: right; font-weight: bold; color: #374151;">Count</th>
-                <th style="border: 1px solid #d1d5db; padding: 12px; text-align: right; font-weight: bold; color: #374151;">Percentage</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style="border: 1px solid #d1d5db; padding: 12px; color: #374151;">Total Registered Users</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right; font-weight: bold;">${stats.totalUsers}</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right;">100%</td>
-              </tr>
-              <tr style="background: #f9fafb;">
-                <td style="border: 1px solid #d1d5db; padding: 12px; color: #374151;">Enrolled Users</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right; font-weight: bold;">${stats.enrolledUsers}</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right;">${enrollmentRate}%</td>
-              </tr>
-              <tr>
-                <td style="border: 1px solid #d1d5db; padding: 12px; color: #374151;">Not Enrolled Users</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right; font-weight: bold;">${stats.totalUsers - stats.enrolledUsers}</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right;">${100 - enrollmentRate}%</td>
-              </tr>
-              <tr style="background: #f9fafb;">
-                <td style="border: 1px solid #d1d5db; padding: 12px; color: #374151;">Total Appointments</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right; font-weight: bold;">${stats.pendingAppointments + stats.completedAppointments}</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right;">100%</td>
-              </tr>
-              <tr>
-                <td style="border: 1px solid #d1d5db; padding: 12px; color: #374151;">Pending Appointments</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right; font-weight: bold;">${stats.pendingAppointments}</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right;">${100 - completionRate}%</td>
-              </tr>
-              <tr style="background: #f9fafb;">
-                <td style="border: 1px solid #d1d5db; padding: 12px; color: #374151;">Completed Appointments</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right; font-weight: bold;">${stats.completedAppointments}</td>
-                <td style="border: 1px solid #d1d5db; padding: 12px; text-align: right;">${completionRate}%</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      `;
-
-      // Create insights section
-      const insights = document.createElement('div');
-      insights.innerHTML = `
-        <div style="margin-bottom: 30px;">
-          <h3 style="color: #2849D0; margin-bottom: 20px; font-size: 16px; border-bottom: 1px solid #ddd; padding-bottom: 5px;">Key Insights</h3>
-          <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #2849D0;">
-            <ul style="margin: 0; padding-left: 20px; color: #374151; line-height: 1.6;">
-              <li style="margin-bottom: 8px;"><strong>Enrollment Rate:</strong> ${enrollmentRate}% of registered users are enrolled in the system.</li>
-              <li style="margin-bottom: 8px;"><strong>Appointment Completion Rate:</strong> ${completionRate}% of appointments have been completed successfully.</li>
-              <li style="margin-bottom: 8px;"><strong>System Usage:</strong> ${stats.totalUsers} total users with ${stats.pendingAppointments + stats.completedAppointments} appointments processed.</li>
-              <li style="margin-bottom: 8px;"><strong>Pending Workload:</strong> ${stats.pendingAppointments} appointments are currently pending processing.</li>
-            </ul>
-          </div>
-        </div>
-      `;
-
-      // Create footer
-      const footer = document.createElement('div');
+detailedStats.innerHTML = `
+  <div style="margin-bottom: 40px;">
+    <h3 style="color: #2849D0; margin-top: -20px; margin-bottom: 25px; font-size: 18px; font-weight: 600; text-align: center; border-bottom: 2px solid #2849D0; padding-bottom: 8px; letter-spacing: 0.5px;">
+      Detailed Statistics
+    </h3>
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 13px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+        <thead>
+          <tr style="background: linear-gradient(135deg, #2849D0, #1e3a8a); color: #fff;">
+            <th style="padding: 12px; text-align: left; font-weight: 600;">Metric</th>
+            <th style="padding: 12px; text-align: right; font-weight: 600;">Count</th>
+            <th style="padding: 12px; text-align: right; font-weight: 600;">Percentage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="background: #f9fafb;">
+            <td style="padding: 12px; color: #374151;">Total Registered Users</td>
+            <td style="padding: 12px; text-align: right; font-weight: bold; color: #111827;">${stats.totalUsers}</td>
+            <td style="padding: 12px; text-align: right;">100%</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; color: #374151;">Enrolled Users</td>
+            <td style="padding: 12px; text-align: right; font-weight: bold; color: #111827;">${stats.enrolledUsers}</td>
+            <td style="padding: 12px; text-align: right;">${enrollmentRate}%</td>
+          </tr>
+          <tr style="background: #f9fafb;">
+            <td style="padding: 12px; color: #374151;">Not Enrolled Users</td>
+            <td style="padding: 12px; text-align: right; font-weight: bold; color: #111827;">${stats.totalUsers - stats.enrolledUsers}</td>
+            <td style="padding: 12px; text-align: right;">${100 - enrollmentRate}%</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; color: #374151;">Total Appointments</td>
+            <td style="padding: 12px; text-align: right; font-weight: bold; color: #111827;">${stats.pendingAppointments + stats.completedAppointments}</td>
+            <td style="padding: 12px; text-align: right;">100%</td>
+          </tr>
+          <tr style="background: #f9fafb;">
+            <td style="padding: 12px; color: #374151;">Pending Appointments</td>
+            <td style="padding: 12px; text-align: right; font-weight: bold; color: #111827;">${stats.pendingAppointments}</td>
+            <td style="padding: 12px; text-align: right;">${100 - completionRate}%</td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; color: #374151;">Completed Appointments</td>
+            <td style="padding: 12px; text-align: right; font-weight: bold; color: #111827;">${stats.completedAppointments}</td>
+            <td style="padding: 12px; text-align: right;">${completionRate}%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+`;
+const insights = document.createElement('div');
+insights.innerHTML = `
+  <div style="margin-bottom: 40px;">
+    <h3 style="color: #2849D0; margin-top: -40px; margin-bottom: 18px; font-size: 18px; font-weight: 600; text-align: center; border-bottom: 2px solid #2849D0; padding-bottom: 6px; letter-spacing: 0.4px;">
+      Key Insights
+    </h3>
+    <div style="background: #f8fafc; padding: 20px; border-radius: 10px; border-left: 5px solid #2849D0; box-shadow: 0 2px 5px rgba(0,0,0,0.05);">
+      <ul style="margin: 0; padding-left: 20px; color: #374151; line-height: 1.8; font-size: 14px;">
+        <li><strong>Enrollment Rate:</strong> ${enrollmentRate}% of registered users are enrolled in the system.</li>
+        <li><strong>Appointment Completion Rate:</strong> ${completionRate}% of appointments have been completed successfully.</li>
+        <li><strong>System Usage:</strong> ${stats.totalUsers} total users with ${stats.pendingAppointments + stats.completedAppointments} appointments processed.</li>
+        <li><strong>Pending Workload:</strong> ${stats.pendingAppointments} appointments are currently pending processing.</li>
+      </ul>
+    </div>
+  </div>
+`;
+     const footer = document.createElement('div');
       footer.innerHTML = `
-        <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd; text-align: center; color: #666; font-size: 10px;">
-          <p style="margin: 0;">This report was automatically generated by the NU Dasmarinas ITSO ID Tracker System</p>
-          <p style="margin: 5px 0 0 0;">© 2025 NU Dasmarinas ITSO. All rights reserved.</p>
+        <div style="margin-top: 30px; padding-top: 15px; border-top: 2px solid #ddd; text-align: center; color: #555; font-size: 11px; line-height: 1.5;">
+          <p style="margin: 0; font-weight: 500;">This report was automatically generated by the <span style="color:#2849D0; font-weight: 600;">National University - Dasmariñas ITSO ID Tracker System</span></p>
+          <p style="margin: 5px 0 0;">© 2025 National University - Dasmariñas ITSO. All rights reserved.</p>
         </div>
       `;
 
@@ -997,222 +1012,68 @@ function AdminDashboard() {
 
   if (loading) {
     return (
-      <div style={{
-        height: '100vh',
-        background: 'linear-gradient(135deg, #1e293b 0%, #334155 50%, #475569 100%)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
+      <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700">
         {/* Floating background elements */}
-        <div style={{
-          position: 'absolute',
-          top: '15%',
-          left: '10%',
-          width: '250px',
-          height: '250px',
-          background: 'radial-gradient(circle, rgba(251, 191, 36, 0.1) 0%, transparent 70%)',
-          borderRadius: '50%',
-          animation: 'float 8s ease-in-out infinite'
-        }}></div>
-        <div style={{
-          position: 'absolute',
-          bottom: '20%',
-          right: '15%',
-          width: '180px',
-          height: '180px',
-          background: 'radial-gradient(circle, rgba(40, 73, 208, 0.15) 0%, transparent 70%)',
-          borderRadius: '50%',
-          animation: 'float 6s ease-in-out infinite reverse'
-        }}></div>
-        
-        <div style={{
-          textAlign: 'center',
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '24px',
-          padding: '48px',
-          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)',
-          border: '1px solid rgba(255, 255, 255, 0.3)',
-          position: 'relative',
-          zIndex: 2
-        }}>
-          <div style={{
-            width: '60px',
-            height: '60px',
-            border: '4px solid #2849D0',
-            borderTop: '4px solid transparent',
-            borderRadius: '50%',
-            margin: '0 auto 24px auto',
-            animation: 'spin 1s linear infinite'
-          }}></div>
-          <h2 style={{
-            fontSize: '24px',
-            fontWeight: '700',
-            color: '#1f2937',
-            margin: '0 0 8px 0',
-            fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
-          }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><FiLock aria-hidden /> <span>Admin Dashboard</span></span></h2>
-          <p style={{
-            fontSize: '16px',
-            color: '#64748b',
-            margin: '0',
-            fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
-          }}>Loading your administrative controls...</p>
+        <div className="absolute -top-6 -left-6 w-64 h-64 rounded-full" style={{ background: 'radial-gradient(circle, rgba(251, 191, 36, 0.08) 0%, transparent 70%)', animation: 'float 8s ease-in-out infinite' }} />
+        <div className="absolute -bottom-8 -right-8 w-44 h-44 rounded-full" style={{ background: 'radial-gradient(circle, rgba(40, 73, 208, 0.12) 0%, transparent 70%)', animation: 'float 6s ease-in-out infinite reverse' }} />
+
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl p-12 shadow-2xl border border-white/30 text-center z-10 max-w-md mx-4">
+          <div className="w-14 h-14 rounded-full mx-auto mb-6 border-4 border-blue-700 border-t-transparent animate-spin" />
+          <h2 className="text-2xl font-extrabold text-slate-800 flex items-center justify-center gap-2">
+            <FiLock aria-hidden /> <span>Admin Dashboard</span>
+          </h2>
+          <p className="text-sm text-slate-500 mt-2">Loading your administrative controls...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{
-      height: '100vh',
-      background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 50%, #cbd5e1 100%)',
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden',
-      position: 'relative'
-    }}>
+    <div className="min-h-screen flex flex-col relative bg-gradient-to-br from-slate-50 via-slate-100 to-slate-200 overflow-hidden">
       {/* Background decorative elements */}
-      <div style={{
-        position: 'absolute',
-        top: '10%',
-        right: '5%',
-        width: '300px',
-        height: '300px',
-        background: 'radial-gradient(circle, rgba(40, 73, 208, 0.05) 0%, transparent 70%)',
-        borderRadius: '50%',
-        animation: 'float 12s ease-in-out infinite'
-      }}></div>
-      <div style={{
-        position: 'absolute',
-        bottom: '15%',
-        left: '8%',
-        width: '200px',
-        height: '200px',
-        background: 'radial-gradient(circle, rgba(251, 191, 36, 0.08) 0%, transparent 70%)',
-        borderRadius: '50%',
-        animation: 'float 10s ease-in-out infinite reverse'
-      }}></div>
+      <div className="absolute top-10 right-8 w-72 h-72 rounded-full" style={{ background: 'radial-gradient(circle, rgba(40, 73, 208, 0.05) 0%, transparent 70%)', animation: 'float 12s ease-in-out infinite' }} />
+      <div className="absolute bottom-16 left-8 w-52 h-52 rounded-full" style={{ background: 'radial-gradient(circle, rgba(251, 191, 36, 0.08) 0%, transparent 70%)', animation: 'float 10s ease-in-out infinite reverse' }} />
 
       {/* Modern Header */}
-      <header style={{
-        background: 'linear-gradient(135deg, #1e293b, #334155, #475569)',
-        color: 'white',
-        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.12)',
-        flexShrink: 0,
-        position: 'relative',
-        zIndex: 10
-      }}>
-        <div style={{
-          maxWidth: '1280px',
-          margin: '0 auto',
-          padding: '0 24px'
-        }}>
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            height: '80px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.15)',
-                backdropFilter: 'blur(10px)',
-                padding: '12px',
-                borderRadius: '16px',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
-              }}>
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                  borderRadius: '12px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 12px rgba(251, 191, 36, 0.3)'
-                }}>
-                  <span style={{
-                    color: 'white',
-                    fontWeight: '900',
-                    fontSize: '18px',
-                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
-                  }}>NU</span>
+      <header className="sticky top-0 backdrop-blur-md bg-gradient-to-r from-blue-800 via-blue-700 to-blue-600 text-white shadow-xl z-20">
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex items-center justify-between h-20 gap-6">
+            <div className="flex items-center gap-4 min-w-0">
+              <img src={nuLogo} alt="NU Logo" className="w-12 h-12 object-contain" />
+              <div className="min-w-0">
+                <div className="text-2xl font-extrabold bg-gradient-to-tr from-amber-400 to-amber-500 bg-clip-text text-transparent leading-tight truncate">
+                  National University - Dasmarinas
+                </div>
+                <div className="text-white/80 font-medium flex items-center gap-2 text-sm">
+                  <FiLock aria-hidden /> <span>Admin Dashboard</span>
                 </div>
               </div>
-              <div>
-                <div style={{
-                  background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text',
-                  fontWeight: '900',
-                  fontSize: '24px',
-                  fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                  letterSpacing: '-0.01em'
-                }}>NU Dasmarinas</div>
-                <div style={{
-                  color: 'rgba(255, 255, 255, 0.8)',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
-                }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}><FiLock aria-hidden /> <span>Admin Control Center</span></span></div>
-              </div>
             </div>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <div style={{
-                background: 'rgba(255, 255, 255, 0.1)',
-                backdropFilter: 'blur(10px)',
-                padding: '12px 20px',
-                borderRadius: '12px',
-                border: '1px solid rgba(255, 255, 255, 0.2)'
-              }}>
-                <span style={{
-                  color: 'white',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
-                }}>
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                    <FiUser aria-hidden />
-                    <span>{admin?.email?.split('@')[0] || "Admin"}</span>
-                  </span>
+              <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-2 bg-gradient-to-r from-white/10 to-white/5 px-3 py-2 rounded-xl border border-white/20 shadow-md backdrop-blur-sm">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 ring-2 ring-emerald-300/40 animate-ping-slow" aria-hidden></div>
+                <span className="font-medium text-sm text-white/90 truncate max-w-[12rem] tracking-wide">
+                  {admin?.email?.split('@')[0] || 'Admin'}
                 </span>
               </div>
-              <button 
+              <button
                 onClick={handleLogout}
-                style={{
-                  background: 'linear-gradient(135deg, #dc2626, #b91c1c)',
-                  color: 'white',
-                  padding: '12px 24px',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  boxShadow: '0 4px 12px rgba(220, 38, 38, 0.3)'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 8px 24px rgba(220, 38, 38, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 12px rgba(220, 38, 38, 0.3)';
-                }}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold
+                bg-gradient-to-r from-rose-600 to-red-500 
+                hover:from-rose-500 hover:to-red-400 
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-rose-400 ring-offset-slate-900
+                shadow-md hover:shadow-lg
+                transform transition-all duration-200 ease-out
+                hover:-translate-y-[2px]
+                active:translate-y-[0px] active:scale-[.97]"
               >
-                Logout
+                <span>Logout</span>
               </button>
             </div>
           </div>
         </div>
       </header>
+
 
       {/* Modern Main Content */}
       <main style={{
@@ -1223,7 +1084,7 @@ function AdminDashboard() {
         zIndex: 2
       }}>
         <div style={{
-          maxWidth: '1280px',
+          maxWidth: '1440px',
           margin: '0 auto',
           padding: '40px 24px'
         }}>
@@ -1384,175 +1245,176 @@ function AdminDashboard() {
         </div>
         
         {/* Modern Tabs */}
-        <div style={{
-          marginBottom: '32px',
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
-          borderRadius: '20px',
-          padding: '8px',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.06)',
-          border: '1px solid rgba(255, 255, 255, 0.3)'
-        }}>
-          <nav style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
-            {[
-              { key: 'appointments', label: 'Appointments', icon: <FiCalendar aria-hidden /> },
-              { key: 'users', label: 'Users', icon: <FiUsers aria-hidden /> },
-              { key: 'calendar', label: 'Calendar', icon: <FiCalendar aria-hidden /> },
-              { key: 'announcements', label: 'Announcements', icon: <FiBell aria-hidden /> },
-              { key: 'analytics', label: 'Analytics', icon: <FiBarChart2 aria-hidden /> }
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                style={{
-                  padding: '16px 24px',
-                  borderRadius: '16px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  background: activeTab === tab.key 
-                    ? 'linear-gradient(135deg, #2849D0, #3b82f6)'
-                    : 'transparent',
-                  color: activeTab === tab.key ? 'white' : '#64748b',
-                  boxShadow: activeTab === tab.key 
-                    ? '0 8px 24px rgba(40, 73, 208, 0.3)'
-                    : 'none',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px',
-                  minWidth: 'fit-content'
-                }}
-                onClick={() => setActiveTab(tab.key)}
-                onMouseEnter={(e) => {
-                  if (activeTab !== tab.key) {
-                    const btn = e.currentTarget; // ensure we style the button, not child spans
-                    btn.style.background = 'rgba(40, 73, 208, 0.1)';
-                    btn.style.color = '#2849D0';
-                    btn.style.transform = 'translateY(-2px)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeTab !== tab.key) {
-                    const btn = e.currentTarget;
-                    btn.style.background = 'transparent';
-                    btn.style.color = '#64748b';
-                    btn.style.transform = 'translateY(0)';
-                  }
-                }}
-              >
-                <span style={{ display: 'inline-flex', alignItems: 'center', fontSize: '18px', color: (activeTab === tab.key ? '#ffffff' : '#64748b') }}>{tab.icon}</span>
-                <span style={{ color: (activeTab === tab.key ? '#ffffff' : '#64748b') }}>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
-        </div>
-        
-        {/* Announcements Tab */}
-        {activeTab === 'announcements' && (
-          <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-              <h2 className="text-lg font-semibold text-gray-800">Announcement Management</h2>
-            </div>
-
-            <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Form */}
-              <div className="md:col-span-2 space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <input
-                    className="w-full border rounded-md p-2"
-                    placeholder="Announcement title"
-                    value={annTitle}
-                    onChange={(e) => setAnnTitle(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                  <textarea
-                    className="w-full border rounded-md p-2"
-                    rows={6}
-                    placeholder="Write content or captions here..."
-                    value={annContent}
-                    onChange={(e) => setAnnContent(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Image URLs (comma separated)</label>
-                  <input
-                    className="w-full border rounded-md p-2"
-                    placeholder="https://... , https://..."
-                    value={annImages}
-                    onChange={(e) => setAnnImages(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Links (comma separated)</label>
-                  <input
-                    className="w-full border rounded-md p-2"
-                    placeholder="https://... , https://..."
-                    value={annLinks}
-                    onChange={(e) => setAnnLinks(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
-                  <input
-                    className="w-full border rounded-md p-2"
-                    placeholder="e.g. id, schedule"
-                    value={annTags}
-                    onChange={(e) => setAnnTags(e.target.value)}
-                  />
-                </div>
-                <div className="flex items-center space-x-3">
-                  <button onClick={() => submitAnnouncement(true)} className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                    {annEditId ? 'Update & Publish' : 'Publish'}
+        <div className="mb-8 bg-white/90 backdrop-blur-xl rounded-2xl p-2 shadow-lg ring-1 ring-black/5">
+          <div className="overflow-x-auto">
+            <nav className="flex w-full flex-wrap justify-center items-center gap-2" role="tablist" aria-label="Admin sections">
+              {[
+                { key: 'appointments', label: 'Appointments', icon: <FiCalendar aria-hidden /> },
+                { key: 'users', label: 'Users', icon: <FiUsers aria-hidden /> },
+                { key: 'calendar', label: 'Calendar', icon: <FiCalendar aria-hidden /> },
+                { key: 'announcements', label: 'Announcements', icon: <FiBell aria-hidden /> },
+                { key: 'analytics', label: 'Analytics', icon: <FiBarChart2 aria-hidden /> }
+              ].map((tab) => {
+                const active = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => setActiveTab(tab.key)}
+                    className={
+                      "inline-flex items-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold transition " +
+                      (active
+                        ? "bg-gradient-to-tr from-blue-700 to-blue-500 text-white shadow-md"
+                        : "text-slate-500 hover:text-blue-700 hover:bg-blue-50")
+                    }
+                  >
+                    <span className={active ? "text-white" : "text-slate-500"}>{tab.icon}</span>
+                    <span>{tab.label}</span>
                   </button>
-                  <button onClick={() => submitAnnouncement(false)} className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
-                    Save Draft
-                  </button>
-                  {annEditId && (
-                    <button onClick={() => { setAnnEditId(null); setAnnTitle(''); setAnnContent(''); setAnnImages(''); setAnnLinks(''); setAnnTags(''); }} className="px-4 py-2 border rounded-md">
-                      Cancel Edit
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* List & Search */}
-              <div>
-                <div className="mb-4">
-                  <input
-                    className="w-full border rounded-md p-2"
-                    placeholder="Search announcements"
-                    value={annSearch}
-                    onChange={(e) => { setAnnSearch(e.target.value); fetchAnnouncements(e.target.value); }}
-                  />
-                </div>
-                <div className="space-y-3 max-h-[520px] overflow-y-auto">
-                  {announcements.map(item => (
-                    <div key={item._id} className="p-3 border rounded hover:bg-gray-50">
-                      <div className="font-medium">{item.title || 'Untitled'}</div>
-                      <div className="text-xs text-gray-500">{new Date(item.publishedAt || item.createdAt).toLocaleString()} {item.isPublished ? '' : '(Draft)'}</div>
-                      <div className="text-sm line-clamp-2">{item.content}</div>
-                      <div className="mt-2 space-x-2">
-                        <button onClick={() => editAnnouncement(item._id)} className="px-2 py-1 text-xs rounded bg-yellow-400 text-blue-900">Edit</button>
-                        <button onClick={() => deleteAnnouncement(item._id)} className="px-2 py-1 text-xs rounded bg-red-600 text-white">Delete</button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+                );
+              })}
+            </nav>
           </div>
-        )}
-        
+        </div>
+                    {/* Announcements Tab */}
+            {activeTab === 'announcements' && (
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+                  <h2 className="text-lg font-semibold text-[#B8860B]">Announcement Management</h2>
+                </div>
+
+                <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {/* Form */}
+                  <div className="md:col-span-2 space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                      <input
+                        className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        placeholder="Announcement title"
+                        value={annTitle}
+                        onChange={(e) => setAnnTitle(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                      <textarea
+                        className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        rows={6}
+                        placeholder="Write content or captions here..."
+                        value={annContent}
+                        onChange={(e) => setAnnContent(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Image URLs (comma separated)</label>
+                      <input
+                        className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        placeholder="https://... , https://..."
+                        value={annImages}
+                        onChange={(e) => setAnnImages(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Links (comma separated)</label>
+                      <input
+                        className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        placeholder="https://... , https://..."
+                        value={annLinks}
+                        onChange={(e) => setAnnLinks(e.target.value)}
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+                      <input
+                        className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        placeholder="e.g. id, schedule"
+                        value={annTags}
+                        onChange={(e) => setAnnTags(e.target.value)}
+                      />
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <button
+                        onClick={() => submitAnnouncement(true)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+                      >
+                        {annEditId ? 'Update & Publish' : 'Publish'}
+                      </button>
+                      <button
+                        onClick={() => submitAnnouncement(false)}
+                        className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
+                      >
+                        Save Draft
+                      </button>
+                      {annEditId && (
+                        <button
+                          onClick={() => {
+                            setAnnEditId(null);
+                            setAnnTitle('');
+                            setAnnContent('');
+                            setAnnImages('');
+                            setAnnLinks('');
+                            setAnnTags('');
+                          }}
+                          className="px-4 py-2 border rounded-md"
+                        >
+                          Cancel Edit
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                          
+                          {/* List & Search */}
+                          <div> {/* List container */}
+                            <div className="mt-6 mb-4"> {/* Search bar wrapper */}
+                              <input
+                                className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-5 focus:ring-blue-400 transition"
+                                placeholder="Search announcements"
+                                value={annSearch}
+                                onChange={(e) => { setAnnSearch(e.target.value); fetchAnnouncements(e.target.value); }}
+                              />
+                            </div> {/* /Search bar wrapper */}
+
+                            <div className="space-y-3 max-h-[540px] overflow-y-auto"> {/* Announcements list */}
+                              {announcements.map(item => (
+                                <div
+                                  key={item._id}
+                                  className="p-3 border rounded bg-white hover:bg-blue-50 hover:cursor-pointer hover:bg-blue-100 hover:shadow-md transition duration-200"
+                                >
+                                  <div className="font-medium">{item.title || 'Untitled'}</div>
+                                  <div className="text-xs text-gray-500">
+                                    {new Date(item.publishedAt || item.createdAt).toLocaleString()} {item.isPublished ? '' : '(Draft)'}
+                                  </div>
+                                  <div className="text-sm line-clamp-2">{item.content}</div>
+
+                                  <div className="mt-2 space-x-2"> {/* Buttons */}
+                                    <button
+                                      onClick={() => editAnnouncement(item._id)}
+                                      className="px-2 py-1 text-xs rounded bg-yellow-400 text-blue-900 hover:bg-yellow-500 transition"
+                                    >
+                                      Edit
+                                    </button>
+                                    <button
+                                      onClick={() => deleteAnnouncement(item._id)}
+                                      className="px-2 py-1 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition"
+                                    >
+                                      Delete
+                                    </button>
+                                  </div> {/* /Buttons */}
+                                </div>
+                              ))}
+                            </div> {/* /Announcements list */}
+                          </div> {/* /List container */}
+                        </div>
+                      </div>
+                    )}
+
         {/* Tab Content */}
         {activeTab === 'appointments' && (
             <>
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                <h2 className="text-lg font-semibold text-gray-800">Appointment Management</h2>
+                <h2 className="text-lg font-semibold text-[#B8860B]">Appointment Management</h2>
               </div>
               
               <div className="overflow-x-auto">
@@ -1648,7 +1510,7 @@ function AdminDashboard() {
                               <option value="pending-approval">Pending Approval</option>
                               <option value="on-hold">On Hold</option>
                               <option value="for-printing">For Printing</option>
-                              <option value="to-claim">To Claim</option>
+                              <option value="to-claim">To Claim</option>  
                               <option value="confirmed">Confirmed</option>
                               <option value="declined">Declined</option>
                             </select>
@@ -1671,7 +1533,7 @@ function AdminDashboard() {
           {activeTab === 'users' && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-800">User Management</h2>
+              <h2 className="text-lg font-semibold text-[#B8860B]">User Management</h2>
               
               <div className="flex items-center space-x-4">
                 <div>
@@ -1692,7 +1554,7 @@ function AdminDashboard() {
                 
                 <div>
                   <button
-                    className={`py-2 px-4 border rounded-md text-sm font-medium ${
+                    className={`py-2 px-4 border rounded-md text-sm font-medium mt-1 ${
                       sortConfig.key === 'last_name' 
                         ? 'bg-blue-100 text-blue-800 border-blue-300' 
                         : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
@@ -1826,20 +1688,25 @@ function AdminDashboard() {
 
         {activeTab === 'calendar' && (
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">Calendar Management</h2>
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between relative">
+              <h2 className="text-lg font-semibold text-[#B8860B]">Calendar Management</h2>
               <div className="flex items-center space-x-2">
                 <button
-                  className="px-3 py-1 rounded border text-sm"
+                  className="px-3 py-1 rounded border border-[#B8860B] text-[#B8860B] text-sm 
+                hover:bg-[#B8860B] hover:text-white hover:shadow-md 
+                focus:outline-none focus:ring-2 focus:ring-[#B8860B] transition"
                   onClick={() => navigateClosureMonth(-1)}
                 >
-                  Prev
+                 Previous
                 </button>
-                <div className="text-sm text-gray-700 font-medium">
+                <div className="absolute left-1/2 transform -translate-x-1/2 text-lg font-bold  
+                px-3 py-1 rounded border border-[#1E3C72] text-[#0077B6]">
                   {calendarCurrentDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
                 </div>
                 <button
-                  className="px-3 py-1 rounded border text-sm"
+                   className="px-3 py-1 rounded border border-[#B8860B] text-[#B8860B] text-sm 
+             hover:bg-[#B8860B] hover:text-white hover:shadow-md 
+             focus:outline-none focus:ring-2 focus:ring-[#B8860B] transition"
                   onClick={() => navigateClosureMonth(1)}
                 >
                   Next
@@ -1889,7 +1756,7 @@ function AdminDashboard() {
                       return (
                         <div
                           key={idx}
-                          className={`${baseClasses} ${stateClasses}`}
+                          className={`${baseClasses} ${stateClasses} hover:bg-blue-50 hover:border-blue-300 transition-colors`}
                           onClick={() => {
                             if (!dateObj || isPast) return; // disable past dates
                             setSelectedClosureDate(dateObj);
@@ -1980,7 +1847,7 @@ function AdminDashboard() {
           <div className="space-y-6">
             <div className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-800">Analytics & Reports</h2>
+                <h2 className="text-lg font-semibold text-[#B8860B]">Analytics & Reports</h2>
                 <div className="flex gap-2">
                   <button
                     onClick={generatePDF}
@@ -2096,8 +1963,8 @@ function AdminDashboard() {
                 {/* Charts Section */}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                   {/* User Enrollment Chart */}
-                  <div className="bg-white p-6 rounded-lg border border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">User Enrollment Status</h3>
+                  <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-4 font-[inter]">User Enrollment Status</h3>
                     <div className="h-64 flex items-center justify-center">
                       <div className="text-center">
                         <div className="w-32 h-32 mx-auto mb-4 relative">
@@ -2303,12 +2170,12 @@ function AdminDashboard() {
 
                 {/* Performance Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                  <div className="bg-white p-6 rounded-lg border border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">System Performance</h3>
+                  <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4 tracking-wide text-center mb-8">System Performance</h3>
                     <div className="space-y-4">
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Enrollment Rate</span>
+                          <span className="text-black-600">Enrollment Rate</span>
                           <span className="font-medium">{stats.totalUsers > 0 ? Math.round((stats.enrolledUsers / stats.totalUsers) * 100) : 0}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
@@ -2321,7 +2188,7 @@ function AdminDashboard() {
                       
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">Completion Rate</span>
+                          <span className="text-black-600">Completion Rate</span>
                           <span className="font-medium">
                             {(stats.pendingAppointments + stats.completedAppointments) > 0 ? 
                               Math.round((stats.completedAppointments / (stats.pendingAppointments + stats.completedAppointments)) * 100) : 0}%
@@ -2340,7 +2207,7 @@ function AdminDashboard() {
                       
                       <div>
                         <div className="flex justify-between text-sm mb-1">
-                          <span className="text-gray-600">System Utilization</span>
+                          <span className="text-black-600">System Utilization</span>
                           <span className="font-medium">
                             {stats.totalUsers > 0 ? Math.min(100, Math.round(((stats.pendingAppointments + stats.completedAppointments) / stats.totalUsers) * 100)) : 0}%
                           </span>
@@ -2357,41 +2224,43 @@ function AdminDashboard() {
                     </div>
                   </div>
 
-                  <div className="bg-white p-6 rounded-lg border border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-4">Quick Stats</h3>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Average appointments per user</span>
-                        <span className="font-bold text-gray-800">
-                          {stats.totalUsers > 0 ? ((stats.pendingAppointments + stats.completedAppointments) / stats.totalUsers).toFixed(1) : '0.0'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Pending vs Completed Ratio</span>
-                        <span className="font-bold text-gray-800">
-                          {stats.completedAppointments > 0 ? (stats.pendingAppointments / stats.completedAppointments).toFixed(1) : 'N/A'}:1
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2 border-b border-gray-100">
-                        <span className="text-gray-600">Enrollment vs Total Ratio</span>
-                        <span className="font-bold text-gray-800">
-                          {stats.totalUsers > 0 ? (stats.enrolledUsers / stats.totalUsers).toFixed(2) : '0.00'}:1
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center py-2">
-                        <span className="text-gray-600">System Activity Score</span>
-                        <span className="font-bold text-blue-600">
-                          {Math.min(100, Math.round(((stats.enrolledUsers * 0.4) + (stats.completedAppointments * 0.6)) / Math.max(1, stats.totalUsers) * 100))}%
-                        </span>
-                      </div>
+                  <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+                  <h3 className="text-2xl font-bold text-gray-900 mb-4 tracking-wide text-center">
+                    Quick Stats
+                  </h3>
+                  <div className="space-y-3 font-[Inter]">
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                      <span className="text-gray-600 font-medium">Average appointments per user</span>
+                      <span className="font-semibold text-gray-900 text-lg">
+                        {stats.totalUsers > 0 ? ((stats.pendingAppointments + stats.completedAppointments) / stats.totalUsers).toFixed(1) : '0.0'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                      <span className="text-gray-600 font-medium">Pending vs Completed Ratio</span>
+                      <span className="font-semibold text-gray-900 text-lg">
+                        {stats.completedAppointments > 0 ? (stats.pendingAppointments / stats.completedAppointments).toFixed(1) : 'N/A'}:1
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100">
+                      <span className="text-gray-600 font-medium">Enrollment vs Total Ratio</span>
+                      <span className="font-semibold text-gray-900 text-lg">
+                        {stats.totalUsers > 0 ? (stats.enrolledUsers / stats.totalUsers).toFixed(2) : '0.00'}:1
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-gray-600 font-medium">System Activity Score</span>
+                      <span className="font-bold text-lg bg-gradient-to-r from-[#1E3C72] to-[#2A5298] text-transparent bg-clip-text">
+                        {Math.min(100, Math.round(((stats.enrolledUsers * 0.4) + (stats.completedAppointments * 0.6)) / Math.max(1, stats.totalUsers) * 100))}%
+                      </span>
                     </div>
                   </div>
+                </div>
                 </div>
 
                 {/* Detailed Statistics Table */}
                 <div className="bg-white rounded-lg border border-gray-200">
                   <div className="px-6 py-4 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-800">Detailed Statistics</h3>
+                    <h3 className="text-2xl font-bold text-gray-900  tracking-wide text-center">Detailed Statistics</h3>
                   </div>
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
@@ -2489,13 +2358,17 @@ function AdminDashboard() {
       
       {/* Footer */}
       <footer className="bg-blue-800 text-white py-4 flex-shrink-0">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-1">
           <div className="flex justify-between items-center">
             <div>
-              <p className="text-sm">© 2025 NU Dasmarinas ITSO. All rights reserved.</p>
+              <p className="text-sm text-white tracking-wide">
+                © 2025 <span className="font-semibold">National University - Dasmarinas ITSO</span>. All rights reserved.
+              </p>
             </div>
             <div className="flex items-center space-x-2">
-              <span className="text-sm">Admin Portal</span>
+                <span className="text-sm text-white tracking-wide">
+                <span className="font-semibold">Admin Portal</span>
+              </span>
             </div>
           </div>
         </div>
