@@ -42,6 +42,50 @@ function AdminDashboard() {
   const [statusChangeModal, setStatusChangeModal] = useState(null); // For status change with remarks
   const [statusRemarks, setStatusRemarks] = useState("");
 
+  // Appointments filter (admin)
+  const [apptFilterMode, setApptFilterMode] = useState('all'); // 'all' | 'day' | 'month' | 'type'
+  const [apptFilterDate, setApptFilterDate] = useState('');    // YYYY-MM-DD
+  const [apptFilterMonth, setApptFilterMonth] = useState('');  // YYYY-MM
+  const [apptFilterType, setApptFilterType] = useState('');    // appointment type key
+
+  // Derived filtered appointments based on filter mode
+  const filteredAppointments = React.useMemo(() => {
+    if (!appointments || appointments.length === 0) return [];
+    if (apptFilterMode === 'day' && apptFilterDate) {
+      return appointments.filter((a) => {
+        if (!a?.date) return false;
+        const y = a.date.getFullYear();
+        const m = String(a.date.getMonth() + 1).padStart(2, '0');
+        const d = String(a.date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}` === apptFilterDate;
+      });
+    }
+    if (apptFilterMode === 'month' && apptFilterMonth) {
+      return appointments.filter((a) => {
+        if (!a?.date) return false;
+        const y = a.date.getFullYear();
+        const m = String(a.date.getMonth() + 1).padStart(2, '0');
+        return `${y}-${m}` === apptFilterMonth;
+      });
+    }
+    if (apptFilterMode === 'type' && apptFilterType) {
+      return appointments.filter((a) => {
+        if (!a?.type) return false;
+        if (apptFilterType === 'school-year-renewal') {
+          return a.type === 'school-year-renewal';
+        }
+        if (apptFilterType === 'school-year-renewal:new-picture') {
+          return a.type === 'school-year-renewal' && a.pictureOption === 'new-picture';
+        }
+        if (apptFilterType === 'school-year-renewal:retain-picture') {
+          return a.type === 'school-year-renewal' && (a.pictureOption === 'retain-picture' || a.pictureOption === 'retain');
+        }
+        return a.type === apptFilterType;
+      });
+    }
+    return appointments;
+  }, [appointments, apptFilterMode, apptFilterDate, apptFilterMonth, apptFilterType]);
+
   // Calendar Management state
   const [calendarCurrentDate, setCalendarCurrentDate] = useState(new Date());
   const [closures, setClosures] = useState([]);
@@ -1416,6 +1460,79 @@ insights.innerHTML = `
               <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
                 <h2 className="text-lg font-semibold text-[#B8860B]">Appointment Management</h2>
               </div>
+
+              {/* Filters */}
+              <div className="px-6 py-4 bg-white border-b border-gray-200 flex flex-col md:flex-row md:items-end md:space-x-4 space-y-3 md:space-y-0">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Filter Mode</label>
+                  <select
+                    className="w-48 border rounded-md p-2"
+                    value={apptFilterMode}
+                    onChange={(e) => {
+                      setApptFilterMode(e.target.value);
+                      // Clear values when switching modes
+                      setApptFilterDate('');
+                      setApptFilterMonth('');
+                      setApptFilterType('');
+                    }}
+                  >
+                    <option value="all">All</option>
+                    <option value="day">By Day</option>
+                    <option value="month">By Month</option>
+                    <option value="type">By Appointment Type</option>
+                  </select>
+                </div>
+
+                {apptFilterMode === 'day' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Day</label>
+                    <input
+                      type="date"
+                      className="border rounded-md p-2"
+                      value={apptFilterDate}
+                      onChange={(e) => setApptFilterDate(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {apptFilterMode === 'month' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Month</label>
+                    <input
+                      type="month"
+                      className="border rounded-md p-2"
+                      value={apptFilterMonth}
+                      onChange={(e) => setApptFilterMonth(e.target.value)}
+                    />
+                  </div>
+                )}
+
+                {apptFilterMode === 'type' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Appointment Type</label>
+                    <select
+                      className="border rounded-md p-2"
+                      value={apptFilterType}
+                      onChange={(e) => setApptFilterType(e.target.value)}
+                    >
+                      <option value="">All Types</option>
+                      <option value="term-renewal">Term Renewal</option>
+                      <option value="school-year-renewal">SY Renewal (New Picture)</option>
+                      <option value="school-year-renewal(retain)">SY Renewal (Retain Picture)</option>
+                      <option value="lost-id">Lost ID</option>
+                    </select>
+                  </div>
+                )}
+
+                {(apptFilterMode === 'day' || apptFilterMode === 'month' || apptFilterMode === 'type') && (
+                  <button
+                    className="h-10 px-4 bg-gray-100 border rounded-md text-sm hover:bg-gray-200"
+                    onClick={() => { setApptFilterMode('all'); setApptFilterDate(''); setApptFilterMonth(''); setApptFilterType(''); }}
+                  >
+                    Clear Filters
+                  </button>
+                )}
+              </div>
               
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
@@ -1442,8 +1559,8 @@ insights.innerHTML = `
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {appointments.length > 0 ? (
-                      appointments.map((appointment) => (
+                    {filteredAppointments.length > 0 ? (
+                      filteredAppointments.map((appointment) => (
                         <tr key={appointment.id}>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">

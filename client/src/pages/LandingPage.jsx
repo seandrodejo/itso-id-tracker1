@@ -1187,7 +1187,7 @@ function LandingPage() {
                 </div>
                 
                 <button 
-                  onClick={() => navigate(`/announcements-public/${item._id}`)} 
+                  onClick={() => navigate('/announcements-public')} 
                   className="modern-button"
                   style={{
                     background: idx % 2 === 0 

@@ -394,6 +394,9 @@ function Dashboard() {
       const isToday = today.getTime() === dateToCheck.getTime();
       const isPastDate = dateToCheck < today;
       
+      // Admin-declared closure for this date
+      const isClosed = isClosedDate(dateToCheck);
+      
       // Check if this date has an appointment
       const hasAppointment = appointments.some(appointment => 
         appointment.date && 
@@ -408,7 +411,8 @@ function Dashboard() {
         isCurrentMonth: true,
         isToday,
         isPastDate,
-        hasAppointment
+        hasAppointment,
+        isClosed
       });
     }
 
@@ -1069,6 +1073,8 @@ function Dashboard() {
                                    'linear-gradient(135deg, #2849D0, #3b82f6)' :
                                    isSelected ?
                                    'linear-gradient(135deg, #fbbf24, #f59e0b)' :
+                                   dayObj.isClosed ?
+                                   'linear-gradient(135deg, #fecaca, #fca5a5)' :
                                    dayObj.hasAppointment ?
                                    'linear-gradient(135deg, #dcfce7, #bbf7d0)' :
                                    'white',
@@ -1102,9 +1108,11 @@ function Dashboard() {
                       }}
                       onMouseLeave={(e) => {
                         if (dayObj.isCurrentMonth && !dayObj.isPastDate && !dayObj.isToday && !isSelected) {
-                          e.target.style.background = dayObj.hasAppointment ?
-                                                     'linear-gradient(135deg, #dcfce7, #bbf7d0)' :
-                                                     'white';
+                          e.target.style.background = dayObj.isClosed ?
+                                                     'linear-gradient(135deg, #fecaca, #fca5a5)' :
+                                                     (dayObj.hasAppointment ?
+                                                       'linear-gradient(135deg, #dcfce7, #bbf7d0)' :
+                                                       'white');
                           e.target.style.transform = 'translateY(0)';
                           e.target.style.boxShadow = dayObj.hasAppointment ?
                                                     '0 2px 8px rgba(34, 197, 94, 0.2)' :
@@ -1113,6 +1121,19 @@ function Dashboard() {
                       }}
                     >
                       {dayObj.day}
+                      {dayObj.isClosed && (
+                        <div style={{
+                          position: 'absolute',
+                          top: '6px',
+                          right: '6px',
+                          width: '12px',
+                          height: '12px',
+                          background: 'linear-gradient(135deg, #9f1717ff, #e8361eff)',
+                          borderRadius: '50%',
+                          boxShadow: '0 2px 4px rgba(34, 197, 94, 0.3)',
+                          animation: 'pulse 2s infinite'
+                        }}></div>
+                      )}
                       {dayObj.hasAppointment && (
                         <div style={{
                           position: 'absolute',
@@ -1345,42 +1366,80 @@ function Dashboard() {
                       
                       <div className="mb-6">
                         <p className="text-sm text-gray-600 mb-1">Status</p>
-                        <span className={`inline-block px-4 py-1 rounded-full text-sm font-medium ${
-                          checkOfficeStatus(selectedDate).isOpen 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-red-100 text-red-800'
-                        }`}>
-                          {checkOfficeStatus(selectedDate).message}
-                        </span>
+                        {(() => {
+                          const today = new Date();
+                          today.setHours(0, 0, 0, 0);
+                          const d = new Date(selectedDate);
+                          d.setHours(0, 0, 0, 0);
+                          const sameDay = d.getTime() === today.getTime();
+                          if (sameDay) {
+                            return (
+                              <span className="inline-block px-4 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                Same-day booking not allowed
+                              </span>
+                            );
+                          }
+                          const status = checkOfficeStatus(selectedDate);
+                          return (
+                            <span className={`inline-block px-4 py-1 rounded-full text-sm font-medium ${
+                              status.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                              {status.message}
+                            </span>
+                          );
+                        })()}
                       </div>
                       
-                      {checkOfficeStatus(selectedDate).isOpen && (
-                        <button 
-                          className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-500 text-blue-800 font-medium rounded-lg transition-colors"
-                          onClick={() => {
-                            setAppointmentType(null);
-                            setPictureOption(null);
-                            setSelectedTimeSlot(null);
-                            
-                            // If it's Saturday, make sure any previously selected afternoon slots are cleared
-                            if (selectedDate && selectedDate.getDay() === 6) {
-                              const afternoonSlots = [
-                                '1:00 PM - 2:00 PM',
-                                '2:00 PM - 3:00 PM',
-                                '3:00 PM - 4:00 PM',
-                                '4:00 PM - 5:00 PM'
-                              ];
-                              if (afternoonSlots.includes(selectedTimeSlot)) {
-                                setSelectedTimeSlot(null);
+                      {(() => {
+                        // Disable same-day bookings at the button level (do not mark the day as closed)
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const d = new Date(selectedDate);
+                        d.setHours(0, 0, 0, 0);
+                        const sameDay = d.getTime() === today.getTime();
+                        const status = checkOfficeStatus(selectedDate);
+
+                        if (!status.isOpen) return null;
+                        if (sameDay) {
+                          return (
+                            <button
+                              className="w-full py-3 px-4 bg-gray-200 text-gray-500 font-medium rounded-lg mt-4 cursor-not-allowed"
+                              disabled
+                              title="Same-day booking not allowed"
+                            >
+                              Book Now
+                            </button>
+                          );
+                        }
+
+                        return (
+                          <button 
+                            className="w-full py-3 px-4 bg-yellow-400 hover:bg-yellow-500 text-blue-800 font-medium rounded-lg transition-colors"
+                            onClick={() => {
+                              setAppointmentType(null);
+                              setPictureOption(null);
+                              setSelectedTimeSlot(null);
+                              
+                              // If it's Saturday, make sure any previously selected afternoon slots are cleared
+                              if (selectedDate && selectedDate.getDay() === 6) {
+                                const afternoonSlots = [
+                                  '1:00 PM - 2:00 PM',
+                                  '2:00 PM - 3:00 PM',
+                                  '3:00 PM - 4:00 PM',
+                                  '4:00 PM - 5:00 PM'
+                                ];
+                                if (afternoonSlots.includes(selectedTimeSlot)) {
+                                  setSelectedTimeSlot(null);
+                                }
                               }
-                            }
-                            
-                            setShowBookingModal(true);
-                          }}
-                        >
-                          Book Now
-                        </button>
-                      )}
+                              
+                              setShowBookingModal(true);
+                            }}
+                          >
+                            Book Now
+                          </button>
+                        );
+                      })()}
                     </>
                   )}
                 </div>
