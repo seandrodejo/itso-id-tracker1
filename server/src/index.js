@@ -26,6 +26,7 @@ import appointmentRoutes from "./routes/appointmentRoutes.js";
 import slotRoutes from "./routes/slotRoutes.js";
 import idCardRoutes from "./routes/idCardRoutes.js";
 import calendarClosureRoutes from "./routes/calendarClosureRoutes.js";
+import schedulingWindowRoutes from "./routes/schedulingWindowRoutes.js";
 
 dotenv.config();
 const app = express();
@@ -44,6 +45,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/slots", slotRoutes);
 app.use("/api/idcards", idCardRoutes);
 app.use("/api/calendar-closures", calendarClosureRoutes);
+app.use("/api/scheduling-windows", schedulingWindowRoutes);
 import announcementRoutes from "./routes/announcementRoutes.js";
 app.use("/api/announcements", announcementRoutes);
 

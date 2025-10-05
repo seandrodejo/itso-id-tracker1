@@ -93,6 +93,19 @@ function AdminDashboard() {
   const [selectedClosureDate, setSelectedClosureDate] = useState(null); // Date object
   const [closureRemarks, setClosureRemarks] = useState("");
 
+  // Scheduling Windows Management state
+  const [schedulingWindows, setSchedulingWindows] = useState([]);
+  const [showSchedulingWindowModal, setShowSchedulingWindowModal] = useState(false);
+  const [schedulingWindowForm, setSchedulingWindowForm] = useState({
+    name: "",
+    startDate: "",
+    endDate: "",
+    purpose: "ALL",
+    isActive: true,
+    description: ""
+  });
+  const [editingSchedulingWindow, setEditingSchedulingWindow] = useState(null);
+
   // Announcement Management state
   const [announcements, setAnnouncements] = useState([]);
   const [annSearch, setAnnSearch] = useState("");

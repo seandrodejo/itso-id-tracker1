@@ -494,11 +494,7 @@ const CalendarLanding = () => {
                 fontSize: '14px', 
                 lineHeight: '1.6'
               }}>
-                Paliparan III, Bridge SM<br />
-                Dasmariñas, Governor's<br />
-                Dr. Dasmariñas,<br />
-                Dasmariñas<br />
-                Philippines
+                Sampaloc 1 Bridge, SM Dasmarinas, Governor's Dr, Dasmariñas, 4114 Cavite<br/>
               </p>
             </div>
 
@@ -566,3 +562,4 @@ const CalendarLanding = () => {
 };
 
 export default CalendarLanding;
+

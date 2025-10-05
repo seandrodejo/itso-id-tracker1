@@ -104,7 +104,7 @@ function LandingPage() {
         animation: 'float 12s ease-in-out infinite'
       }}></div>
 
-      {/* Modern Navigation */}
+      {/* Modern Navigation Header*/}
       <nav style={{
         background: 'rgba(40, 73, 208, 0.95)',
         backdropFilter: 'blur(20px)',
@@ -193,15 +193,16 @@ function LandingPage() {
             <button
               onClick={openLogin}
               style={{
-                backgroundColor: '#fde047',
-                color: '#2849D0',
-                padding: '8px 20px',
-                borderRadius: '6px',
-                border: 'none',
+                background: 'linear-gradient(135deg, #fde047, #fbbf24)',
+                color: '#1e3a8a',
+                padding: '10px 22px',
+                borderRadius: '12px',
+                border: '1px solid rgba(0,0,0,0.05)',
                 cursor: 'pointer',
-                fontWeight: '500',
+                fontWeight: 800,
                 fontSize: '14px',
-                whiteSpace: 'nowrap'
+                whiteSpace: 'nowrap',
+                boxShadow: '0 10px 20px rgba(251, 191, 36, 0.25)'
               }}
             >
               Log In
@@ -744,8 +745,8 @@ function LandingPage() {
             {/* Enhanced Start Dot */}
             <div style={{
               position: 'absolute',
-              left: '12.5%',
-              top: '50%',
+              left: '11.5%',
+              top: '6%',
               width: '20px',
               height: '20px',
               background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
@@ -758,8 +759,8 @@ function LandingPage() {
             {/* Enhanced End Dot */}
             <div style={{
               position: 'absolute',
-              right: '12.5%',
-              top: '50%',
+              right: '11.5%',
+              top: '5%',
               width: '20px',
               height: '20px',
               background: 'linear-gradient(135deg, #10b981, #059669)',
@@ -1313,12 +1314,8 @@ function LandingPage() {
                 color: '#cbd5e0', 
                 fontSize: '14px', 
                 lineHeight: '1.6'
-              }}>
-                Paliparan III, Bridge SM<br />
-                Dasmariñas, Governor's<br />
-                Dr. Dasmariñas,<br />
-                Dasmariñas<br />
-                Philippines
+               }}>
+                Paliparan III, Bridge SM Dasmariñas, Governor's Dr. Dasmariñas, Cavite, Philippines<br/>
               </p>
             </div>
 
@@ -1383,3 +1380,4 @@ function LandingPage() {
 }
 
 export default LandingPage;
+

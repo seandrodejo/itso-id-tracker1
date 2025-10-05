@@ -8,15 +8,17 @@ const createTransporter = () => {
   console.log('EMAIL_USER:', process.env.EMAIL_USER);
   console.log('EMAIL_PASS length:', process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 'undefined');
   console.log('GMAIL_OAUTH_REFRESH_TOKEN set:', !!process.env.GMAIL_OAUTH_REFRESH_TOKEN);
+  console.log('EMAIL_TRANSPORT_MODE:', process.env.EMAIL_TRANSPORT_MODE);
 
   const emailUser = (process.env.EMAIL_USER || '').trim();
   const emailPass = (process.env.EMAIL_PASS || '').trim();
   const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
   const clientSecret = (process.env.GOOGLE_CLIENT_SECRET || '').trim();
   const refreshToken = (process.env.GMAIL_OAUTH_REFRESH_TOKEN || '').trim();
+  const transportMode = (process.env.EMAIL_TRANSPORT_MODE || '').trim();
 
-  // Prefer OAuth2 if refresh token is provided (works without app passwords)
-  if (emailUser && clientId && clientSecret && refreshToken) {
+  // Use OAuth2 if transport mode is 'oauth2' and credentials are provided
+  if (transportMode === 'oauth2' && emailUser && clientId && clientSecret && refreshToken) {
     console.log('✅ Using Gmail OAuth2 for Nodemailer');
     return nodemailer.createTransport({
       service: 'gmail',
@@ -30,11 +32,40 @@ const createTransporter = () => {
     });
   }
 
-  // Fallback: password/app password auth if provided
-  if (emailUser && emailPass &&
+  // Use password/app password auth if transport mode is 'password' and credentials are provided
+  if (transportMode === 'password' && emailUser && emailPass &&
       emailUser !== 'your-gmail@gmail.com' &&
       emailPass !== 'your-app-password') {
     console.log('✅ Using SMTP password authentication for Gmail');
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: emailUser,
+        pass: emailPass,
+      },
+    });
+  }
+
+  // Fallback: try OAuth2 if refresh token is provided (legacy support)
+  if (emailUser && clientId && clientSecret && refreshToken) {
+    console.log('✅ Using Gmail OAuth2 for Nodemailer (fallback)');
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        type: 'OAuth2',
+        user: emailUser,
+        clientId,
+        clientSecret,
+        refreshToken,
+      },
+    });
+  }
+
+  // Fallback: password/app password auth if provided (legacy support)
+  if (emailUser && emailPass &&
+      emailUser !== 'your-gmail@gmail.com' &&
+      emailPass !== 'your-app-password') {
+    console.log('✅ Using SMTP password authentication for Gmail (fallback)');
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {

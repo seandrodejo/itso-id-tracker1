@@ -69,10 +69,10 @@ router.post("/login", async (req, res) => {
     console.log('🔍 Login attempt:', req.body);
     const { email, student_id, password } = req.body;
 
-    // Validate email format (must be @nu-dasma.edu.ph)
-    if (!email || !email.endsWith('@nu-dasma.edu.ph')) {
+    // Validate email format (must be @students.nu-dasma.edu.ph), except for admin
+    if (student_id !== 'admin' && (!email || !email.endsWith('@students.nu-dasma.edu.ph'))) {
       console.log('❌ Invalid email format:', email);
-      return res.status(400).json({ message: "Email must be a valid @nu-dasma.edu.ph address" });
+      return res.status(400).json({ message: "Email must be a valid @students.nu-dasma.edu.ph address" });
     }
 
    

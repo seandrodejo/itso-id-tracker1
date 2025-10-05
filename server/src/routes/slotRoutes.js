@@ -1,5 +1,6 @@
 import express from "express";
 import Slot from "../models/Slot.js";
+import SchedulingWindow from "../models/SchedulingWindow.js";
 import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -7,6 +8,19 @@ const router = express.Router();
 router.get("/available", async (req, res) => {
   try {
     const { date, purpose } = req.query;
+
+    // First, get active scheduling windows
+    const today = new Date().toISOString().split('T')[0];
+    const activeWindows = await SchedulingWindow.find({
+      isActive: true,
+      startDate: { $lte: today },
+      endDate: { $gte: today }
+    });
+
+    if (activeWindows.length === 0) {
+      // No active scheduling windows, return empty
+      return res.json([]);
+    }
 
     let query = {};
 
@@ -18,8 +32,8 @@ router.get("/available", async (req, res) => {
       query.purpose = purpose;
     }
 
-   
-    const slots = await Slot.aggregate([
+    // Get slots that match the basic criteria
+    let slots = await Slot.aggregate([
       { $match: query },
       { $addFields: {
         isAvailable: { $lt: ["$bookedCount", "$capacity"] }
@@ -27,6 +41,17 @@ router.get("/available", async (req, res) => {
       { $match: { isAvailable: true } },
       { $sort: { date: 1, start: 1 } }
     ]);
+
+    // Filter slots based on active scheduling windows
+    slots = slots.filter(slot => {
+      // Check if this slot's date falls within any active window
+      return activeWindows.some(window => {
+        const slotDate = slot.date;
+        const windowMatches = slotDate >= window.startDate && slotDate <= window.endDate;
+        const purposeMatches = window.purpose === "ALL" || window.purpose === slot.purpose;
+        return windowMatches && purposeMatches;
+      });
+    });
 
     res.json(slots);
   } catch (err) {
