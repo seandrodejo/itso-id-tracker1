@@ -33,8 +33,26 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173", 
+    "http://localhost:5174",
+    // Allow Expo web development server
+    "http://localhost:8081",
+    "http://localhost:8082",
+    "http://localhost:8083",
+    // Allow mobile app requests (Expo/React Native)
+    "exp://localhost:19000",
+    "exp://localhost:19001", 
+    "exp://localhost:19002",
+    "exp://192.168.1.20:19000", // Example local network IP
+    "exp://192.168.1.20:19001",
+    "exp://192.168.1.20:19002",
+    // Allow all origins in development (for mobile testing)
+    ...(process.env.NODE_ENV === 'development' ? ['*'] : [])
+  ],
   credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
 }));
 
 app.use("/uploads", express.static(path.resolve("uploads")));
