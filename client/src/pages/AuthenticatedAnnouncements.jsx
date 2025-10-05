@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
 import nuLogo from "../assets/images/nu-logo.png";
-import { FaCalendarAlt, FaBullhorn, FaInfoCircle, FaUser } from 'react-icons/fa';
+import { FaCalendarAlt, FaBullhorn, FaInfoCircle, FaUser, FaSearch, FaArrowRight, FaSignInAlt } from 'react-icons/fa';
+import LoginModal from '../components/LoginModal';
+import ChangePasswordModal from '../components/ChangePasswordModal';
 
 function AuthenticatedAnnouncements() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
+  const [userDetails, setUserDetails] = useState(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
   
   // Get user info from token
   const token = localStorage.getItem("token");
@@ -45,6 +53,20 @@ function AuthenticatedAnnouncements() {
     run();
   }, [search]);
 
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showProfileDropdown && !event.target.closest('.profile-dropdown-container')) {
+        setShowProfileDropdown(false);
+      }
+    };
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showProfileDropdown]);
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -77,7 +99,7 @@ function AuthenticatedAnnouncements() {
 
       {/* Student Navigation Header (match Calendar Dashboard) */}
       <nav style={{
-        background: 'linear-gradient(135deg, #2849D0 0%, #3b82f6 50%, #1e40af 100%)',
+        background: 'rgba(40, 73, 208, 0.95)',
         color: 'white',
         boxShadow: '0 8px 32px rgba(40, 73, 208, 0.2)',
         backdropFilter: 'blur(20px)',
@@ -96,57 +118,362 @@ function AuthenticatedAnnouncements() {
             height: '80px'
           }}>
             {/* Logo and Brand */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                width: '56px', height: '56px', background: 'rgba(253, 224, 71, 0.2)',
-                borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                backdropFilter: 'blur(10px)', border: '1px solid rgba(253, 224, 71, 0.3)',
-                position: 'relative'
-              }}>
-                <img src={nuLogo} alt="NU Logo" style={{ width: '40px', height: '40px', objectFit: 'contain' }} />
-              </div>
-              <div>
-                <div style={{ fontWeight: '800', fontSize: '20px', background: 'linear-gradient(135deg, #fde047, #fbbf24)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text', fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif', letterSpacing: '-0.01em' }}>NU Dasmarinas</div>
-                <div style={{ fontSize: '14px', fontWeight: '600', color: 'rgba(253, 224, 71, 0.9)', fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif' }}>ITSO ID Tracker</div>
-              </div>
-            </div>
+            <div style={{ 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    justifyContent: 'flex-start'
+                                  }}>
+                                    <div style={{
+                                      width: '48px',
+                                      height: '48px',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'center',
+                                      marginRight: '12px'
+                                    }}>
+                                      <img src={nuLogo} alt="NU Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
+                                    </div>
+                                    <div>
+                                      <div style={{ color: '#fde047', fontWeight: 'bold', fontSize: '18px', whiteSpace: 'nowrap' }}>
+                                        NU Dasmarinas
+                                      </div>
+                                      <div style={{ color: '#fde047', fontSize: '18px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+                                        ITSO ID Tracker
+                                      </div>
+                                    </div>
+                                  </div>
 
             {/* Navigation Links */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-              <Link to="/dashboard" style={{ color: 'white', textDecoration: 'none', fontSize: '16px', fontWeight: '600', fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif', padding: '12px 20px', borderRadius: '12px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative' }}
-                onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.transform = 'translateY(-2px)'; }}
-                onMouseLeave={(e) => { e.target.style.background = 'transparent'; e.target.style.transform = 'translateY(0)'; }}
-              ><span style={{display:'inline-flex',alignItems:'center',gap:'8px'}}><FaCalendarAlt /> Calendar</span></Link>
-              <Link to="/announcements" style={{ color: 'white', textDecoration: 'none', fontSize: '16px', fontWeight: '600', fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif', padding: '12px 20px', borderRadius: '12px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative' }}
-                onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.transform = 'translateY(-2px)'; }}
-                onMouseLeave={(e) => { e.target.style.background = 'transparent'; e.target.style.transform = 'translateY(0)'; }}
-              ><span style={{display:'inline-flex',alignItems:'center',gap:'8px'}}><FaBullhorn /> Announcements</span></Link>
-              <Link to="/about" style={{ color: 'white', textDecoration: 'none', fontSize: '16px', fontWeight: '600', fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif', padding: '12px 20px', borderRadius: '12px', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', position: 'relative' }}
-                onMouseEnter={(e) => { e.target.style.background = 'rgba(255, 255, 255, 0.1)'; e.target.style.transform = 'translateY(-2px)'; }}
-                onMouseLeave={(e) => { e.target.style.background = 'transparent'; e.target.style.transform = 'translateY(0)'; }}
-              ><span style={{display:'inline-flex',alignItems:'center',gap:'8px'}}><FaInfoCircle /> About Us</span></Link>
+            <div style={{ 
+              display: 'flex', 
+              gap: '32px', 
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
+              <Link to="/dashboard" className="link-underline" style={{
+                color: location.pathname === '/dashboard' ? '#fde047' : '#93c5fd',
+                textDecoration: 'none',
+                fontWeight: '600',
+                whiteSpace: 'nowrap'
+              }}>Calendar</Link>
+              <Link to="/announcements" className="link-underline" style={{
+                color: location.pathname === '/announcements' ? '#fde047' : '#93c5fd',
+                textDecoration: 'none',
+                fontWeight: '600',
+                whiteSpace: 'nowrap'
+              }}>Announcements</Link>
+              <Link to="/about" className="link-underline" style={{
+                color: location.pathname === '/about' ? '#fde047' : '#93c5fd',
+                textDecoration: 'none',
+                fontWeight: '600',
+                whiteSpace: 'nowrap'
+              }}>About Us</Link>
             </div>
 
-            {/* User Profile */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', position: 'relative' }} className="profile-dropdown-container">
-              <span style={{ color: 'white', fontSize: '16px', fontWeight: '600', fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif', display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
-                <FaUser /> Hi, {user?.email?.split('@')[0] || 'User'}!
-              </span>
-              <div style={{ width: '48px', height: '48px', background: 'linear-gradient(135deg, #fde047, #fbbf24)', borderRadius: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', boxShadow: '0 4px 16px rgba(253, 224, 71, 0.3)', border: '2px solid rgba(255, 255, 255, 0.2)' }}
+            {/* Enhanced Modern User Profile */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '20px',
+              position: 'relative'
+            }} className="profile-dropdown-container">
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                background: 'rgba(255, 255, 255, 0.1)',
+                backdropFilter: 'blur(10px)',
+                borderRadius: '20px',
+                padding: '8px 16px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+              }}>
+                <FaUser style={{ color: 'rgba(255, 255, 255, 0.9)', fontSize: '16px' }} />
+                <span style={{
+                  color: 'white',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                }}>
+                  Hi, {userDetails?.first_name || user?.email?.split('@')[0] || "User"}!
+                </span>
+              </div>
+              <div 
+                style={{
+                  width: '56px',
+                  height: '56px',
+                  background: 'linear-gradient(135deg, #fde047, #fbbf24)',
+                  borderRadius: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                  boxShadow: '0 8px 32px rgba(253, 224, 71, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                  border: '2px solid rgba(255, 255, 255, 0.2)',
+                  position: 'relative',
+                  overflow: 'hidden'
+                }}
                 onClick={() => setShowProfileDropdown(!showProfileDropdown)}
-                onMouseEnter={(e) => { e.target.style.transform = 'translateY(-2px) scale(1.05)'; e.target.style.boxShadow = '0 8px 24px rgba(253, 224, 71, 0.4)'; }}
-                onMouseLeave={(e) => { e.target.style.transform = 'translateY(0) scale(1)'; e.target.style.boxShadow = '0 4px 16px rgba(253, 224, 71, 0.3)'; }}
+                onMouseEnter={(e) => {
+                  e.target.style.transform = 'translateY(-3px) scale(1.08)';
+                  e.target.style.boxShadow = '0 12px 40px rgba(253, 224, 71, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2)';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.transform = 'translateY(0) scale(1)';
+                  e.target.style.boxShadow = '0 8px 32px rgba(253, 224, 71, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)';
+                }}
               >
-                <div style={{ width: '36px', height: '36px', background: 'white', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ color: '#2849D0', fontWeight: '700', fontSize: '16px', fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif' }}>
-                    {(user?.email || 'U').charAt(0).toUpperCase()}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  background: 'linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%, rgba(255, 255, 255, 0.1) 100%)',
+                  opacity: 0,
+                  transition: 'opacity 0.3s ease'
+                }}></div>
+                <div style={{
+                  width: '42px',
+                  height: '42px',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  borderRadius: '16px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)'
+                }}>
+                  <span style={{
+                    background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    fontWeight: '800',
+                    fontSize: '18px',
+                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+                  }}>
+                    {(userDetails?.first_name || user?.email || "U").charAt(0).toUpperCase()}
                   </span>
                 </div>
               </div>
+              
+              {/* Enhanced Modern Profile Dropdown */}
               {showProfileDropdown && (
-                <div style={{ position: 'absolute', right: '0', top: '60px', width: '320px', background: 'rgba(255, 255, 255, 0.95)', backdropFilter: 'blur(20px)', borderRadius: '20px', boxShadow: '0 20px 60px rgba(0, 0, 0, 0.15)', border: '1px solid rgba(255, 255, 255, 0.3)', zIndex: 50, overflow: 'hidden' }}>
-                  <div style={{ padding: '16px', borderBottom: '1px solid rgba(0,0,0,0.06)' }}>
-                    <button onClick={handleLogout} style={{ width: '100%', padding: '12px 16px', background: '#ef4444', color: 'white', borderRadius: '12px', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Logout</button>
+                <div style={{
+                  position: 'absolute',
+                  right: '0',
+                  top: '70px',
+                  width: '360px',
+                  background: 'rgba(255, 255, 255, 0.98)',
+                  backdropFilter: 'blur(40px)',
+                  borderRadius: '24px',
+                  boxShadow: '0 32px 80px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  zIndex: 50,
+                  overflow: 'hidden',
+                  animation: 'dropdownSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
+                }}>
+                  <div style={{
+                    background: 'linear-gradient(135deg, #1e40af 0%, #3b82f6 50%, #60a5fa 100%)',
+                    padding: '32px 24px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'url("data:image/svg+xml,%3Csvg width="60" height="60" viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg"%3E%3Cg fill="none" fill-rule="evenodd"%3E%3Cg fill="%23ffffff" fill-opacity="0.05"%3E%3Ccircle cx="30" cy="30" r="2"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")',
+                      opacity: 0.3
+                    }}></div>
+                    <div style={{
+                      width: '96px',
+                      height: '96px',
+                      background: 'linear-gradient(135deg, #fde047, #fbbf24)',
+                      borderRadius: '28px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '20px',
+                      border: '3px solid rgba(255, 255, 255, 0.4)',
+                      boxShadow: '0 12px 40px rgba(253, 224, 71, 0.3)',
+                      position: 'relative',
+                      zIndex: 1
+                    }}>
+                      <div style={{
+                        width: '72px',
+                        height: '72px',
+                        background: 'rgba(255, 255, 255, 0.95)',
+                        borderRadius: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+                      }}>
+                        <span style={{
+                          background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+                          WebkitBackgroundClip: 'text',
+                          WebkitTextFillColor: 'transparent',
+                          fontWeight: '900',
+                          fontSize: '32px',
+                          fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+                        }}>
+                          {(userDetails?.first_name || user?.email || "U").charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    </div>
+                    <h3 style={{
+                      color: 'white',
+                      fontWeight: '800',
+                      fontSize: '22px',
+                      margin: '0 0 12px 0',
+                      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                      textAlign: 'center',
+                      textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                      position: 'relative',
+                      zIndex: 1
+                    }}>
+                      {userDetails?.first_name && userDetails?.last_name 
+                        ? `${userDetails.first_name} ${userDetails.last_name}`
+                        : user?.email?.split('@')[0] || "Juan Dela Cruz"}
+                    </h3>
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '8px',
+                      alignItems: 'center',
+                      position: 'relative',
+                      zIndex: 1
+                    }}>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        padding: '8px 16px',
+                        borderRadius: '12px',
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        <span style={{
+                          color: 'rgba(255, 255, 255, 0.95)',
+                          fontSize: '16px',
+                          fontWeight: '600',
+                          fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+                        }}>
+                          {userDetails?.student_id || "2023-123456"}
+                        </span>
+                      </div>
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: 'rgba(255, 255, 255, 0.15)',
+                        padding: '8px 16px',
+                        borderRadius: '12px',
+                        backdropFilter: 'blur(10px)'
+                      }}>
+                        <span style={{
+                          color: 'rgba(255, 255, 255, 0.85)',
+                          fontSize: '14px',
+                          fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+                        }}>
+                          {userDetails?.personal_email || user?.email || "juandelacruz@gmail.com"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ padding: '24px' }}>
+                    <button 
+                      style={{
+                        width: '100%',
+                        padding: '16px 20px',
+                        color: '#1e40af',
+                        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1))',
+                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                        borderRadius: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        marginBottom: '16px',
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                        cursor: 'pointer',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: '0 4px 16px rgba(59, 130, 246, 0.1)'
+                      }}
+                      onClick={() => {
+                        setShowChangePasswordModal(true);
+                        setShowProfileDropdown(false);
+                      }}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(99, 102, 241, 0.2))';
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 8px 24px rgba(59, 130, 246, 0.2)';
+                        e.target.style.borderColor = 'rgba(59, 130, 246, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1))';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 16px rgba(59, 130, 246, 0.1)';
+                        e.target.style.borderColor = 'rgba(59, 130, 246, 0.2)';
+                      }}
+                    >
+                      <svg style={{ width: '22px', height: '22px', marginRight: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                      </svg>
+                      Change Password
+                    </button>
+                    <button 
+                      style={{
+                        width: '100%',
+                        padding: '16px 20px',
+                        color: '#dc2626',
+                        background: 'linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.1))',
+                        border: '1px solid rgba(220, 38, 38, 0.2)',
+                        borderRadius: '16px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '16px',
+                        fontWeight: '700',
+                        fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                        cursor: 'pointer',
+                        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                        position: 'relative',
+                        overflow: 'hidden',
+                        backdropFilter: 'blur(10px)',
+                        boxShadow: '0 4px 16px rgba(220, 38, 38, 0.1)'
+                      }}
+                      onClick={handleLogout}
+                      onMouseEnter={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(239, 68, 68, 0.2))';
+                        e.target.style.transform = 'translateY(-2px)';
+                        e.target.style.boxShadow = '0 8px 24px rgba(220, 38, 38, 0.2)';
+                        e.target.style.borderColor = 'rgba(220, 38, 38, 0.4)';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.target.style.background = 'linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(239, 68, 68, 0.1))';
+                        e.target.style.transform = 'translateY(0)';
+                        e.target.style.boxShadow = '0 4px 16px rgba(220, 38, 38, 0.1)';
+                        e.target.style.borderColor = 'rgba(220, 38, 38, 0.2)';
+                      }}
+                    >
+                      <svg style={{ width: '22px', height: '22px', marginRight: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Log out
+                    </button>
                   </div>
                 </div>
               )}
@@ -155,203 +482,252 @@ function AuthenticatedAnnouncements() {
         </div>
       </nav>
 
-      {/* Enhanced Page Title */}
-      <div className="relative bg-gradient-to-r from-white via-blue-50 to-indigo-50 shadow-sm border-b border-gray-100">
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-indigo-600/5"></div>
-        <div className="relative max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center">
-              <svg className="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 3a1 1 0 00-1.447-.894L8.763 6H5a3 3 0 000 6h.28l1.771 5.316A1 1 0 008 18h1a1 1 0 001-1v-4.382l6.553 3.894A1 1 0 0018 16V3z" clipRule="evenodd" />
-              </svg>
+      {/* Main Content */}
+      <main className="slide-in-up" style={{
+        maxWidth: '1280px',
+        margin: '0 auto',
+        padding: '38px 24px',
+        position: 'relative',
+        zIndex: 2,
+        animationDelay: '0.2s'
+      }}>
+        {/* Modern Page Header */}
+        <div className="fade-in" style={{
+          textAlign: 'left',
+          marginBottom: '48px',
+          position: 'relative'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
+              borderRadius: '16px',
+              padding: '12px',
+              boxShadow: '0 8px 32px rgba(40, 73, 208, 0.3)'
+            }}>
+              <FaBullhorn style={{ color: 'white', fontSize: '24px' }} />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1">Announcements</h1>
-              <p className="text-gray-600">Stay updated with the latest news and important information</p>
+            <h1 className="slide-in-up" style={{
+              fontSize: 'clamp(32px, 4vw, 48px)',
+              fontWeight: '900',
+              background: 'linear-gradient(135deg, #2849D0, #3b82f6, #1e40af)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: '0',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+              letterSpacing: '-0.02em',
+              animationDelay: '0.1s'
+            }}>
+              ITSO Announcements
+            </h1>
+          </div>
+          <p className="slide-in-up" style={{
+            fontSize: '18px',
+            color: '#64748b',
+            maxWidth: '600px',
+            margin: '0',
+            fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+            lineHeight: '1.6',
+            animationDelay: '0.2s'
+          }}>
+            Stay updated with the latest news and important information from the ITSO office.
+          </p>
+        </div>
+
+        {/* Modern Search Bar */}
+        <div className="modern-card fade-in" style={{
+          background: 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
+          borderRadius: '20px',
+          padding: '24px',
+          marginBottom: '40px',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
+          animationDelay: '0.3s'
+        }}>
+          <div style={{ position: 'relative' }}>
+            <input
+              type="text"
+              placeholder="Search announcements..."
+              style={{
+                width: '100%',
+                padding: '16px 20px 16px 56px',
+                borderRadius: '16px',
+                border: '2px solid rgba(40, 73, 208, 0.1)',
+                fontSize: '16px',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                background: 'white',
+                transition: 'all 0.3s ease',
+                outline: 'none'
+              }}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onFocus={(e) => {
+                e.target.style.borderColor = '#2849D0';
+                e.target.style.boxShadow = '0 0 0 4px rgba(40, 73, 208, 0.1)';
+              }}
+              onBlur={(e) => {
+                e.target.style.borderColor = 'rgba(40, 73, 208, 0.1)';
+                e.target.style.boxShadow = 'none';
+              }}
+            />
+            <div style={{
+              position: 'absolute',
+              left: '20px',
+              top: '50%',
+              transform: 'translateY(-50%)',
+              color: '#64748b'
+            }}>
+              <FaSearch style={{ fontSize: '16px' }} />
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Enhanced Search Bar */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-2xl mx-auto">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-2xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
-            <div className="relative bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-              <input
-                type="text"
-                placeholder="Search announcements by title or content..."
-                className="w-full px-6 py-4 pl-14 text-gray-800 placeholder-gray-500 bg-transparent focus:outline-none text-lg"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <div className="absolute left-5 top-1/2 transform -translate-y-1/2">
-                <svg className="w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              {search && (
-                <button
-                  onClick={() => setSearch('')}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 rounded-full transition-colors duration-200"
-                >
-                  <svg className="w-5 h-5 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
-          
-          {/* Search results count */}
-          {search && (
-            <div className="mt-4 text-center">
-              <p className="text-sm text-gray-600">
-                {announcements.length === 0 
-                  ? 'No announcements found' 
-                  : `Found ${announcements.length} announcement${announcements.length !== 1 ? 's' : ''}`
-                }
-                {search && (
-                  <span className="ml-1">
-                    for "<span className="font-medium text-blue-600">{search}</span>"
-                  </span>
-                )}
+        {/* Modern Announcements List */}
+        <div style={{
+          display: 'grid',
+          gap: '24px'
+        }}>
+          {announcements.length === 0 && (
+            <div className="modern-card fade-in" style={{
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+              borderRadius: '20px',
+              padding: '48px',
+              textAlign: 'center',
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+              border: '1px solid rgba(255, 255, 255, 0.3)'
+            }}>
+              <FaBullhorn style={{ 
+                fontSize: '48px', 
+                color: '#cbd5e1', 
+                marginBottom: '16px' 
+              }} />
+              <p style={{
+                color: '#64748b',
+                fontSize: '18px',
+                fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+              }}>
+                No announcements available at the moment.
               </p>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Modern Announcements Grid */}
-      <div className="container mx-auto px-4 pb-12 flex-1 w-full">
-        {announcements.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16">
-            <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full flex items-center justify-center mb-6">
-              <svg className="w-12 h-12 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M18 13V5a2 2 0 00-2-2H4a2 2 0 00-2 2v8a2 2 0 002 2h3l3 3 3-3h3a2 2 0 002-2zM5 7a1 1 0 011-1h8a1 1 0 110 2H6a1 1 0 01-1-1zm1 3a1 1 0 100 2h3a1 1 0 100-2H6z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">No Announcements Yet</h3>
-            <p className="text-gray-600 text-center max-w-md">
-              Check back later for important updates and announcements from the ITSO office.
-            </p>
-          </div>
-        ) : (
-          <div style={{
-            maxWidth: '900px',
-            margin: '0 auto',
-            position: 'relative',
-            zIndex: 2
-          }}>
-            {announcements.map((item, index) => (
-              <div 
-                key={item._id}
-                className="hover-pop"
-                style={{
-                  background: index % 2 === 0 
-                    ? 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)' 
-                    : 'linear-gradient(135deg, #2849D0 0%, #3b82f6 100%)',
-                  borderRadius: '20px',
-                  padding: '28px',
-                  marginBottom: index === announcements.length - 1 ? '0' : '20px',
-                  display: 'flex',
-                  alignItems: 'flex-start',
-                  gap: '20px',
-                  border: index % 2 === 0 
-                    ? '1px solid rgba(40, 73, 208, 0.1)' 
-                    : '1px solid rgba(255, 255, 255, 0.1)',
-                  boxShadow: index % 2 === 0 
-                    ? '0 4px 20px rgba(40, 73, 208, 0.08)' 
-                    : '0 4px 20px rgba(40, 73, 208, 0.2)',
-                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                  position: 'relative',
-                  overflow: 'hidden',
-                  cursor: 'pointer'
-                }}
-                onClick={() => navigate(`/announcements/${item._id}`)}
-              >
-                {/* Indicator dot to match landing page style */}
+          {announcements.map((item, index) => (
+            <div 
+              key={item._id}
+              className="modern-card hover-pop scale-in"
+              style={{
+                background: 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(20px)',
+                borderRadius: '20px',
+                padding: '32px',
+                cursor: 'pointer',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.3)',
+                transition: 'all 0.3s ease',
+                animationDelay: `${0.1 * index}s`
+              }}
+              onClick={() => {
+                setSelectedAnnouncement(item);
+                setShowAnnouncementModal(true);
+              }}
+            >
+              <div style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '20px'
+              }}>
                 <div style={{
-                  width: '16px',
-                  height: '16px',
-                  background: index % 2 === 0 
-                    ? 'linear-gradient(135deg, #fbbf24, #f59e0b)' 
-                    : 'linear-gradient(135deg, #fde047, #fbbf24)',
-                  borderRadius: '50%',
-                  marginTop: '8px',
-                  flexShrink: 0,
-                  boxShadow: '0 2px 8px rgba(251, 191, 36, 0.3)',
-                  animation: 'pulse 3s infinite'
-                }}></div>
-
+                  background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
+                  borderRadius: '12px',
+                  padding: '12px',
+                  flexShrink: 0
+                }}>
+                  <FaBullhorn style={{ color: 'white', fontSize: '20px' }} />
+                </div>
                 <div style={{ flex: 1 }}>
-                  <h3 style={{
-                    fontSize: '20px',
+                  <h2 style={{
+                    fontSize: '24px',
                     fontWeight: '700',
-                    color: index % 2 === 0 ? '#1f2937' : 'white',
-                    margin: '0 0 12px 0',
+                    color: '#1f2937',
+                    marginBottom: '12px',
                     fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                    letterSpacing: '-0.01em'
+                    lineHeight: '1.3'
                   }}>
                     {item.title}
-                  </h3>
+                  </h2>
                   <p style={{
+                    color: '#64748b',
                     fontSize: '16px',
-                    color: index % 2 === 0 ? '#64748b' : 'rgba(255, 255, 255, 0.9)',
                     lineHeight: '1.6',
-                    margin: '0 0 16px 0',
+                    marginBottom: '20px',
                     fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                   }}>
-                    {item.content?.length > 140 ? item.content.slice(0, 140) + '…' : item.content}
+                    {item.content?.length > 200 ? item.content.slice(0, 200) + '...' : item.content}
                   </p>
                   <div style={{
-                    fontSize: '14px',
-                    color: index % 2 === 0 ? '#9ca3af' : 'rgba(255, 255, 255, 0.7)',
-                    marginBottom: '16px',
-                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                    fontWeight: '500'
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    flexWrap: 'wrap',
+                    gap: '16px'
                   }}>
-                    📅 {new Date(item.publishedAt || item.createdAt).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      color: '#64748b',
+                      fontSize: '14px',
+                      fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+                    }}>
+                      <FaCalendarAlt style={{ fontSize: '14px' }} />
+                      <span>
+                        {new Date(item.publishedAt || item.createdAt).toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </span>
+                    </div>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedAnnouncement(item);
+                        setShowAnnouncementModal(true);
+                      }}
+                      className="hover-pop"
+                      style={{
+                        background: 'linear-gradient(135deg, #fde047, #fbbf24)',
+                        color: '#1e40af',
+                        padding: '12px 20px',
+                        borderRadius: '12px',
+                        border: 'none',
+                        cursor: 'pointer',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'all 0.3s ease',
+                        boxShadow: '0 4px 12px rgba(253, 224, 71, 0.3)'
+                      }}
+                    >
+                      Read More
+                      <FaArrowRight style={{ fontSize: '12px' }} />
+                    </button>
                   </div>
                 </div>
-
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/announcements/${item._id}`);
-                  }}
-                  className="modern-button"
-                  style={{
-                    background: index % 2 === 0 
-                      ? 'linear-gradient(135deg, #2849D0, #3b82f6)'
-                      : 'linear-gradient(135deg, #fbbf24, #f59e0b)',
-                    color: index % 2 === 0 ? 'white' : '#1f2937',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '12px 20px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer',
-                    flexShrink: 0,
-                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                    fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                    boxShadow: index % 2 === 0 
-                      ? '0 4px 12px rgba(40, 73, 208, 0.3)'
-                      : '0 4px 12px rgba(251, 191, 36, 0.3)'
-                  }}
-                >
-                  Read More
-                </button>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+            </div>
+          ))}
+        </div>
+      </main>
 
       {/* Footer */}
       <footer style={{
@@ -410,11 +786,7 @@ function AuthenticatedAnnouncements() {
                 fontSize: '14px', 
                 lineHeight: '1.6'
               }}>
-                Paliparan III, Bridge SM<br />
-                Dasmariñas, Governor's<br />
-                Dr. Dasmariñas,<br />
-                Dasmariñas<br />
-                Philippines
+                Paliparan III, Bridge SM Dasmariñas, Governor's Dr. Dasmariñas, Cavite, Philippines<br/>
               </p>
             </div>
 
@@ -471,6 +843,103 @@ function AuthenticatedAnnouncements() {
           </div>
         </div>
       </footer>
+
+      {/* Login Modal */}
+      {isLoginOpen && <LoginModal isOpen={isLoginOpen} onClose={() => setIsLoginOpen(false)} />}
+      
+      {/* Change Password Modal */}
+      {showChangePasswordModal && (
+        <ChangePasswordModal 
+          isOpen={showChangePasswordModal} 
+          onClose={() => setShowChangePasswordModal(false)} 
+        />
+      )}
+
+      {/* Announcement Modal */}
+      {showAnnouncementModal && selectedAnnouncement && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-800">
+                  <span className="text-blue-600">Announcement</span> Details
+                </h2>
+                <button 
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowAnnouncementModal(false)}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">
+                  {selectedAnnouncement.title}
+                </h3>
+                <div className="flex items-center gap-2 text-gray-600 mb-4">
+                  <FaCalendarAlt />
+                  <span className="text-sm">
+                    {new Date(selectedAnnouncement.publishedAt || selectedAnnouncement.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-sm">
+                  {selectedAnnouncement.content}
+                </p>
+              </div>
+
+              {selectedAnnouncement.images?.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-3 text-sm">Images</h4>
+                  <div className="grid grid-cols-1 gap-4">
+                    {selectedAnnouncement.images.map((src, idx) => (
+                      <img 
+                        key={idx} 
+                        src={src} 
+                        alt={`announcement-${idx}`} 
+                        className="w-full rounded-lg shadow-md" 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedAnnouncement.links?.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-3 text-sm">Related Links</h4>
+                  <div className="space-y-2">
+                    {selectedAnnouncement.links.map((href, idx) => (
+                      <a 
+                        key={idx}
+                        href={href} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="block text-blue-600 hover:text-blue-800 underline break-all text-sm"
+                      >
+                        {href}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowAnnouncementModal(false)}
+                  className="py-2 px-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

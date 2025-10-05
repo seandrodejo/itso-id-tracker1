@@ -527,12 +527,13 @@ function AboutUs() {
 
         {/* Mission Section */}
         <div className="modern-card fade-in" style={{
-          background: 'linear-gradient(135deg, rgba(40, 73, 208, 0.05), rgba(59, 130, 246, 0.05))',
+          background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderRadius: '24px',
           padding: '48px',
           marginBottom: '40px',
-          border: '1px solid rgba(40, 73, 208, 0.1)',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.05)',
+          border: '1px solid rgba(255, 255, 255, 0.3)',
           textAlign: 'center',
           animationDelay: '0.4s'
         }}>
@@ -718,11 +719,7 @@ function AboutUs() {
                 fontSize: '14px', 
                 lineHeight: '1.6'
               }}>
-                Paliparan III, Bridge SM<br />
-                Dasmariñas, Governor's<br />
-                Dr. Dasmariñas,<br />
-                Dasmariñas<br />
-                Philippines
+                Paliparan III, Bridge SM Dasmariñas, Governor's Dr. Dasmariñas, Cavite, Philippines<br/>
               </p>
             </div>
 

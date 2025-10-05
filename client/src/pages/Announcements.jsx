@@ -9,6 +9,11 @@ function Announcements() {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [announcements, setAnnouncements] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+  const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
 
   const openLogin = () => setIsLoginOpen(true);
   const closeLogin = () => setIsLoginOpen(false);
@@ -340,7 +345,10 @@ function Announcements() {
                 transition: 'all 0.3s ease',
                 animationDelay: `${0.1 * index}s`
               }}
-              onClick={() => navigate(`/announcements-public/${item._id}`)}
+              onClick={() => {
+                setSelectedAnnouncement(item);
+                setShowAnnouncementModal(true);
+              }}
             >
               <div style={{
                 display: 'flex',
@@ -402,7 +410,8 @@ function Announcements() {
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        navigate(`/announcements-public/${item._id}`);
+                        setSelectedAnnouncement(item);
+                        setShowAnnouncementModal(true);
                       }}
                       className="hover-pop"
                       style={{
@@ -490,11 +499,7 @@ function Announcements() {
                 fontSize: '14px', 
                 lineHeight: '1.6'
               }}>
-                Paliparan III, Bridge SM<br />
-                Dasmariñas, Governor's<br />
-                Dr. Dasmariñas,<br />
-                Dasmariñas<br />
-                Philippines
+                Paliparan III, Bridge SM Dasmariñas, Governor's Dr. Dasmariñas, Cavite, Philippines<br/>
               </p>
             </div>
 
@@ -552,6 +557,92 @@ function Announcements() {
         </div>
       </footer>
 
+      {/* Announcement Modal */}
+      {showAnnouncementModal && selectedAnnouncement && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-xl font-bold text-gray-800">
+                  <span className="text-blue-600">Announcement</span> Details
+                </h2>
+                <button 
+                  className="text-gray-500 hover:text-gray-700"
+                  onClick={() => setShowAnnouncementModal(false)}
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-3">
+                  {selectedAnnouncement.title}
+                </h3>
+                <div className="flex items-center gap-2 text-gray-600 mb-4">
+                  <FaCalendarAlt />
+                  <span className="text-sm">
+                    {new Date(selectedAnnouncement.publishedAt || selectedAnnouncement.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap text-sm">
+                  {selectedAnnouncement.content}
+                </p>
+              </div>
+
+              {selectedAnnouncement.images?.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-3 text-sm">Images</h4>
+                  <div className="grid grid-cols-1 gap-4">
+                    {selectedAnnouncement.images.map((src, idx) => (
+                      <img 
+                        key={idx} 
+                        src={src} 
+                        alt={`announcement-${idx}`} 
+                        className="w-full rounded-lg shadow-md" 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedAnnouncement.links?.length > 0 && (
+                <div className="mb-6">
+                  <h4 className="font-semibold text-gray-800 mb-3 text-sm">Related Links</h4>
+                  <div className="space-y-2">
+                    {selectedAnnouncement.links.map((href, idx) => (
+                      <a 
+                        key={idx}
+                        href={href} 
+                        target="_blank" 
+                        rel="noreferrer"
+                        className="block text-blue-600 hover:text-blue-800 underline break-all text-sm"
+                      >
+                        {href}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowAnnouncementModal(false)}
+                  className="py-2 px-6 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Login Modal */}
       <LoginModal
         isOpen={isLoginOpen}
@@ -562,3 +653,4 @@ function Announcements() {
 }
 
 export default Announcements;
+
