@@ -43,7 +43,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setUser(storedUser);
       }
     } catch (error) {
-      console.error('Error checking auth state:', error);
+      // Silently handle auth state check errors
     } finally {
       setLoading(false);
     }
@@ -61,8 +61,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       return true;
     } catch (error: any) {
-      console.error('❌ Login error:', error);
-      console.error('Error details:', error.response?.data || error.message);
       // Re-throw the error so the component can handle specific error messages
       throw error;
     }
@@ -70,10 +68,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   const logout = async (): Promise<void> => {
     try {
+      console.log('🔍 AuthContext: Starting logout process...');
+      
+      // Clear stored auth data
       await apiUtils.clearAuthData();
+      console.log('✅ AuthContext: Auth data cleared from storage');
+      
+      // Clear user state
       setUser(null);
+      console.log('✅ AuthContext: User state cleared');
+      
+      console.log('✅ AuthContext: Logout completed successfully');
     } catch (error) {
-      console.error('Logout error:', error);
+      // Even if clearing storage fails, we should still clear the user state
+      // to prevent the user from being stuck in a logged-in state
+      setUser(null);
+      
+      // Re-throw the error so the calling component knows something went wrong
+      throw error;
     }
   };
 

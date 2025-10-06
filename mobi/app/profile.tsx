@@ -128,7 +128,6 @@ export default function Profile() {
       );
       setAppointments(sortedAppointments);
     } catch (error) {
-      console.error('Error fetching appointments:', error);
       Alert.alert('Error', 'Failed to load appointment history. Please try again.');
     } finally {
       setAppointmentsLoading(false);
@@ -333,10 +332,6 @@ export default function Profile() {
         [{ text: 'OK', onPress: closeSettingsModal }]
       );
     } catch (error: any) {
-      console.error('❌ Error changing password:', error);
-      console.error('Error response:', error.response?.data);
-      console.error('Error message:', error.message);
-      
       // Check for specific error messages
       const errorMessage = error?.response?.data?.message || error?.message || '';
       
@@ -391,13 +386,52 @@ export default function Profile() {
           style: 'destructive',
           onPress: async () => {
             try {
-              // First logout, then redirect to avoid interference
+              console.log('🔍 Starting logout process...');
+              
+              // Clear any open modals first
+              setShowSettingsModal(false);
+              setShowHistoryModal(false);
+              
+              // Clear form data
+              setCurrentPassword('');
+              setNewPassword('');
+              setConfirmPassword('');
+              setPasswordErrors({
+                currentPassword: '',
+                newPassword: '',
+                confirmPassword: '',
+              });
+              setPasswordTouched({
+                currentPassword: false,
+                newPassword: false,
+                confirmPassword: false,
+              });
+              
+              // Clear appointments data
+              setAppointments([]);
+              
+              // Perform logout
               await logout();
+              console.log('✅ Logout successful');
+              
+              // Navigate to login screen
               router.replace('/login');
+              
             } catch (error) {
-              console.error('Logout error:', error);
-              // Still redirect even if logout fails
-              router.replace('/login');
+              // Show error alert but still redirect to login for security
+              Alert.alert(
+                'Logout Error',
+                'There was an issue logging out, but you have been redirected to the login screen for security.',
+                [
+                  {
+                    text: 'OK',
+                    onPress: () => {
+                      // Force redirect to login even if logout failed
+                      router.replace('/login');
+                    }
+                  }
+                ]
+              );
             }
           },
         },

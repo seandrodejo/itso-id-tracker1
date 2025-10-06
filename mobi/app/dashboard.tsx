@@ -44,7 +44,7 @@ export default function Dashboard() {
       const userAppointments = await appointmentAPI.getUserAppointments(user?.id || '');
       setAppointments(userAppointments);
     } catch (error) {
-      console.error('Error fetching appointments:', error);
+      // Silently handle appointment fetch errors
     } finally {
       setAppointmentsLoading(false);
     }

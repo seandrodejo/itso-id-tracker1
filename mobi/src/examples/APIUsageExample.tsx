@@ -49,7 +49,7 @@ export const ExampleAPIUsage = () => {
         loadUserData(storedUser.id);
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      // Silently handle auth status check errors
     }
   };
 
@@ -78,7 +78,6 @@ export const ExampleAPIUsage = () => {
       const windows = await schedulingWindowAPI.getActiveWindows();
       setSchedulingWindows(windows);
     } catch (error) {
-      console.error('Error loading user data:', error);
       Alert.alert('Error', 'Failed to load data');
     } finally {
       setLoading(false);
@@ -101,7 +100,6 @@ export const ExampleAPIUsage = () => {
       
       Alert.alert('Success', 'Login successful!');
     } catch (error: any) {
-      console.error('Login error:', error);
       Alert.alert('Login Failed', error.response?.data?.message || 'Login failed');
     } finally {
       setLoading(false);
@@ -118,7 +116,7 @@ export const ExampleAPIUsage = () => {
       setAvailableSlots([]);
       Alert.alert('Success', 'Logged out successfully!');
     } catch (error) {
-      console.error('Logout error:', error);
+      // Silently handle logout errors
     }
   };
 
@@ -147,7 +145,6 @@ export const ExampleAPIUsage = () => {
       const updatedAppointments = await appointmentAPI.getUserAppointments(user.id);
       setAppointments(updatedAppointments);
     } catch (error: any) {
-      console.error('Create appointment error:', error);
       Alert.alert('Error', error.response?.data?.message || 'Failed to create appointment');
     } finally {
       setLoading(false);
@@ -163,7 +160,7 @@ export const ExampleAPIUsage = () => {
       });
       setAvailableSlots(slots);
     } catch (error) {
-      console.error('Error fetching slots:', error);
+      // Silently handle slot fetch errors
     }
   };
 
@@ -174,7 +171,6 @@ export const ExampleAPIUsage = () => {
       setIdCardStatus(status);
       Alert.alert('ID Card Status', status.message);
     } catch (error) {
-      console.error('Error checking ID card status:', error);
       Alert.alert('Error', 'Failed to check ID card status');
     }
   };

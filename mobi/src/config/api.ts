@@ -23,7 +23,7 @@ api.interceptors.request.use(
         config.headers.Authorization = `Bearer ${token}`;
       }
     } catch (error) {
-      console.error('Error getting auth token:', error);
+      // Silently handle token retrieval errors
     }
     return config;
   },
@@ -44,7 +44,7 @@ api.interceptors.response.use(
         await AsyncStorage.removeItem('authToken');
         await AsyncStorage.removeItem('user');
       } catch (storageError) {
-        console.error('Error clearing storage:', storageError);
+        // Silently handle storage clearing errors
       }
     }
     return Promise.reject(error);
@@ -572,7 +572,6 @@ export const apiUtils = {
       await AsyncStorage.setItem('authToken', token);
       await AsyncStorage.setItem('user', JSON.stringify(user));
     } catch (error) {
-      console.error('Error storing auth data:', error);
       throw error;
     }
   },
@@ -580,10 +579,32 @@ export const apiUtils = {
   // Clear auth data
   clearAuthData: async (): Promise<void> => {
     try {
+      console.log('🔍 API Utils: Clearing auth data from storage...');
+      
+      // Remove auth token
       await AsyncStorage.removeItem('authToken');
+      console.log('✅ API Utils: Auth token removed');
+      
+      // Remove user data
       await AsyncStorage.removeItem('user');
+      console.log('✅ API Utils: User data removed');
+      
+      // Remove any other auth-related data that might exist
+      const keys = await AsyncStorage.getAllKeys();
+      const authKeys = keys.filter(key => 
+        key.includes('auth') || 
+        key.includes('token') || 
+        key.includes('user') ||
+        key.includes('login')
+      );
+      
+      if (authKeys.length > 0) {
+        await AsyncStorage.multiRemove(authKeys);
+        console.log('✅ API Utils: Additional auth keys removed:', authKeys);
+      }
+      
+      console.log('✅ API Utils: All auth data cleared successfully');
     } catch (error) {
-      console.error('Error clearing auth data:', error);
       throw error;
     }
   },
@@ -593,7 +614,6 @@ export const apiUtils = {
     try {
       return await AsyncStorage.getItem('authToken');
     } catch (error) {
-      console.error('Error getting stored token:', error);
       return null;
     }
   },
@@ -604,7 +624,6 @@ export const apiUtils = {
       const userData = await AsyncStorage.getItem('user');
       return userData ? JSON.parse(userData) : null;
     } catch (error) {
-      console.error('Error getting stored user:', error);
       return null;
     }
   },
@@ -615,7 +634,6 @@ export const apiUtils = {
       const token = await AsyncStorage.getItem('authToken');
       return !!token;
     } catch (error) {
-      console.error('Error checking authentication:', error);
       return false;
     }
   },

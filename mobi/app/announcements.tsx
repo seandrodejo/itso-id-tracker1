@@ -49,7 +49,6 @@ export default function Announcements() {
       const response = await announcementAPI.getAnnouncements();
       setAnnouncements(response.items);
     } catch (error) {
-      console.error('Error fetching announcements:', error);
       Alert.alert('Error', 'Failed to load announcements. Please try again.');
     } finally {
       setAnnouncementsLoading(false);

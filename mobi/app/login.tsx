@@ -137,8 +137,6 @@ const LoginScreen: React.FC = () => {
 
       router.push('/dashboard');
     } catch (error: any) {
-      console.error('Login error:', error);
-      
       // Check if it's a student number not found error
       const errorMessage = error?.response?.data?.message || error?.message || '';
       

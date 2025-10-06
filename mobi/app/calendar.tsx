@@ -91,7 +91,6 @@ export default function Calendar() {
         setUserAppointments(appointments);
       }
     } catch (error) {
-      console.error('Error fetching user appointments:', error);
       setUserAppointments([]);
     }
   };
@@ -111,7 +110,6 @@ export default function Calendar() {
       });
       setClosures(closures);
     } catch (error) {
-      console.error('Error fetching closures:', error);
       setClosures([]);
     }
   };
@@ -125,7 +123,7 @@ export default function Calendar() {
         fetchClosuresForMonth()
       ]);
     } catch (error) {
-      console.error('Error refreshing calendar data:', error);
+      // Silently handle refresh errors
     } finally {
       setRefreshing(false);
     }
@@ -238,7 +236,6 @@ export default function Calendar() {
       hideModal();
       
     } catch (error: any) {
-      console.error('Error booking appointment:', error);
       setErrorMessage(error.response?.data?.message || 'Failed to book appointment. Please try again.');
     } finally {
       setIsSubmitting(false);
