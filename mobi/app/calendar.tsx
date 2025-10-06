@@ -363,6 +363,13 @@ export default function Calendar() {
     return isClosedDate(day);
   };
 
+  // Get closure remarks for a specific day
+  const getClosureRemarks = (day: number) => {
+    const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const closure = closures.find(c => c.date === dateStr);
+    return closure?.remarks || '';
+  };
+
 
 
   // Generate calendar days
@@ -502,6 +509,12 @@ export default function Calendar() {
           ) : isClosedByAdmin(selectedDate.getDate()) ? (
             <View style={styles.closedContainer}>
               <Text style={styles.closedLabel}>CLOSED</Text>
+              {getClosureRemarks(selectedDate.getDate()) && (
+                <View style={styles.closedRemarks}>
+                  <Text style={styles.remarksLabel}>Remarks:</Text>
+                  <Text style={styles.remarksText}>{getClosureRemarks(selectedDate.getDate())}</Text>
+                </View>
+              )}
             </View>
           ) : isPastDate(selectedDate.getDate()) ? (
             <View style={styles.closedContainer}>
@@ -951,6 +964,36 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: "#dc2626",
     textAlign: "center",
+  },
+  remarksContainer: {
+    marginTop: 12,
+    width: "100%",
+    maxWidth: "90%",
+  },
+  remarksLabel: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#374151",
+    marginBottom: 6,
+    textAlign: "left",
+  },
+  closedRemarks: {
+    marginTop: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: "#f9fafb",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    width: "100%",
+    maxWidth: "90%",
+  },
+  remarksText: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#374151",
+    textAlign: "left",
+    lineHeight: 20,
   },
   openContainer: {
     width: "100%",

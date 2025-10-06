@@ -22,9 +22,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { authAPI, appointmentAPI, Appointment } from '../src/config/api';
 
 export default function Profile() {
+  // All hooks must be called at the top level before any conditional returns
   const router = useRouter();
   const pathname = usePathname();
   const { user, logout, isAuthenticated, loading } = useAuth();
+  
+  // State hooks - all initialized before any early returns
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -48,7 +51,7 @@ export default function Profile() {
     confirmPassword: false,
   });
 
-  // Redirect to login if not authenticated
+  // Effect hooks - all initialized before any early returns
   React.useEffect(() => {
     if (!loading && !isAuthenticated) {
       router.replace('/login');
@@ -65,6 +68,15 @@ export default function Profile() {
 
   if (!isAuthenticated) {
     return null; // Will redirect to login
+  }
+
+  // Safety check: ensure user exists before rendering
+  if (!user) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Loading user data...</Text>
+      </View>
+    );
   }
 
   const navigateToPage = (page: string) => {
@@ -117,7 +129,11 @@ export default function Profile() {
   };
 
   const fetchAppointments = async () => {
-    if (!user?.id) return;
+    // Safety check: ensure user and user.id exist
+    if (!user?.id) {
+      console.warn('Profile: Cannot fetch appointments - user or user.id is null');
+      return;
+    }
     
     try {
       setAppointmentsLoading(true);
@@ -128,6 +144,7 @@ export default function Profile() {
       );
       setAppointments(sortedAppointments);
     } catch (error) {
+      console.error('Profile: Failed to fetch appointments:', error);
       Alert.alert('Error', 'Failed to load appointment history. Please try again.');
     } finally {
       setAppointmentsLoading(false);
@@ -388,11 +405,13 @@ export default function Profile() {
             try {
               console.log('🔍 Starting logout process...');
               
-              // Clear any open modals first
+              // Perform logout first (this handles clearing auth data and user state)
+              await logout();
+              console.log('✅ Logout successful');
+              
+              // Clear local component state after successful logout
               setShowSettingsModal(false);
               setShowHistoryModal(false);
-              
-              // Clear form data
               setCurrentPassword('');
               setNewPassword('');
               setConfirmPassword('');
@@ -406,18 +425,14 @@ export default function Profile() {
                 newPassword: false,
                 confirmPassword: false,
               });
-              
-              // Clear appointments data
               setAppointments([]);
-              
-              // Perform logout
-              await logout();
-              console.log('✅ Logout successful');
               
               // Navigate to login screen
               router.replace('/login');
               
             } catch (error) {
+              console.error('❌ Logout error:', error);
+              
               // Show error alert but still redirect to login for security
               Alert.alert(
                 'Logout Error',
@@ -427,7 +442,12 @@ export default function Profile() {
                     text: 'OK',
                     onPress: () => {
                       // Force redirect to login even if logout failed
-                      router.replace('/login');
+                      try {
+                        router.replace('/login');
+                      } catch (navError) {
+                        console.error('❌ Navigation error:', navError);
+                        // If navigation fails, we can't do much more
+                      }
                     }
                   }
                 ]
