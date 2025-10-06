@@ -32,33 +32,42 @@ export default function Announcements() {
   // Redirect to login if not authenticated
   React.useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.replace('/login');
+      // Only redirect if we're not already on the login page
+      if (pathname !== '/login') {
+        router.replace('/login');
+      }
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, router, pathname]);
 
   // Fetch announcements when component mounts
   useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        setAnnouncementsLoading(true);
+        const response = await announcementAPI.getAnnouncements();
+        setAnnouncements(response.items);
+      } catch (error) {
+        Alert.alert('Error', 'Failed to load announcements. Please try again.');
+      } finally {
+        setAnnouncementsLoading(false);
+      }
+    };
+
     if (isAuthenticated) {
       fetchAnnouncements();
     }
   }, [isAuthenticated]);
 
-  const fetchAnnouncements = async () => {
+  const onRefresh = async () => {
+    setRefreshing(true);
     try {
-      setAnnouncementsLoading(true);
       const response = await announcementAPI.getAnnouncements();
       setAnnouncements(response.items);
     } catch (error) {
       Alert.alert('Error', 'Failed to load announcements. Please try again.');
     } finally {
-      setAnnouncementsLoading(false);
+      setRefreshing(false);
     }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchAnnouncements();
-    setRefreshing(false);
   };
 
   if (loading) {

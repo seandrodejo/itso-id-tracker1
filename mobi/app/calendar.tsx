@@ -25,26 +25,7 @@ export default function Calendar() {
   const pathname = usePathname();
   const { user, isAuthenticated, loading } = useAuth();
 
-  // Redirect to login if not authenticated
-  React.useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      router.replace('/login');
-    }
-  }, [isAuthenticated, loading, router]);
-
-
-  if (loading) {
-    return (
-      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text>Loading...</Text>
-      </View>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return null; // Will redirect to login
-  }
-  
+  // All hooks must be called at the top level before any conditional returns
   // State for current date and selected date
   const [currentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -68,6 +49,65 @@ export default function Calendar() {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [showConfirmation, setShowConfirmation] = useState(false);
 
+  // Redirect to login if not authenticated
+  React.useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      // Only redirect if we're not already on the login page
+      if (pathname !== '/login') {
+        router.replace('/login');
+      }
+    }
+  }, [isAuthenticated, loading, router, pathname]);
+
+  // Fetch data when month changes
+  useEffect(() => {
+    const fetchUserAppointments = async () => {
+      try {
+        if (user?.id) {
+          const appointments = await appointmentAPI.getUserAppointments(user.id);
+          setUserAppointments(appointments);
+        }
+      } catch (error) {
+        setUserAppointments([]);
+      }
+    };
+
+    const fetchClosuresForMonth = async () => {
+      try {
+        const startDate = new Date(currentYear, currentMonth, 1);
+        const endDate = new Date(currentYear, currentMonth + 1, 0);
+        
+        const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+        const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
+        
+        const closures = await calendarClosureAPI.getClosures({
+          start: startDateStr,
+          end: endDateStr
+        });
+        setClosures(closures);
+      } catch (error) {
+        setClosures([]);
+      }
+    };
+
+    if (user) {
+      fetchUserAppointments();
+      fetchClosuresForMonth();
+    }
+  }, [currentMonth, currentYear, user]);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text>Loading...</Text>
+      </View>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect to login
+  }
+
   const navigateToPage = (page: string) => {
     const currentRoute = pathname || '/calendar';
     
@@ -83,41 +123,40 @@ export default function Calendar() {
   };
 
 
-  // Fetch user appointments for the current month
-  const fetchUserAppointments = async () => {
-    try {
-      if (user?.id) {
-        const appointments = await appointmentAPI.getUserAppointments(user.id);
-        setUserAppointments(appointments);
-      }
-    } catch (error) {
-      setUserAppointments([]);
-    }
-  };
-
-  // Fetch calendar closures for the current month
-  const fetchClosuresForMonth = async () => {
-    try {
-      const startDate = new Date(currentYear, currentMonth, 1);
-      const endDate = new Date(currentYear, currentMonth + 1, 0);
-      
-      const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
-      const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
-      
-      const closures = await calendarClosureAPI.getClosures({
-        start: startDateStr,
-        end: endDateStr
-      });
-      setClosures(closures);
-    } catch (error) {
-      setClosures([]);
-    }
-  };
 
   // Pull-to-refresh function
   const onRefresh = async () => {
     setRefreshing(true);
     try {
+      const fetchUserAppointments = async () => {
+        try {
+          if (user?.id) {
+            const appointments = await appointmentAPI.getUserAppointments(user.id);
+            setUserAppointments(appointments);
+          }
+        } catch (error) {
+          setUserAppointments([]);
+        }
+      };
+
+      const fetchClosuresForMonth = async () => {
+        try {
+          const startDate = new Date(currentYear, currentMonth, 1);
+          const endDate = new Date(currentYear, currentMonth + 1, 0);
+          
+          const startDateStr = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
+          const endDateStr = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
+          
+          const closures = await calendarClosureAPI.getClosures({
+            start: startDateStr,
+            end: endDateStr
+          });
+          setClosures(closures);
+        } catch (error) {
+          setClosures([]);
+        }
+      };
+
       await Promise.all([
         fetchUserAppointments(),
         fetchClosuresForMonth()
@@ -228,7 +267,10 @@ export default function Calendar() {
       await appointmentAPI.createAppointment(appointmentData);
       
       // Refresh data after successful booking
-      fetchUserAppointments();
+      if (user?.id) {
+        const appointments = await appointmentAPI.getUserAppointments(user.id);
+        setUserAppointments(appointments);
+      }
       
       setSuccessMessage('Your appointment has been booked successfully. You will receive a confirmation email shortly.');
       
@@ -279,14 +321,6 @@ export default function Calendar() {
       setCurrentMonth(currentMonth + 1);
     }
   };
-
-  // Fetch data when month changes
-  useEffect(() => {
-    if (user) {
-      fetchUserAppointments();
-      fetchClosuresForMonth();
-    }
-  }, [currentMonth, currentYear, user]);
 
   // Check if a date is today
   const isToday = (day: number) => {
@@ -701,7 +735,7 @@ export default function Calendar() {
               {errorMessage && (errorMessage.includes('Gmail') || errorMessage.includes('email') || errorMessage.includes('valid')) && (
                 <Text style={styles.errorText}>{errorMessage}</Text>
               )}
-              <Text style={styles.timeSlotNote}>We'll send your appointment confirmation to this email address</Text>
+              <Text style={styles.timeSlotNote}>We&apos;ll send your appointment confirmation to this email address</Text>
               <View style={styles.inputContainer}>
                 <Text style={styles.inputLabel}>Gmail Account *</Text>
                 <TextInput

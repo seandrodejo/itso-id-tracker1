@@ -27,33 +27,42 @@ export default function Dashboard() {
   // Redirect to login if not authenticated
   React.useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.replace('/login');
+      // Only redirect if we're not already on the login page
+      if (pathname !== '/login') {
+        router.replace('/login');
+      }
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, router, pathname]);
 
   // Fetch appointments when component mounts
   useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        setAppointmentsLoading(true);
+        const userAppointments = await appointmentAPI.getUserAppointments(user?.id || '');
+        setAppointments(userAppointments);
+      } catch (error) {
+        // Silently handle appointment fetch errors
+      } finally {
+        setAppointmentsLoading(false);
+      }
+    };
+
     if (isAuthenticated && user?.id) {
       fetchAppointments();
     }
   }, [isAuthenticated, user?.id]);
 
-  const fetchAppointments = async () => {
+  const onRefresh = async () => {
+    setRefreshing(true);
     try {
-      setAppointmentsLoading(true);
       const userAppointments = await appointmentAPI.getUserAppointments(user?.id || '');
       setAppointments(userAppointments);
     } catch (error) {
       // Silently handle appointment fetch errors
     } finally {
-      setAppointmentsLoading(false);
+      setRefreshing(false);
     }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await fetchAppointments();
-    setRefreshing(false);
   };
 
   // Get current and upcoming appointments

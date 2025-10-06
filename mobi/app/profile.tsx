@@ -54,9 +54,12 @@ export default function Profile() {
   // Effect hooks - all initialized before any early returns
   React.useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.replace('/login');
+      // Only redirect if we're not already on the login page
+      if (pathname !== '/login') {
+        router.replace('/login');
+      }
     }
-  }, [isAuthenticated, loading, router]);
+  }, [isAuthenticated, loading, router, pathname]);
 
   if (loading) {
     return (
@@ -685,7 +688,7 @@ export default function Profile() {
                   <Ionicons name="calendar-outline" size={48} color="#94a3b8" />
                   <Text style={styles.historyEmptyTitle}>No Appointments Found</Text>
                   <Text style={styles.historyEmptySubtitle}>
-                    You haven't made any appointments yet
+                    You haven&apos;t made any appointments yet
                   </Text>
                 </View>
               ) : (
