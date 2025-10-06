@@ -19,9 +19,9 @@ export default function LoadingScreen() {
     );
     spinAnimation.start();
 
-    // Navigate to login screen after 3 seconds
+    // Navigate to splash screen after 3 seconds
     const timer = setTimeout(() => {
-      router.replace('/login');
+      router.replace('/splash');
     }, 3000);
 
     return () => {
@@ -99,9 +99,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   loadingCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 70,
+    height: 70,
+    borderRadius: 35,
     borderWidth: 12,
     borderColor: '#FFD147',
     borderTopColor: 'transparent',
