@@ -41,37 +41,49 @@ router.get("/", authenticateToken, async (req, res) => {
 });
 
 router.post("/", authenticateToken, async (req, res) => {
-  try {
-    const { slotId, purpose, notes, type, pictureOption, status, appointmentDate, appointmentStartTime, appointmentEndTime, gmail } = req.body;
+   try {
+     const { slotId, purpose, notes, type, pictureOption, status, appointmentDate, appointmentStartTime, appointmentEndTime, gmail } = req.body;
 
-   
-    const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
-    if (!gmail || !gmailRegex.test(gmail)) {
-      return res.status(400).json({ message: "Please provide a valid Gmail address (example@gmail.com)" });
-    }
-    
-   
-    let slot = null;
-    if (slotId && slotId !== '507f1f77bcf86cd799439011') {
-      slot = await Slot.findById(slotId);
-      if (!slot) {
-        return res.status(404).json({ message: "Slot not found" });
-      }
-      
-      if (slot.bookedCount >= slot.capacity) {
-        return res.status(400).json({ message: "Slot is full" });
-      }
-      
-     
-      const existingAppointment = await Appointment.findOne({
-        userId: req.user.id,
-        slotId: slotId
-      });
-      
-      if (existingAppointment) {
-        return res.status(400).json({ message: "You already have an appointment for this slot" });
-      }
-    }
+
+     const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+     if (!gmail || !gmailRegex.test(gmail)) {
+       return res.status(400).json({ message: "Please provide a valid Gmail address (example@gmail.com)" });
+     }
+
+
+     let slot = null;
+     let targetDate = appointmentDate;
+     if (slotId && slotId !== '507f1f77bcf86cd799439011') {
+       slot = await Slot.findById(slotId);
+       if (!slot) {
+         return res.status(404).json({ message: "Slot not found" });
+       }
+
+       if (slot.bookedCount >= slot.capacity) {
+         return res.status(400).json({ message: "Slot is full" });
+       }
+
+
+       const existingAppointment = await Appointment.findOne({
+         userId: req.user.id,
+         slotId: slotId
+       });
+
+       if (existingAppointment) {
+         return res.status(400).json({ message: "You already have an appointment for this slot" });
+       }
+
+       targetDate = slot.date;
+     }
+
+     // Check daily appointment limit (1500 per day)
+     const dailyAppointmentCount = await Appointment.countDocuments({
+       appointmentDate: targetDate
+     });
+
+     if (dailyAppointmentCount >= 1500) {
+       return res.status(400).json({ message: "Fully Booked - Daily appointment limit reached for this date" });
+     }
     
    
     let finalDate = appointmentDate;
@@ -139,7 +151,7 @@ router.post("/", authenticateToken, async (req, res) => {
                            purpose === "RENEWAL" ? "ID Renewal" :
                            purpose === "LOST_REPLACEMENT" ? "Lost/Replacement" : String(purpose || '').toString();
 
-     
+
       try {
         const token = uuidv4();
         const expires = new Date(Date.now() + 1000 * 60 * 60 * 6);
@@ -150,7 +162,8 @@ router.post("/", authenticateToken, async (req, res) => {
         await appointment.save();
         const pngBuffer = await QRCode.toBuffer(JSON.stringify(payload));
 
-        await sendAppointmentConfirmationEmail(gmail, {
+        console.log('📧 Attempting to send confirmation email to:', gmail);
+        const emailResult = await sendAppointmentConfirmationEmail(gmail, {
           purposeLabel,
           date: finalDate,
           startTime: finalStartTime,
@@ -159,16 +172,19 @@ router.post("/", authenticateToken, async (req, res) => {
           qrPayload: payload,
           qrPng: pngBuffer,
         });
+        console.log('📧 Email send result:', emailResult);
       } catch (qrErr) {
         console.error('Error generating QR for confirmation email:', qrErr);
-       
-        await sendAppointmentConfirmationEmail(gmail, {
+
+        console.log('📧 Attempting to send confirmation email (without QR) to:', gmail);
+        const emailResult = await sendAppointmentConfirmationEmail(gmail, {
           purposeLabel,
           date: finalDate,
           startTime: finalStartTime,
           endTime: finalEndTime,
           location: 'NU Dasmarinas ITSO Office',
         });
+        console.log('📧 Email send result (without QR):', emailResult);
       }
     } catch (emailErr) {
       console.error('Error sending confirmation email:', emailErr);
@@ -426,6 +442,33 @@ router.post("/scan", authenticateToken, async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: "Error processing scan", error: err.message });
+  }
+});
+
+// Test email endpoint
+router.post("/test-email", authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Admin only" });
+    }
+
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email required" });
+
+    console.log('🧪 Testing email service...');
+    const result = await sendAppointmentConfirmationEmail(email, {
+      purposeLabel: "Test Appointment",
+      date: "2025-01-01",
+      startTime: "10:00",
+      endTime: "11:00",
+      location: 'NU Dasmarinas ITSO Office',
+      qrPayload: { ref: "test", t: "test" },
+      qrPng: null,
+    });
+
+    res.json({ success: true, result });
+  } catch (err) {
+    res.status(500).json({ message: "Test failed", error: err.message });
   }
 });
 

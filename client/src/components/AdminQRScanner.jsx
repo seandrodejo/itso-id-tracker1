@@ -7,7 +7,7 @@ export default function AdminQRScanner() {
   const videoRef = useRef(null);
   const [error, setError] = useState("");
   const [result, setResult] = useState(null);
-  const [action, setAction] = useState("check-in");
+  const [action, setAction] = useState("claim");
   const [manualPayload, setManualPayload] = useState("");
 
   useEffect(() => {

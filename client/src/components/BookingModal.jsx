@@ -308,7 +308,7 @@ function BookingModal({ isOpen, onClose, onSuccess, preSelectedDate = null }) {
                       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
                     </div>
                   ) : availableSlots.length === 0 ? (
-                    <p className="text-gray-500 text-sm">No available slots for this date</p>
+                    <p className="text-red-600 text-sm font-medium">Fully Booked - No available slots for this date</p>
                   ) : (
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                       {availableSlots.map((slot) => (

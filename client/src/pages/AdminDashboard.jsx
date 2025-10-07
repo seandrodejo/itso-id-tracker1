@@ -4,7 +4,8 @@ import { jwtDecode } from 'jwt-decode';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import nuLogo from '../assets/images/nu-logo-copy.png';
-import { FiLock, FiUser, FiUsers, FiCheckCircle, FiEdit3, FiXCircle, FiCalendar, FiBell, FiBarChart2 } from 'react-icons/fi';
+import { FiLock, FiUser, FiUsers, FiCheckCircle, FiEdit3, FiXCircle, FiCalendar, FiBell, FiBarChart2, FiCamera } from 'react-icons/fi';
+import AdminQRScanner from '../components/AdminQRScanner';
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
@@ -1310,7 +1311,8 @@ insights.innerHTML = `
                 { key: 'users', label: 'Users', icon: <FiUsers aria-hidden /> },
                 { key: 'calendar', label: 'Calendar', icon: <FiCalendar aria-hidden /> },
                 { key: 'announcements', label: 'Announcements', icon: <FiBell aria-hidden /> },
-                { key: 'analytics', label: 'Analytics', icon: <FiBarChart2 aria-hidden /> }
+                { key: 'analytics', label: 'Analytics', icon: <FiBarChart2 aria-hidden /> },
+                { key: 'qr-scanner', label: 'QR Scanner', icon: <FiCamera aria-hidden /> }
               ].map((tab) => {
                 const active = activeTab === tab.key;
                 return (
@@ -2479,6 +2481,19 @@ insights.innerHTML = `
                   </div>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* QR Scanner Tab */}
+        {activeTab === 'qr-scanner' && (
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <h2 className="text-lg font-semibold text-[#B8860B]">QR Code Scanner</h2>
+              <p className="text-sm text-gray-600 mt-1">Scan QR codes from student confirmation emails to mark appointments as claimed</p>
+            </div>
+            <div className="p-6">
+              <AdminQRScanner />
             </div>
           </div>
         )}

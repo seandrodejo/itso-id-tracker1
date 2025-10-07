@@ -1364,6 +1364,50 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                             </span>
                           </div>
 
+                          {/* QR Code Display for Confirmed Appointments */}
+                          {appointment.status === 'confirmed' && appointment.qrData && (
+                            <div className="mb-2">
+                              <p className="text-sm text-gray-600 mb-1">QR Code for Check-in</p>
+                              <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center">
+                                    <svg className="h-5 w-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 15h4.01M12 21h4.01M12 12h4.01M12 15h4.01M12 21h4.01M12 12h4.01M12 15h4.01M12 21h4.01" />
+                                    </svg>
+                                    <span className="text-sm text-green-800">Show QR Code</span>
+                                  </div>
+                                  <button
+                                    onClick={() => {
+                                      // Create a modal or expand to show QR code
+                                      const qrModal = document.createElement('div');
+                                      qrModal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+                                      qrModal.innerHTML = `
+                                        <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
+                                          <div class="flex justify-between items-center mb-4">
+                                            <h3 class="text-lg font-semibold text-gray-800">Check-in QR Code</h3>
+                                            <button class="text-gray-500 hover:text-gray-700" onclick="this.closest('.fixed').remove()">
+                                              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                              </svg>
+                                            </button>
+                                          </div>
+                                          <div class="text-center">
+                                            <img src="https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(appointment.qrData)}" alt="QR Code" class="mx-auto mb-4" />
+                                            <p class="text-sm text-gray-600">Scan this QR code at the ITSO office for check-in</p>
+                                          </div>
+                                        </div>
+                                      `;
+                                      document.body.appendChild(qrModal);
+                                    }}
+                                    className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                                  >
+                                    View QR
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Admin Remarks */}
                           {appointment.adminRemarks && (
                             <div className="mb-2">

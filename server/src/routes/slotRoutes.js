@@ -1,6 +1,7 @@
 import express from "express";
 import Slot from "../models/Slot.js";
 import SchedulingWindow from "../models/SchedulingWindow.js";
+import Appointment from "../models/Appointment.js";
 import { authenticateToken } from "../middleware/auth.js";
 
 const router = express.Router();
@@ -51,6 +52,27 @@ router.get("/available", async (req, res) => {
         const purposeMatches = window.purpose === "ALL" || window.purpose === slot.purpose;
         return windowMatches && purposeMatches;
       });
+    });
+
+    // Get unique dates from remaining slots
+    const uniqueDates = [...new Set(slots.map(slot => slot.date))];
+
+    // Get appointment counts for these dates
+    const appointmentCounts = await Appointment.aggregate([
+      { $match: { appointmentDate: { $in: uniqueDates } } },
+      { $group: { _id: "$appointmentDate", count: { $sum: 1 } } }
+    ]);
+
+    // Create a map of date to count
+    const countMap = new Map();
+    appointmentCounts.forEach(item => {
+      countMap.set(item._id, item.count);
+    });
+
+    // Filter out slots for dates that are fully booked (1500+ appointments)
+    slots = slots.filter(slot => {
+      const count = countMap.get(slot.date) || 0;
+      return count < 1500;
     });
 
     res.json(slots);
