@@ -154,6 +154,222 @@
   }
 }
 
+/* Modern Fluid Responsive Styles */
+
+/* Navigation - Fluid scaling */
+.nav-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(auto, max-content) minmax(0, 1fr) !important;
+  gap: clamp(12px, 3vw, 32px) !important;
+}
+
+.nav-links {
+  gap: clamp(16px, 4vw, 32px) !important;
+}
+
+.nav-links a {
+  font-size: clamp(12px, 2vw, 16px) !important;
+}
+
+.nav-logo-text {
+  font-size: clamp(14px, min(3vw, 18px), 18px) !important;
+}
+
+.nav-button {
+  padding: clamp(8px, 2vh, 10px) clamp(16px, 4vw, 22px) !important;
+  font-size: clamp(12px, 2.5vw, 14px) !important;
+}
+
+/* Hero Section - Fluid dimensions */
+.hero-section {
+  min-height: clamp(400px, 80vh, 700px) !important;
+  height: clamp(400px, 80vh, 700px) !important;
+}
+
+.hero-content {
+  margin-left: clamp(0px, 25vw, 310px) !important;
+  padding: 0 clamp(16px, 4vw, 20px) !important;
+}
+
+.hero-title {
+  font-size: clamp(32px, min(8vw, 100px), 100px) !important;
+}
+
+.hero-subtitle {
+  font-size: clamp(18px, min(3vw, 32px), 32px) !important;
+}
+
+.hero-description {
+  font-size: clamp(14px, min(4vw, 20px), 20px) !important;
+}
+
+/* Calendar Section - Flex layout with fixed positioning */
+.calendar-grid {
+  gap: clamp(16px, 4vw, 48px) !important;
+}
+
+.calendar-item {
+  flex-shrink: 0 !important;
+}
+
+.calendar-center {
+  flex: 1 1 auto !important;
+  min-width: min(300px, 50vw) !important;
+  max-width: min(500px, 80vw) !important;
+}
+
+/* Tablet specific calendar layout */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .calendar-grid {
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: clamp(20px, 3vw, 40px) !important;
+    max-width: 100% !important;
+    padding: 0 20px !important;
+  }
+
+  .calendar-center {
+    flex: 0 0 min(350px, 45vw) !important;
+    text-align: center !important;
+  }
+
+  .calendar-item {
+    flex-shrink: 0 !important;
+  }
+}
+
+/* Mobile calendar layout */
+@media (max-width: 767px) {
+  .calendar-grid {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 20px !important;
+  }
+
+  .calendar-item {
+    min-width: auto !important;
+  }
+
+  .calendar-center {
+    min-width: min(300px, 90vw) !important;
+    max-width: min(400px, 95vw) !important;
+  }
+}
+
+/* Steps Section - Responsive grid layout */
+.steps-grid {
+  gap: clamp(16px, 3vw, 32px) !important;
+}
+
+/* Large screens: 4 columns (horizontal line) */
+@media (min-width: 1024px) {
+  .steps-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* Medium screens: 2 columns (2x2 grid) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+/* Small screens: 1 column (vertical stack) */
+@media (max-width: 767px) {
+  .steps-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Footer - Fluid grid */
+.footer-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(250px, 100%), 1fr)) !important;
+  gap: clamp(20px, 4vw, 40px) !important;
+}
+
+/* Dashboard - Fluid layout */
+.dashboard-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(min(300px, 100%), max-content) !important;
+  gap: clamp(16px, 3vw, 25px) !important;
+}
+
+.dashboard-nav {
+  height: clamp(60px, 8vh, 80px) !important;
+}
+
+.dashboard-nav-links {
+  gap: clamp(16px, 4vw, 32px) !important;
+}
+
+.calendar-header {
+  margin-bottom: clamp(16px, 4vh, 32px) !important;
+  padding: clamp(16px, 4vh, 24px) clamp(20px, 4vw, 32px) !important;
+}
+
+.calendar-header h2 {
+  font-size: clamp(20px, min(4vw, 28px), 28px) !important;
+}
+
+/* Modal - Fluid sizing */
+.modal-content {
+  max-width: min(500px, 90vw) !important;
+  width: min(500px, 90vw) !important;
+  margin: clamp(8px, 4vh, 32px) !important;
+}
+
+/* Responsive navigation behavior - hide links on very small screens */
+@media (max-width: 480px) {
+  .nav-links {
+    display: none !important;
+  }
+
+  .nav-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(auto, max-content) !important;
+  }
+}
+
+/* iPad Pro and similar large tablets (1024px-1279px) - specific calendar layout */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .calendar-grid {
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    align-items: center !important;
+    gap: clamp(40px, 5vw, 60px) !important;
+    max-width: 100% !important;
+    padding: 0 40px !important;
+  }
+
+  .calendar-center {
+    flex: 0 0 min(420px, 45vw) !important;
+    text-align: center !important;
+  }
+
+  .calendar-item {
+    flex-shrink: 0 !important;
+  }
+}
+
+/* Landscape orientation adjustments */
+@media (max-height: 500px) and (orientation: landscape) {
+  .hero-section {
+    min-height: min(300px, 60vh) !important;
+    height: min(300px, 60vh) !important;
+  }
+
+  .hero-title {
+    font-size: min(28px, 6vw) !important;
+  }
+
+  .hero-subtitle {
+    font-size: min(16px, 4vw) !important;
+  }
+
+  .nav-logo-text {
+    font-size: min(12px, 3vw) !important;
+  }
+}
+
 /* Keyframes for animations */
 @keyframes fadeIn {
   from { opacity: 0 }

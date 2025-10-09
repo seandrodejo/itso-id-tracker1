@@ -543,11 +543,11 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
           margin: '0 auto',
           padding: '0 24px'
         }}>
-          <div style={{
+          <div className="dashboard-nav" style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            height: '80px'
+            height: 'clamp(60px, 8vh, 80px)'
           }}>
             {/* Enhanced Logo and Brand */}
             <div style={{ 
@@ -576,9 +576,9 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                       </div>
 
             {/* Center: Navigation Links */}
-            <div style={{ 
-              display: 'flex', 
-              gap: '32px', 
+            <div className="dashboard-nav-links" style={{
+              display: 'flex',
+              gap: 'clamp(16px, 4vw, 32px)',
               justifyContent: 'center',
               alignItems: 'center'
             }}>
@@ -953,10 +953,10 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
         </div>
 
         {/* Modern Calendar and Profile Layout */}
-        <div style={{
+        <div className="dashboard-layout" style={{
           display: 'grid',
-          gridTemplateColumns: '750px 435px',
-          gap: '25px',
+          gridTemplateColumns: 'minmax(0, 1fr) minmax(300px, 435px)',
+          gap: 'clamp(16px, 3vw, 25px)',
           alignItems: 'start'
         }}>
           {/* Modern Calendar Section - Left Side (Expanded) */}
@@ -974,13 +974,13 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
             maxWidth: '100%'
           }}>
             {/* Modern Calendar Header */}
-            <div style={{
+            <div className="calendar-header" style={{
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              marginBottom: '32px',
+              marginBottom: 'clamp(16px, 4vh, 32px)',
               background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
-              padding: '24px 32px',
+              padding: 'clamp(16px, 4vh, 24px) clamp(20px, 4vw, 32px)',
               borderRadius: '20px',
               margin: '-32px -32px 32px -32px',
               boxShadow: '0 8px 32px rgba(40, 73, 208, 0.2)'
@@ -1689,7 +1689,10 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
       {/* Booking Modal */}
       {showBookingModal && !showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
+          <div className="modal-content bg-white rounded-lg shadow-xl max-w-md w-full" style={{
+            maxWidth: 'min(500px, 90vw)',
+            width: 'min(500px, 90vw)'
+          }}>
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-bold text-gray-800">
