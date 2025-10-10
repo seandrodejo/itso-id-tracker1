@@ -15,16 +15,17 @@ import {
 } from "react-native";
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter, usePathname } from "expo-router";
+import { useNavigationWithTransition } from "../hooks/useNavigationTransition";
 import { LinearGradient } from 'expo-linear-gradient';
 import nuLogo from '../assets/images/nu-logo.png';
 import { useAuth } from '../contexts/AuthContext';
 import { authAPI, appointmentAPI, Appointment } from '../src/config/api';
+import { AnimatedScreen } from '../components/AnimatedScreen';
+import { BottomNavigation } from '../components/BottomNavigation';
 
 export default function Profile() {
   // All hooks must be called at the top level before any conditional returns
-  const router = useRouter();
-  const pathname = usePathname();
+  const { navigateToPage, currentRoute } = useNavigationWithTransition();
   const { user, logout, isAuthenticated, loading } = useAuth();
   
   // State hooks - all initialized before any early returns
@@ -55,11 +56,11 @@ export default function Profile() {
   React.useEffect(() => {
     if (!loading && !isAuthenticated) {
       // Only redirect if we're not already on the login page
-      if (pathname !== '/login') {
-        router.replace('/login');
+      if (currentRoute !== '/login') {
+        navigateToPage('/login');
       }
     }
-  }, [isAuthenticated, loading, router, pathname]);
+  }, [isAuthenticated, loading, currentRoute, navigateToPage]);
 
   if (loading) {
     return (
@@ -82,19 +83,7 @@ export default function Profile() {
     );
   }
 
-  const navigateToPage = (page: string) => {
-    const currentRoute = pathname || '/profile';
-    
-    if (page === 'dashboard' && currentRoute !== '/dashboard') {
-      router.push('/dashboard');
-    } else if (page === 'announcements' && currentRoute !== '/announcements') {
-      router.push('/announcements');
-    } else if (page === 'calendar' && currentRoute !== '/calendar') {
-      router.push('/calendar');
-    } else if (page === 'profile' && currentRoute !== '/profile') {
-      router.push('/profile');
-    }
-  };
+  // Navigation function is now provided by the hook
 
   const handleSettingsPress = () => {
     setShowSettingsModal(true);
@@ -431,7 +420,7 @@ export default function Profile() {
               setAppointments([]);
               
               // Navigate to login screen
-              router.replace('/login');
+              navigateToPage('/login');
               
             } catch (error) {
               console.error('❌ Logout error:', error);
@@ -446,7 +435,7 @@ export default function Profile() {
                     onPress: () => {
                       // Force redirect to login even if logout failed
                       try {
-                        router.replace('/login');
+                        navigateToPage('/login');
                       } catch (navError) {
                         console.error('❌ Navigation error:', navError);
                         // If navigation fails, we can't do much more
@@ -464,22 +453,24 @@ export default function Profile() {
 
   return (
     <View style={styles.container}>
-      {/* Top Bar */}
-      <LinearGradient
-        colors={['#1e40af', '#3b82f6']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.topBar}
-      >
-        <View style={styles.logoContainer}>
-          <Image source={nuLogo} style={styles.logoImage} resizeMode="contain" />
-          <View style={styles.logoTextContainer}>
-            <Text style={styles.logoTitle}>NU Dasmarinas</Text>
-            <Text style={styles.logoSubtitle}>ITSO ID Tracker</Text>
+      <View style={styles.contentContainer}>
+        <AnimatedScreen route="/profile" currentRoute={currentRoute}>
+        {/* Top Bar */}
+        <LinearGradient
+          colors={['#1e40af', '#3b82f6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.topBar}
+        >
+          <View style={styles.logoContainer}>
+            <Image source={nuLogo} style={styles.logoImage} resizeMode="contain" />
+            <View style={styles.logoTextContainer}>
+              <Text style={styles.logoTitle}>NU Dasmarinas</Text>
+              <Text style={styles.logoSubtitle}>ITSO ID Tracker</Text>
+            </View>
           </View>
-        </View>
-        <Text style={styles.greeting}>Hi, {user?.name || 'User'}!</Text>
-      </LinearGradient>
+          <Text style={styles.greeting}>Hi, {user?.name || 'User'}!</Text>
+        </LinearGradient>
 
       <ScrollView
         style={styles.scrollContainer}
@@ -759,29 +750,19 @@ export default function Profile() {
             </ScrollView>
           </View>
         </View>
-      </Modal>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity onPress={() => navigateToPage('dashboard')}>
-          <Ionicons name="home-outline" size={24} color="#475569" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigateToPage('announcements')}>
-          <Ionicons name="notifications-outline" size={24} color="#475569" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigateToPage('calendar')}>
-          <Ionicons name="calendar-outline" size={24} color="#475569" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigateToPage('profile')}>
-          <Ionicons name="person" size={24} color="#1e40af" />
-        </TouchableOpacity>
+        </Modal>
+        </AnimatedScreen>
       </View>
+
+      {/* Bottom Navigation - Always present and unaffected by animations */}
+      <BottomNavigation currentRoute={currentRoute} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#eeeeeeff" },
+  contentContainer: { flex: 1 },
   scrollContainer: { flex: 1, paddingHorizontal: 16 },
   topBar: {
     flexDirection: "row",
@@ -903,19 +884,6 @@ const styles = StyleSheet.create({
     marginLeft: 8,
   },
 
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#e2e8f0",
-    backgroundColor: "#fff",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
 
   // Modal Styles
   modalOverlay: {

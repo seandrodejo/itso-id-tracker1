@@ -1,7 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import {
   Alert,
+  Animated,
+  Dimensions,
   Image,
   Platform,
   StyleSheet,
@@ -15,7 +17,12 @@ import { Ionicons } from '@expo/vector-icons';
 import nuLogo from '../assets/images/nu-logo.png';
 import { useAuth } from '../contexts/AuthContext';
 
+const { height } = Dimensions.get('window');
+
 const LoginScreen: React.FC = () => {
+  // Animation values
+  const slideAnim = useRef(new Animated.Value(height)).current;
+  const opacityAnim = useRef(new Animated.Value(0)).current;
   const [email, setEmail] = useState('');
   const [studentNumber, setStudentNumber] = useState('');
   const [password, setPassword] = useState('');
@@ -35,6 +42,22 @@ const LoginScreen: React.FC = () => {
 
   const router = useRouter();
   const { login } = useAuth();
+
+  // Start animation when component mounts
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   // Refs for input fields
   const emailRef = useRef<TextInput>(null);
@@ -166,16 +189,25 @@ const LoginScreen: React.FC = () => {
   };
 
   return (
-    <KeyboardAwareScrollView
-      style={styles.container}
-      contentContainerStyle={styles.scrollContent}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-      enableOnAndroid={true}
-      enableAutomaticScroll={true}
-      extraScrollHeight={20}
-      keyboardOpeningTime={0}
+    <Animated.View 
+      style={[
+        styles.container,
+        {
+          transform: [{ translateY: slideAnim }],
+          opacity: opacityAnim,
+        }
+      ]}
     >
+      <KeyboardAwareScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        enableOnAndroid={true}
+        enableAutomaticScroll={true}
+        extraScrollHeight={20}
+        keyboardOpeningTime={0}
+      >
       {/* Logo */}
       <View style={styles.logoWrapper}>
         <Image source={nuLogo} style={styles.logoImage} resizeMode="contain" />
@@ -283,7 +315,8 @@ const LoginScreen: React.FC = () => {
       <TouchableOpacity style={styles.button} onPress={handleLogin}>
         <Text style={styles.buttonText}>Log In</Text>
       </TouchableOpacity>
-    </KeyboardAwareScrollView>
+      </KeyboardAwareScrollView>
+    </Animated.View>
   );
 };
 
@@ -291,6 +324,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#ffffff',
+  },
+  scrollView: {
+    flex: 1,
   },
   scrollContent: {
     flexGrow: 1,

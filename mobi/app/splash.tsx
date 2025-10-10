@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, TouchableOpacity, Platform } from 'react-native';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -10,6 +10,8 @@ export default function SplashScreen() {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const swipeAnim = useRef(new Animated.Value(0)).current;
   const nuidAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(0)).current;
+  const isNavigating = useRef(false);
 
   useEffect(() => {
     // Fade in animation
@@ -53,7 +55,25 @@ export default function SplashScreen() {
   }, []);
 
   const handleContinue = () => {
-    router.replace('/login');
+    if (isNavigating.current) return;
+    isNavigating.current = true;
+
+    // Start exit animation
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: -height,
+        duration: 500,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // Navigate after animation completes
+      router.push('/login');
+    });
   };
 
   const swipeIndicatorTranslateY = swipeAnim.interpolate({
@@ -77,11 +97,20 @@ export default function SplashScreen() {
   });
 
   return (
-    <TouchableOpacity 
-      style={styles.container} 
-      activeOpacity={1}
-      onPress={handleContinue}
+    <Animated.View 
+      style={[
+        styles.container,
+        {
+          transform: [{ translateY: slideAnim }],
+          opacity: fadeAnim,
+        }
+      ]}
     >
+      <TouchableOpacity 
+        style={styles.touchableContainer} 
+        activeOpacity={1}
+        onPress={handleContinue}
+      >
       {/* Background Image */}
       <Image
         source={require('../assets/images/splash.png')}
@@ -89,7 +118,7 @@ export default function SplashScreen() {
         contentFit="cover"
       />
       
-      <Animated.View style={[styles.content, { opacity: fadeAnim }]}>
+      <View style={styles.content}>
         {/* NU Logo */}
         <Image
           source={require('../assets/images/nu-logo.png')}
@@ -102,7 +131,7 @@ export default function SplashScreen() {
           <Text style={styles.title}>NU Dasmarinas</Text>
           <Text style={styles.subtitle}>ITSO ID Tracker</Text>
         </View>
-      </Animated.View>
+      </View>
 
       {/* Animated NUID Image */}
       <Animated.View 
@@ -135,9 +164,10 @@ export default function SplashScreen() {
         ]}
       >
         <Ionicons name="chevron-up" size={24} color="#ffffff" />
-        <Text style={styles.swipeText}>Tap to continue</Text>
+        <Text style={styles.swipeText}>Swipe up to continue</Text>
       </Animated.View>
-    </TouchableOpacity>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -147,6 +177,10 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  touchableContainer: {
+    flex: 1,
+    width: '100%',
   },
   backgroundImage: {
     position: 'absolute',
@@ -159,51 +193,62 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 260,
+    marginTop: 220,
   },
   logo: {
-    width: 70,
-    height: 70,
-    marginRight: 5,
+    width: 75,
+    height: 75,
+    marginRight: 10,
   },
   textContainer: {
     alignItems: 'flex-start',
   },
   title: {
-    fontSize: 24,
-    fontWeight: '800',
-    color: '#2849D0',
-    letterSpacing: 1,
-
-  },
-  subtitle: {
-    fontSize: 24,
-    fontWeight: '800',
+    fontSize: 25,
+    fontWeight: '900',
     color: '#2849D0',
     letterSpacing: 0.5,
+    fontFamily: Platform.select({
+      ios: 'Arial-Black',
+      android: 'sans-serif-black',
+      default: 'Arial-Black',
+    }),
+  },
+  subtitle: {
+    fontSize: 25,
+    fontWeight: '900',
+    color: '#2849D0',
+    letterSpacing: 0.2,
+    fontFamily: Platform.select({
+      ios: 'Arial-Black',
+      android: 'sans-serif-black',
+      default: 'Arial-Black',
+    }),
   },
   swipeContainer: {
     position: 'absolute',
-    bottom: 60,
+    bottom: 40,
     alignItems: 'center',
     justifyContent: 'center',
+    alignSelf: 'center',
   },
   swipeText: {
     fontSize: 14,
+    fontWeight: '700',
     color: '#ffffff',
     marginTop: 8,
-    fontWeight: '500',
     opacity: 0.8,
+    fontFamily: 'Montserrat',
   },
   nuidContainer: {
     position: 'absolute',
-    bottom: 100,
-    left: -70,
+    bottom: 110,
+    right: 85,
     alignItems: 'center',
     justifyContent: 'center',
   },
   nuidImage: {
-    width:350,
+    width: 400,
     height: 400,
   },
 });

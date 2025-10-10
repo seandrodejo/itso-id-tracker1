@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Animated, Dimensions, Platform } from 'react-native';
 import { Image } from 'expo-image';
   import { router } from 'expo-router';
 
@@ -83,14 +83,24 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 25,
-    fontWeight: '800',
+    fontWeight: '900',
     color: 'white',
     letterSpacing: 2,
+    fontFamily: Platform.select({
+      ios: 'Arial-Black',
+      android: 'sans-serif-black',
+      default: 'Arial-Black',
+    }),
   },
   subtitle: {
     fontSize: 25,
-    fontWeight: '800',
+    fontWeight: '900',
     color: 'white',
+    fontFamily: Platform.select({
+      ios: 'Arial-Black',
+      android: 'sans-serif-black',
+      default: 'Arial-Black',
+    }),
   },
   loadingContainer: {
     position: 'absolute',

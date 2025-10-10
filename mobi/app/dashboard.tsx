@@ -10,15 +10,16 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useRouter, usePathname } from "expo-router";
+import { useNavigationWithTransition } from "../hooks/useNavigationTransition";
 import { LinearGradient } from 'expo-linear-gradient';
 import nuLogo from '../assets/images/nu-logo.png';
 import { useAuth } from '../contexts/AuthContext';
 import { appointmentAPI, Appointment } from '../src/config/api';
+import { AnimatedScreen } from '../components/AnimatedScreen';
+import { BottomNavigation } from '../components/BottomNavigation';
 
 export default function Dashboard() {
-  const router = useRouter();
-  const pathname = usePathname();
+  const { navigateToPage, currentRoute } = useNavigationWithTransition();
   const { user, isAuthenticated, loading } = useAuth();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [appointmentsLoading, setAppointmentsLoading] = useState(true);
@@ -28,11 +29,11 @@ export default function Dashboard() {
   React.useEffect(() => {
     if (!loading && !isAuthenticated) {
       // Only redirect if we're not already on the login page
-      if (pathname !== '/login') {
-        router.replace('/login');
+      if (currentRoute !== '/login') {
+        navigateToPage('/login');
       }
     }
-  }, [isAuthenticated, loading, router, pathname]);
+  }, [isAuthenticated, loading, currentRoute, navigateToPage]);
 
   // Fetch appointments when component mounts
   useEffect(() => {
@@ -100,7 +101,7 @@ export default function Dashboard() {
           text: 'Pending Approval', 
           color: '#1e40af', 
           bgColor: '#dbeafe',
-          icon: 'clock-outline',
+          icon: 'time-outline',
           borderColor: '#1e40af'
         };
       case 'approved':
@@ -177,19 +178,7 @@ export default function Dashboard() {
     return null; // Will redirect to login
   }
 
-  const navigateToPage = (page: string) => {
-    const currentRoute = pathname || '/dashboard';
-    
-    if (page === 'dashboard' && currentRoute !== '/dashboard') {
-      router.push('/dashboard');
-    } else if (page === 'announcements' && currentRoute !== '/announcements') {
-      router.push('/announcements');
-    } else if (page === 'calendar' && currentRoute !== '/calendar') {
-      router.push('/calendar');
-    } else if (page === 'profile' && currentRoute !== '/profile') {
-      router.push('/profile');
-    }
-  };
+  // Navigation function is now provided by the hook
 
   // Generate current week dates
   const getCurrentMonth = () => {
@@ -221,36 +210,38 @@ export default function Dashboard() {
 
   return (
     <View style={styles.container}>
-      {/* Top Bar */}
-      <LinearGradient
-        colors={['#1e40af', '#3b82f6']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.topBar}
-      >
-        <View style={styles.logoContainer}>
-          <Image source={nuLogo} style={styles.logoImage} resizeMode="contain" />
-          <View style={styles.logoTextContainer}>
-            <Text style={styles.logoTitle}>NU Dasmarinas</Text>
-            <Text style={styles.logoSubtitle}>ITSO ID Tracker</Text>
+      <View style={styles.contentContainer}>
+        <AnimatedScreen route="/dashboard" currentRoute={currentRoute}>
+        {/* Top Bar */}
+        <LinearGradient
+          colors={['#1e40af', '#3b82f6']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.topBar}
+        >
+          <View style={styles.logoContainer}>
+            <Image source={nuLogo} style={styles.logoImage} resizeMode="contain" />
+            <View style={styles.logoTextContainer}>
+              <Text style={styles.logoTitle}>NU Dasmarinas</Text>
+              <Text style={styles.logoSubtitle}>ITSO ID Tracker</Text>
+            </View>
           </View>
-        </View>
-        <Text style={styles.greeting}>Hi, {user?.name || 'User'}!</Text>
-      </LinearGradient>
+          <Text style={styles.greeting}>Hi, {user?.name || 'User'}!</Text>
+        </LinearGradient>
 
-      <ScrollView
-        style={styles.scrollContainer}
-        contentContainerStyle={{ paddingBottom: 80 }}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={onRefresh}
-            colors={['#1e40af']}
-            tintColor="#1e40af"
-          />
-        }
-      >
+        <ScrollView
+          style={styles.scrollContainer}
+          contentContainerStyle={{ paddingBottom: 80 }}
+          showsVerticalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+              colors={['#1e40af']}
+              tintColor="#1e40af"
+            />
+          }
+        >
         {/* Current Appointment Card */}
         <View style={styles.appointmentCard}>
           {appointmentsLoading ? (
@@ -308,7 +299,7 @@ export default function Dashboard() {
               <View style={styles.appointmentActions}>
                 <TouchableOpacity 
                   style={styles.viewCalendarButton}
-                  onPress={() => navigateToPage('calendar')}
+                  onPress={() => navigateToPage('/calendar')}
                 >
                   <Ionicons name="calendar-outline" size={16} color="#1e40af" />
                   <Text style={styles.viewCalendarButtonText}>View Calendar</Text>
@@ -317,7 +308,7 @@ export default function Dashboard() {
                 {currentAndUpcomingAppointments.length > 1 && (
                   <TouchableOpacity 
                     style={styles.bookAnotherButton}
-                    onPress={() => navigateToPage('calendar')}
+                    onPress={() => navigateToPage('/calendar')}
                   >
                     <Text style={styles.bookAnotherButtonText}>Book Another</Text>
                   </TouchableOpacity>
@@ -343,7 +334,7 @@ export default function Dashboard() {
               
               <TouchableOpacity 
                 style={styles.bookButton}
-                onPress={() => navigateToPage('calendar')}
+                onPress={() => navigateToPage('/calendar')}
               >
                 <Ionicons name="add-outline" size={20} color="#000" />
                 <Text style={styles.bookButtonText}>Book Appointment</Text>
@@ -388,7 +379,7 @@ export default function Dashboard() {
         <View style={styles.featureRow}>
           <TouchableOpacity 
             style={styles.featureCard}
-            onPress={() => navigateToPage('announcements')}
+            onPress={() => navigateToPage('/announcements')}
           >
             <Ionicons name="notifications-outline" size={28} color="#1e40af" />
             <Text style={styles.featureTitle}>Announcements</Text>
@@ -397,7 +388,7 @@ export default function Dashboard() {
 
           <TouchableOpacity 
             style={styles.featureCard}
-            onPress={() => navigateToPage('calendar')}
+            onPress={() => navigateToPage('/calendar')}
           >
             <Ionicons name="calendar-outline" size={28} color="#1e40af" />
             <Text style={styles.featureTitle}>Calendar</Text>
@@ -410,7 +401,7 @@ export default function Dashboard() {
         {/* Important Updates */}
         <TouchableOpacity 
           style={styles.updateCard}
-          onPress={() => navigateToPage('announcements')}
+          onPress={() => navigateToPage('/announcements')}
         >
           <Text style={styles.updateTitle}>
             Important updates from ITSO
@@ -425,29 +416,19 @@ export default function Dashboard() {
             style={{ position: "absolute", right: 12, top: 16 }}
           />
         </TouchableOpacity>
-      </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View style={styles.bottomNav}>
-        <TouchableOpacity onPress={() => navigateToPage('dashboard')}>
-          <Ionicons name="home" size={24} color="#1e40af" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigateToPage('announcements')}>
-          <Ionicons name="notifications-outline" size={24} color="#475569" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigateToPage('calendar')}>
-          <Ionicons name="calendar-outline" size={24} color="#475569" />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => navigateToPage('profile')}>
-          <Ionicons name="person-outline" size={24} color="#475569" />
-        </TouchableOpacity>
+        </ScrollView>
+        </AnimatedScreen>
       </View>
+
+      {/* Bottom Navigation - Always present and unaffected by animations */}
+      <BottomNavigation currentRoute={currentRoute} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: "#eeeeeeff" },
+  contentContainer: { flex: 1 },
   scrollContainer: { flex: 1, paddingHorizontal: 16 },
   topBar: {
     flexDirection: "row",
@@ -686,17 +667,4 @@ const styles = StyleSheet.create({
   updateTitle: { fontSize: 14, fontWeight: "600", marginBottom: 4 },
   updateSubtitle: { fontSize: 12, color: "#64748b" },
 
-  bottomNav: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    alignItems: "center",
-    paddingVertical: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#e2e8f0",
-    backgroundColor: "#fff",
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-  },
 });
