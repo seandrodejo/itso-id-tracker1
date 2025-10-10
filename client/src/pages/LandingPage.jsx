@@ -108,21 +108,21 @@ function LandingPage() {
       <nav style={{
         background: 'rgba(40, 73, 208, 0.95)',
         backdropFilter: 'blur(20px)',
-        padding: '0 24px',
+        padding: '0 clamp(16px, 4vw, 24px)',
         boxShadow: '0 8px 32px rgba(40, 73, 208, 0.2)',
         border: '1px solid rgba(255, 255, 255, 0.1)',
         position: 'relative',
         zIndex: 10
       }}>
-        <div style={{
+        <div className="nav-grid" style={{
           display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
+          gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
           alignItems: 'center',
-          height: '80px',
+          height: 'clamp(60px, 8vh, 80px)',
           maxWidth: '1280px',
           width: '100%',
           margin: '0 auto',
-          gap: '24px'
+          gap: 'clamp(12px, 3vw, 24px)'
         }}>
           {/* Left: Logo and Brand */}
           <div style={{ 
@@ -131,29 +131,39 @@ function LandingPage() {
             justifyContent: 'flex-start'
           }}>
             <div style={{
-              width: '48px',
-              height: '48px',
+              width: 'min(48px, max(32px, 6vw))',
+              height: 'min(48px, max(32px, 6vw))',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginRight: '12px'
+              marginRight: 'min(12px, max(8px, 2vw))'
             }}>
-              <img src={nuLogo} alt="NU Logo" style={{ width: '48px', height: '48px', objectFit: 'contain' }} />
+              <img src={nuLogo} alt="NU Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
             </div>
             <div>
-              <div style={{ color: '#fde047', fontWeight: 'bold', fontSize: '18px', whiteSpace: 'nowrap' }}>
+              <div className="nav-logo-text" style={{
+                color: '#fde047',
+                fontWeight: 'bold',
+                fontSize: 'clamp(14px, min(3vw, 18px), 18px)',
+                whiteSpace: 'nowrap'
+              }}>
                 NU Dasmarinas
               </div>
-              <div style={{ color: '#fde047', fontSize: '18px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+              <div className="nav-logo-text" style={{
+                color: '#fde047',
+                fontSize: 'clamp(12px, min(2.5vw, 16px), 16px)',
+                whiteSpace: 'nowrap',
+                fontWeight: 'bold'
+              }}>
                 ITSO ID Tracker
               </div>
             </div>
           </div>
 
           {/* Center: Navigation Links */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '32px', 
+          <div className="nav-links" style={{
+            display: 'flex',
+            gap: 'clamp(16px, 4vw, 32px)',
             justifyContent: 'center',
             alignItems: 'center'
           }}>
@@ -161,25 +171,29 @@ function LandingPage() {
               color: location.pathname === '/' ? '#fde047' : '#93c5fd',
               textDecoration: 'none',
               fontWeight: '600',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              fontSize: 'clamp(12px, 2vw, 16px)'
             }}>Home</Link>
             <Link to="/calendar-public" className="link-underline" style={{
               color: location.pathname === '/calendar-public' ? '#fde047' : '#93c5fd',
               textDecoration: 'none',
               fontWeight: '600',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              fontSize: 'clamp(12px, 2vw, 16px)'
             }}>Calendar</Link>
             <Link to="/announcements-public" className="link-underline" style={{
               color: location.pathname === '/announcements-public' ? '#fde047' : '#93c5fd',
               textDecoration: 'none',
               fontWeight: '600',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              fontSize: 'clamp(12px, 2vw, 16px)'
             }}>Announcements</Link>
             <Link to="/about-public" className="link-underline" style={{
               color: location.pathname === '/about-public' ? '#fde047' : '#93c5fd',
               textDecoration: 'none',
               fontWeight: '600',
-              whiteSpace: 'nowrap'
+              whiteSpace: 'nowrap',
+              fontSize: 'clamp(12px, 2vw, 16px)'
             }}>About Us</Link>
           </div>
 
@@ -192,15 +206,16 @@ function LandingPage() {
           }}>
             <button
               onClick={openLogin}
+              className="nav-button"
               style={{
                 background: 'linear-gradient(135deg, #fde047, #fbbf24)',
                 color: '#1e3a8a',
-                padding: '10px 22px',
+                padding: 'clamp(8px, 2vh, 10px) clamp(16px, 4vw, 22px)',
                 borderRadius: '12px',
                 border: '1px solid rgba(0,0,0,0.05)',
                 cursor: 'pointer',
                 fontWeight: 800,
-                fontSize: '14px',
+                fontSize: 'clamp(12px, 2.5vw, 14px)',
                 whiteSpace: 'nowrap',
                 boxShadow: '0 10px 20px rgba(251, 191, 36, 0.25)'
               }}
@@ -265,14 +280,13 @@ function LandingPage() {
       )}
 
       {/* Hero Section */}
-      <section style={{
+      <section className="hero-section" style={{
         backgroundImage: `url(${landingBackground})`,
         backgroundSize: 'cover',
         backgroundPosition: 'right center',
         backgroundRepeat: 'no-repeat',
-        // marginRight: '50px',
-        minHeight: '600px',
-        height: '600px',
+        minHeight: 'clamp(400px, 80vh, 700px)',
+        height: 'clamp(400px, 80vh, 700px)',
         display: 'flex',
         alignItems: 'center',
         position: 'relative'
@@ -280,15 +294,15 @@ function LandingPage() {
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
-          padding: '0 20px',
+          padding: '0 clamp(16px, 4vw, 20px)',
           width: '100%',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'flex-end',
-          marginLeft: '310px'
+          marginLeft: 'clamp(0px, 25vw, 310px)'
         }}>
           {/* Right side - Text content */}
-          <div className="slide-up" style={{ 
+          <div className="slide-up hero-content" style={{
             maxWidth: '600px',
             textAlign: 'left',
             position: 'relative'
@@ -321,7 +335,7 @@ function LandingPage() {
             }}></div>
 
             {/* Main heading with gradient text */}
-            <h1 style={{
+            <h1 className="hero-title" style={{
               fontSize: 'clamp(60px, 8vw, 100px)',
               fontWeight: '900',
               marginBottom: '8px',
@@ -342,7 +356,7 @@ function LandingPage() {
               marginBottom: '24px',
               marginLeft: '4px'
             }}>
-              <h2 style={{
+              <h2 className="hero-subtitle" style={{
                 fontSize: 'clamp(24px, 3vw, 32px)',
                 color: '#1e293b',
                 marginBottom: '0',
@@ -365,7 +379,7 @@ function LandingPage() {
             </div>
             
             {/* Description with better spacing and typography */}
-            <p style={{
+            <p className="hero-description" style={{
               fontSize: '20px',
               color: '#64748b',
               marginBottom: '32px',
@@ -485,19 +499,23 @@ function LandingPage() {
           position: 'relative',
           zIndex: 2
         }}>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr auto 2fr auto 1fr',
+          <div className="calendar-grid" style={{
+            display: 'flex',
+            flexWrap: 'wrap',
             alignItems: 'center',
-            gap: '48px'
-            
+            justifyContent: 'center',
+            gap: 'clamp(24px, 4vw, 48px)',
+            minHeight: '200px'
+
           }}>
             {/* NU Logo with modern styling and animation */}
-            <div className="slide-up" style={{
-              display: 'flex',
+            <div className="slide-up calendar-item" style={{
+              display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              position: 'relative'
+              position: 'relative',
+              minWidth: 'min(200px, 25vw)',
+              flex: '0 0 auto'
             }}>
               <div style={{
                 background: 'rgba(255, 255, 255, 0.1)',
@@ -537,23 +555,27 @@ function LandingPage() {
             </div>
 
             {/* Modern connector line */}
-            <div className="slide-up" style={{
+            <div className="slide-up calendar-item" style={{
               width: '3px',
-              height: '100px',
+              height: 'min(100px, 15vh)',
               background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(253, 224, 71, 0.8), rgba(255, 255, 255, 0.6))',
               borderRadius: '2px',
-              boxShadow: '0 0 20px rgba(253, 224, 71, 0.3)'
-              
+              boxShadow: '0 0 20px rgba(253, 224, 71, 0.3)',
+              flex: '0 0 auto',
+              alignSelf: 'center'
             }}></div>
 
             {/* Center Text with enhanced styling */}
-            <div className="slide-up" style={{ 
+            <div className="slide-up calendar-item calendar-center" style={{
               textAlign: 'center',
               background: 'rgba(255, 255, 255, 0.05)',
               backdropFilter: 'blur(10px)',
               borderRadius: '20px',
-              padding: '32px',
-              border: '1px solid rgba(255, 255, 255, 0.1)'
+              padding: 'clamp(16px, 4vw, 32px)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              minWidth: 'min(400px, 60vw)',
+              maxWidth: '500px',
+              flex: '1 1 auto'
             }}>
               <div style={{ 
                 color: '#fde047', 
@@ -605,20 +627,24 @@ function LandingPage() {
             </div>
 
             {/* Modern connector line */}
-            <div className="slide-up" style={{
+            <div className="slide-up calendar-item" style={{
               width: '3px',
-              height: '100px',
+              height: 'min(100px, 15vh)',
               background: 'linear-gradient(to bottom, rgba(255, 255, 255, 0.6), rgba(253, 224, 71, 0.8), rgba(255, 255, 255, 0.6))',
               borderRadius: '2px',
-              boxShadow: '0 0 20px rgba(253, 224, 71, 0.3)'
+              boxShadow: '0 0 20px rgba(253, 224, 71, 0.3)',
+              flex: '0 0 auto',
+              alignSelf: 'center'
             }}></div>
 
             {/* Calendar Icon with modern styling and enhanced animation */}
-            <div className="slide-up" style={{
-              display: 'flex',
+            <div className="slide-up calendar-item" style={{
+              display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              position: 'relative'
+              position: 'relative',
+              minWidth: 'min(200px, 25vw)',
+              flex: '0 0 auto'
             }}>
               <div style={{
                 background: 'rgba(255, 255, 255, 0.1)',
@@ -733,8 +759,8 @@ function LandingPage() {
             <div style={{
               position: 'absolute',
               top: '50%',
-              left: '12.5%',
-              right: '12.5%',
+              left: '11.5%',
+              right: '11.5%',
               height: '6px',
               background: 'linear-gradient(90deg, #2849D0, #3b82f6, #fbbf24, #10b981)',
               transform: 'translateY(-50%)',
@@ -742,41 +768,15 @@ function LandingPage() {
               boxShadow: '0 2px 10px rgba(40, 73, 208, 0.3)'
             }}></div>
             
-            {/* Enhanced Start Dot */}
-            <div style={{
-              position: 'absolute',
-              left: '11.5%',
-              top: '6%',
-              width: '20px',
-              height: '20px',
-              background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
-              borderRadius: '50%',
-              transform: 'translate(-50%, -50%)',
-              boxShadow: '0 4px 15px rgba(40, 73, 208, 0.4), 0 0 0 4px rgba(40, 73, 208, 0.1)',
-              animation: 'pulse 3s infinite'
-            }}></div>
             
-            {/* Enhanced End Dot */}
-            <div style={{
-              position: 'absolute',
-              right: '11.5%',
-              top: '5%',
-              width: '20px',
-              height: '20px',
-              background: 'linear-gradient(135deg, #10b981, #059669)',
-              borderRadius: '50%',
-              transform: 'translate(50%, -50%)',
-              boxShadow: '0 4px 15px rgba(16, 185, 129, 0.4), 0 0 0 4px rgba(16, 185, 129, 0.1)',
-              animation: 'pulse 3s infinite 1.5s'
-            }}></div>
           </div>
 
           {/* Modern Steps Cards */}
-          <div style={{
+          <div className="steps-grid" style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(4, 1fr)',
-            gap: '32px',
-            marginTop: '40px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(250px, 100%), 1fr))',
+            gap: 'clamp(16px, 3vw, 32px)',
+            marginTop: 'clamp(20px, 5vh, 40px)'
           }}>
             {/* Step 1: Book - Enhanced */}
             <div className="hover-pop slide-in-up" style={{
@@ -1268,11 +1268,11 @@ function LandingPage() {
           maxWidth: '1200px',
           margin: '0 auto'
         }}>
-          <div style={{
+          <div className="footer-grid" style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr 1fr',
-            gap: '40px',
-            alignItems: 'center',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(250px, 100%), 1fr))',
+            gap: 'clamp(20px, 4vw, 40px)',
+            alignItems: 'start',
             marginBottom: '24px'
           }}>
             {/* Contact Section */}

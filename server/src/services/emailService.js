@@ -10,6 +10,13 @@ const createTransporter = () => {
   console.log('GMAIL_OAUTH_REFRESH_TOKEN set:', !!process.env.GMAIL_OAUTH_REFRESH_TOKEN);
   console.log('EMAIL_TRANSPORT_MODE:', process.env.EMAIL_TRANSPORT_MODE);
 
+  // Force logging for debugging
+  console.log('🔧 Email configuration debug:');
+  console.log('- EMAIL_TRANSPORT_MODE:', process.env.EMAIL_TRANSPORT_MODE);
+  console.log('- EMAIL_USER:', process.env.EMAIL_USER);
+  console.log('- EMAIL_PASS exists:', !!process.env.EMAIL_PASS);
+  console.log('- EMAIL_PASS length:', process.env.EMAIL_PASS ? process.env.EMAIL_PASS.length : 0);
+
   const emailUser = (process.env.EMAIL_USER || '').trim();
   const emailPass = (process.env.EMAIL_PASS || '').trim();
   const clientId = (process.env.GOOGLE_CLIENT_ID || '').trim();
@@ -35,7 +42,9 @@ const createTransporter = () => {
   // Use password/app password auth if transport mode is 'password' and credentials are provided
   if (transportMode === 'password' && emailUser && emailPass &&
       emailUser !== 'your-gmail@gmail.com' &&
-      emailPass !== 'your-app-password') {
+      emailPass !== 'your-app-password-here' &&
+      emailPass !== 'your-app-password' &&
+      emailPass !== 'dz11ztanmwmdygnz') { // Skip invalid passwords
     console.log('✅ Using SMTP password authentication for Gmail');
     return nodemailer.createTransport({
       service: 'gmail',
@@ -46,9 +55,26 @@ const createTransporter = () => {
     });
   }
 
-  // Fallback: try OAuth2 if refresh token is provided (legacy support)
-  if (emailUser && clientId && clientSecret && refreshToken) {
-    console.log('✅ Using Gmail OAuth2 for Nodemailer (fallback)');
+  // Use Outlook SMTP if transport mode is 'outlook'
+  if (transportMode === 'outlook' && emailUser && emailPass) {
+    console.log('✅ Using Outlook SMTP');
+    return nodemailer.createTransport({
+      host: 'smtp-mail.outlook.com',
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: emailUser,
+        pass: emailPass,
+      },
+      tls: {
+        ciphers: 'SSLv3'
+      }
+    });
+  }
+
+  // Fallback: try OAuth2 if transport mode is 'oauth2' and credentials are provided
+  if (transportMode === 'oauth2' && emailUser && clientId && clientSecret && refreshToken) {
+    console.log('✅ Using Gmail OAuth2 for Nodemailer');
     return nodemailer.createTransport({
       service: 'gmail',
       auth: {
