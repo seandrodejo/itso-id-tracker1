@@ -97,10 +97,10 @@ function AboutUs() {
               />
             </div>
             <div>
-              <div style={{ color: '#fde047', fontWeight: 'bold', fontSize: '18px', whiteSpace: 'nowrap' }}>
+              <div style={{ color: '#fde047', fontFamily: 'montserrat', fontWeight: 'bold', fontSize: '18px', whiteSpace: 'nowrap' }}>
                 NU Dasmarinas
               </div>
-              <div style={{ color: '#fde047', fontSize: '18px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
+              <div style={{ color: '#fde047', fontFamily: 'montserrat', fontSize: '18px', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
                 ITSO ID Tracker
               </div>
             </div>
@@ -719,7 +719,7 @@ function AboutUs() {
                 fontSize: '14px', 
                 lineHeight: '1.6'
               }}>
-                Paliparan III, Bridge SM Dasmariñas, Governor's Dr. Dasmariñas, Cavite, Philippines<br/>
+                Sampaloc 1 Bridge, SM Dasmarinas, Governor's Dr, Dasmariñas, 4114 Cavite<br/>
               </p>
             </div>
 
@@ -745,12 +745,14 @@ function AboutUs() {
               </div>
               <div>
                 <h3 style={{ 
+                  fontFamily: 'montserrat',
                   fontWeight: 'bold',
                   fontSize: '18px',
                   color: '#fbbf24',
                   margin: '0 0 4px 0'
                 }}>NU Dasmarinas</h3>
                 <p style={{ 
+                  fontFamily: 'montserrat',
                   color: '#fbbf24',
                   fontSize: '16px',
                   fontWeight: '600',
