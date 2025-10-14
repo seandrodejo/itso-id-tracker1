@@ -16,6 +16,9 @@ import AuthenticatedAboutUs from "./pages/AuthenticatedAboutUs";
 import AuthSuccess from "./pages/AuthSuccess";
 import GoogleSignupComplete from "./pages/GoogleSignupComplete";
 import ResetPassword from "./components/ResetPassword";
+import TermsAndConditions from "./pages/TermsAndConditions";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import ContactUs from "./pages/ContactUs";
 import ProtectedRoute from "./components/ProtectedRoute";
 import AdminRoute from "./components/AdminRoute";
 
@@ -59,13 +62,16 @@ createRoot(document.getElementById("root")).render(
         <Route path="/auth-success" element={<AuthSuccess />} />
         <Route path="/google-signup-complete" element={<GoogleSignupComplete />} />
         <Route path="/reset-password" element={<ResetPassword />} />
-        <Route 
-          path="/admin" 
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/contact-us" element={<ContactUs />} />
+        <Route
+          path="/admin"
           element={
             <AdminRoute>
               <AdminDashboard />
             </AdminRoute>
-          } 
+          }
         />
       </Routes>
     </BrowserRouter>

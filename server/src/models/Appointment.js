@@ -40,7 +40,11 @@ const AppointmentSchema = new Schema(
    
     adminRemarks: { type: String, default: "" },
     statusUpdatedAt: { type: Date },
-    statusUpdatedBy: { type: String }
+    statusUpdatedBy: { type: String },
+
+    // ID Printing tracking
+    printedAt: { type: Date },
+    printedBy: { type: String }
   },
   { timestamps: true }
 );

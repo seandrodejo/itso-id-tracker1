@@ -25,15 +25,24 @@ router.post("/test-login", (req, res) => {
 
 const readStudentCSV = () => {
   try {
-    const csvPath = path.join(__dirname, '../../../student_ids.csv');
+    // First try to read from uploaded CSV file
+    const uploadedCsvPath = path.join(__dirname, '../../../uploads/student_accounts.csv');
+    let csvPath = uploadedCsvPath;
+
+    // If uploaded file doesn't exist, fall back to original file
+    if (!fs.existsSync(uploadedCsvPath)) {
+      csvPath = path.join(__dirname, '../../../student_ids.csv');
+    }
+
     const csvContent = fs.readFileSync(csvPath, 'utf8');
     const lines = csvContent.split(/\r?\n/).filter(line => line.trim());
     const students = [];
-    
-   
+
+
     for (let i = 1; i < lines.length; i++) {
       const [student_id, email, password] = lines[i].split(',');
-      if (student_id && student_id.trim()) {
+      if (student_id && student_id.trim() && student_id.trim() !== 'admin') {
+        // Exclude admin account from student accounts list
         students.push({
           student_id: student_id.trim(),
           email: email ? email.trim() : '',
@@ -41,7 +50,7 @@ const readStudentCSV = () => {
         });
       }
     }
-    
+
     return students;
   } catch (error) {
     console.error('Error reading student CSV:', error);
@@ -50,17 +59,42 @@ const readStudentCSV = () => {
 };
 
 const validateStudentCredentials = (student_id, password) => {
+  // Special handling for admin account
+  if (student_id === 'admin') {
+    // Read admin credentials directly from CSV
+    try {
+      const csvPath = path.join(__dirname, '../../../student_ids.csv');
+      const csvContent = fs.readFileSync(csvPath, 'utf8');
+      const lines = csvContent.split(/\r?\n/).filter(line => line.trim());
+
+      for (let i = 1; i < lines.length; i++) {
+        const [sid, email, pwd] = lines[i].split(',');
+        if (sid && sid.trim() === 'admin') {
+          if (pwd && pwd.trim() === password) {
+            return { valid: true, student: { student_id: 'admin', email: email ? email.trim() : '', password: pwd.trim() } };
+          } else {
+            return { valid: false, message: 'Invalid password' };
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Error reading admin credentials:', error);
+    }
+    return { valid: false, message: 'Admin account not found' };
+  }
+
+  // For regular students, use the filtered CSV (excludes admin)
   const students = readStudentCSV();
   const student = students.find(s => s.student_id === student_id);
-  
+
   if (!student) {
     return { valid: false, message: 'Student ID not found' };
   }
-  
+
   if (student.password !== password) {
     return { valid: false, message: 'Invalid password' };
   }
-  
+
   return { valid: true, student };
 };
 
@@ -593,13 +627,13 @@ router.post("/change-password", authenticateToken, async (req, res) => {
       return res.status(400).json({ message: "New password must be at least 6 characters long" });
     }
 
-   
+
     const user = await User.findById(req.user.id);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
 
-   
+
     let valid = false;
     if (user.password) {
       valid = await bcrypt.compare(currentPassword, user.password);
@@ -610,24 +644,33 @@ router.post("/change-password", authenticateToken, async (req, res) => {
     }
     if (!valid) return res.status(400).json({ message: "Current password is incorrect" });
 
-   
+
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
 
-   
+
     try {
-      const csvPath = path.join(__dirname, "../../../student_ids.csv");
-      const csvContent = fs.readFileSync(csvPath, "utf8");
-      const lines = csvContent.split(/\r?\n/);
-      for (let i = 1; i < lines.length; i++) {
-        const [sid, email, pwd] = lines[i].split(",");
-        if (sid && sid.trim() === user.student_id) {
-          const safeEmail = (email || "").trim();
-          lines[i] = `${sid},${safeEmail},${newPassword}`;
-          break;
+      // Update both possible CSV files
+      const csvPaths = [
+        path.join(__dirname, "../../../uploads/student_accounts.csv"),
+        path.join(__dirname, "../../../student_ids.csv")
+      ];
+
+      for (const csvPath of csvPaths) {
+        if (fs.existsSync(csvPath)) {
+          const csvContent = fs.readFileSync(csvPath, "utf8");
+          const lines = csvContent.split(/\r?\n/);
+          for (let i = 1; i < lines.length; i++) {
+            const [sid, email, pwd] = lines[i].split(",");
+            if (sid && sid.trim() === user.student_id) {
+              const safeEmail = (email || "").trim();
+              lines[i] = `${sid},${safeEmail},${newPassword}`;
+              break;
+            }
+          }
+          fs.writeFileSync(csvPath, lines.join("\n"));
         }
       }
-      fs.writeFileSync(csvPath, lines.join("\n"));
     } catch (csvError) {
       console.error("Error updating CSV file:", csvError);
     }
@@ -638,6 +681,112 @@ router.post("/change-password", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Change password error:", error);
     res.status(500).json({ message: "Failed to change password", error: error.message });
+  }
+});
+
+// Admin endpoint to upload student accounts CSV
+router.post("/admin/upload-student-accounts", authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admin only." });
+    }
+
+    const { csvData } = req.body;
+
+    if (!csvData) {
+      return res.status(400).json({ message: "CSV data is required" });
+    }
+
+    // Validate CSV format
+    const lines = csvData.trim().split('\n');
+    if (lines.length < 2) {
+      return res.status(400).json({ message: "CSV must have at least a header row and one data row" });
+    }
+
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+    if (!headers.includes('student_id') || !headers.includes('email') || !headers.includes('password')) {
+      return res.status(400).json({ message: "CSV must contain student_id, email, and password columns" });
+    }
+
+    // Parse the new CSV data to check for duplicates
+    const newStudents = [];
+    const duplicateIds = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const [student_id, email, password] = lines[i].split(',');
+      if (student_id && student_id.trim()) {
+        const trimmedId = student_id.trim();
+        newStudents.push({
+          student_id: trimmedId,
+          email: email ? email.trim() : '',
+          password: password ? password.trim() : '12345'
+        });
+      }
+    }
+
+    // Check for duplicates within the new CSV itself
+    const newStudentIds = newStudents.map(s => s.student_id);
+    const internalDuplicates = newStudentIds.filter((id, index) => newStudentIds.indexOf(id) !== index);
+
+    if (internalDuplicates.length > 0) {
+      return res.status(400).json({
+        message: `CSV contains duplicate student IDs within itself: ${[...new Set(internalDuplicates)].join(', ')}`
+      });
+    }
+
+    // Check against existing student accounts (both uploaded and original CSV)
+    const existingStudents = readStudentCSV();
+    const existingIds = existingStudents.map(s => s.student_id);
+
+    const conflictingIds = newStudentIds.filter(id => existingIds.includes(id));
+
+    if (conflictingIds.length > 0) {
+      return res.status(400).json({
+        message: `CSV contains student IDs that already exist in the system: ${conflictingIds.join(', ')}. Please remove these duplicates before uploading.`
+      });
+    }
+
+    // Ensure uploads directory exists
+    const uploadsDir = path.join(__dirname, '../../../uploads');
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    // Save the CSV file
+    const csvPath = path.join(uploadsDir, 'student_accounts.csv');
+    fs.writeFileSync(csvPath, csvData);
+
+    console.log("✅ Student accounts CSV uploaded successfully");
+    res.status(200).json({
+      message: "Student accounts CSV uploaded successfully",
+      recordCount: lines.length - 1, // Subtract header row
+      validatedIds: newStudentIds.length
+    });
+
+  } catch (error) {
+    console.error("Upload student accounts error:", error);
+    res.status(500).json({ message: "Failed to upload student accounts", error: error.message });
+  }
+});
+
+// Admin endpoint to get current student accounts
+router.get("/admin/student-accounts", authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admin only." });
+    }
+
+    const students = readStudentCSV();
+
+    res.json({
+      message: "Student accounts retrieved successfully",
+      students: students,
+      count: students.length
+    });
+
+  } catch (error) {
+    console.error("Get student accounts error:", error);
+    res.status(500).json({ message: "Failed to get student accounts", error: error.message });
   }
 });
 

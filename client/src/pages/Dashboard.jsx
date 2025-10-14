@@ -1669,10 +1669,66 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
             </div>
           </div>
 
-          {/* Copyright */}
+          {/* Footer Links */}
           <div style={{
             borderTop: '1px solid #64748b',
             paddingTop: '16px',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '24px',
+              marginBottom: '12px',
+              flexWrap: 'wrap'
+            }}>
+              <Link
+                to="/terms-and-conditions"
+                style={{
+                  color: '#cbd5e0',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.color = '#fbbf24'}
+                onMouseLeave={(e) => e.target.style.color = '#cbd5e0'}
+              >
+                Terms and Conditions
+              </Link>
+              <Link
+                to="/privacy-policy"
+                style={{
+                  color: '#cbd5e0',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.color = '#fbbf24'}
+                onMouseLeave={(e) => e.target.style.color = '#cbd5e0'}
+              >
+                Privacy Policy
+              </Link>
+              <Link
+                to="/contact-us"
+                style={{
+                  color: '#cbd5e0',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.color = '#fbbf24'}
+                onMouseLeave={(e) => e.target.style.color = '#cbd5e0'}
+              >
+                Contact Us
+              </Link>
+            </div>
+          </div>
+
+          {/* Copyright */}
+          <div style={{
             textAlign: 'center'
           }}>
             <p style={{
