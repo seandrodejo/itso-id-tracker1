@@ -261,7 +261,7 @@ const LoginScreen: React.FC = () => {
         onBlur={() => handleFieldBlur('studentNumber')}
         placeholder="Enter your student number"
         placeholderTextColor="#94a3b8"
-        keyboardType="number-pad"
+        keyboardType="default"
         autoCapitalize="none"
         autoCorrect={false}
         returnKeyType="next"
