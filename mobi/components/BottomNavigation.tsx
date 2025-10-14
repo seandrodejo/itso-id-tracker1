@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigationWithTransition } from '../hooks/useNavigationTransition';
 
@@ -27,7 +27,11 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({ currentRoute
   };
 
   return (
-    <View style={styles.bottomNav}>
+    <View style={[
+      styles.bottomNav,
+      Platform.OS === 'ios' ? styles.bottomNavIOS : null,
+      Platform.OS === 'android' ? styles.bottomNavAndroid : null,
+    ]}>
       <TouchableOpacity onPress={() => navigateToPage('/dashboard')}>
         <Ionicons 
           name={getIconName('/dashboard', currentRoute === '/dashboard') as any} 
@@ -87,5 +91,11 @@ const styles = StyleSheet.create({
     // Additional isolation properties
     pointerEvents: 'auto',
     overflow: 'visible',
+  },
+  bottomNavIOS: {
+    paddingBottom: 28, // extra space for iOS home indicator/safe area
+  },
+  bottomNavAndroid: {
+    paddingBottom: 28, // extra space for Android gesture/navigation bar
   },
 });
