@@ -151,7 +151,7 @@ export default function Profile() {
           text: 'Pending Approval', 
           color: '#1e40af', 
           bgColor: '#dbeafe',
-          icon: 'clock-outline',
+          icon: 'time-outline',
           borderColor: '#1e40af'
         };
       case 'approved':

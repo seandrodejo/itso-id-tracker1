@@ -11,6 +11,7 @@ import {
   Modal,
   Dimensions,
   RefreshControl,
+  Pressable,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigationWithTransition } from "../hooks/useNavigationTransition";
@@ -187,16 +188,12 @@ export default function Announcements() {
         transparent={true}
         onRequestClose={closeAnnouncementPopup}
       >
-        <TouchableOpacity 
-          style={styles.modalOverlay} 
-          activeOpacity={1} 
-          onPress={closeAnnouncementPopup}
-        >
-          <TouchableOpacity 
-            style={styles.modalContainer} 
-            activeOpacity={1} 
-            onPress={(e) => e.stopPropagation()}
-          >
+        <View style={styles.modalOverlay}>
+          {/* Backdrop layer to close on outside tap */}
+          <Pressable style={StyleSheet.absoluteFill} onPress={closeAnnouncementPopup} />
+
+          {/* Content container (not pressable) so scrolling works */}
+          <View style={styles.modalContainer}>
             {selectedAnnouncement && (
               <>
                 <View style={styles.modalHeader}>
@@ -209,7 +206,14 @@ export default function Announcements() {
                   </TouchableOpacity>
                 </View>
                 
-                <ScrollView style={styles.modalContent} showsVerticalScrollIndicator={false}>
+                <ScrollView 
+                  style={styles.modalContent}
+                  showsVerticalScrollIndicator={false}
+                  nestedScrollEnabled={true}
+                  scrollEventThrottle={16}
+                  keyboardShouldPersistTaps="handled"
+                  contentContainerStyle={{ paddingBottom: 24, flexGrow: 1 }}
+                >
                 
                 <Text style={styles.popupAnnouncementDate}>
                   {new Date(selectedAnnouncement.publishedAt || selectedAnnouncement.createdAt).toLocaleDateString('en-US', {
@@ -260,8 +264,8 @@ export default function Announcements() {
               </ScrollView>
               </>
             )}
-          </TouchableOpacity>
-        </TouchableOpacity>
+          </View>
+        </View>
         </Modal>
         </AnimatedScreen>
       </View>

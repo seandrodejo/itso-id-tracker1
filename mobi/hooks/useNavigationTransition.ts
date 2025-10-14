@@ -13,11 +13,10 @@ export const useNavigationWithTransition = () => {
     
     // Only navigate if we're going to a different route
     if (targetRoute !== currentRoute) {
-      // Navigate immediately
-      router.push(targetRoute as any);
-      
-      // Trigger the transition animation after navigation
+      // Set direction BEFORE navigating so the next screen can animate in correctly
       navigateWithTransition(targetRoute, currentRoute);
+      // Navigate immediately after direction is set
+      router.push(targetRoute as any);
     }
   };
 

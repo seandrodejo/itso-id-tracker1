@@ -45,6 +45,7 @@ export default function Calendar() {
   const [selectedTimeSlot, setSelectedTimeSlot] = useState<string | null>(null);
   const [gmail, setGmail] = useState<string>('');
   const [modalAnimation] = useState(new Animated.Value(0));
+  const [backdropAnimation] = useState(new Animated.Value(0));
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
@@ -168,19 +169,33 @@ export default function Calendar() {
   // Modal functions
   const showModal = () => {
     setIsModalVisible(true);
-    Animated.timing(modalAnimation, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
+    Animated.parallel([
+      Animated.timing(modalAnimation, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(backdropAnimation, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start();
   };
 
   const hideModal = () => {
-    Animated.timing(modalAnimation, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
+    Animated.parallel([
+      Animated.timing(modalAnimation, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+      Animated.timing(backdropAnimation, {
+        toValue: 0,
+        duration: 250,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
       setIsModalVisible(false);
       // Reset form data
       setAppointmentType(null);
@@ -578,7 +593,14 @@ export default function Calendar() {
         animationType="none"
         onRequestClose={hideModal}
       >
-        <View style={styles.modalOverlay}>
+        <Animated.View 
+          style={[
+            styles.modalOverlay,
+            {
+              opacity: backdropAnimation
+            }
+          ]}
+        >
           <TouchableOpacity 
             style={styles.modalBackdrop} 
             activeOpacity={1} 
@@ -814,7 +836,7 @@ export default function Calendar() {
               </TouchableOpacity>
             </View>
           </Animated.View>
-        </View>
+        </Animated.View>
         </Modal>
         </AnimatedScreen>
       </View>

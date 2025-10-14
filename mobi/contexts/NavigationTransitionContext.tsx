@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useRef, ReactNode } from 'react';
-import { Animated, Easing } from 'react-native';
 
 interface NavigationTransitionContextType {
-  slideAnimation: Animated.Value;
+  // -1 = from left to right, 1 = from right to left, 0 = no transition
+  transitionDirection: React.MutableRefObject<number>;
   navigateWithTransition: (targetRoute: string, currentRoute: string) => void;
 }
 
@@ -29,7 +29,8 @@ const NAVIGATION_ORDER = {
 };
 
 export const NavigationTransitionProvider: React.FC<NavigationTransitionProviderProps> = ({ children }) => {
-  const slideAnimation = useRef(new Animated.Value(0)).current;
+  // Stores only the direction for the next transition
+  const transitionDirection = useRef(0);
 
   const navigateWithTransition = (targetRoute: string, currentRoute: string) => {
     const currentIndex = NAVIGATION_ORDER[currentRoute as keyof typeof NAVIGATION_ORDER] ?? 0;
@@ -41,32 +42,11 @@ export const NavigationTransitionProvider: React.FC<NavigationTransitionProvider
     const isMovingRight = targetIndex > currentIndex;
     const isMovingLeft = targetIndex < currentIndex;
     
-    if (isMovingRight) {
-      // Moving right: new screen comes from right (translateX: 100% to 0%)
-      slideAnimation.setValue(100);
-      Animated.timing(slideAnimation, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-    } else if (isMovingLeft) {
-      // Moving left: new screen comes from left (translateX: -100% to 0%)
-      slideAnimation.setValue(-100);
-      Animated.timing(slideAnimation, {
-        toValue: 0,
-        duration: 300,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-    } else {
-      // Same screen or unknown route, no transition
-      slideAnimation.setValue(0);
-    }
+    transitionDirection.current = isMovingRight ? 1 : isMovingLeft ? -1 : 0;
   };
 
   const contextValue: NavigationTransitionContextType = {
-    slideAnimation,
+    transitionDirection,
     navigateWithTransition,
   };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
 import Animated, { 
   useSharedValue, 
   useAnimatedStyle, 
@@ -15,35 +15,36 @@ interface AnimatedScreenProps {
 }
 
 export const AnimatedScreen: React.FC<AnimatedScreenProps> = ({ children, route, currentRoute }) => {
-  const { slideAnimation } = useNavigationTransition();
+  const { transitionDirection } = useNavigationTransition();
   const translateX = useSharedValue(0);
   const opacity = useSharedValue(0);
 
   useEffect(() => {
     // Check if this is the current route (just navigated to)
     if (currentRoute === route) {
-      // Get the current slide animation value to determine direction
-      const slideValue = (slideAnimation as any)._value || 0;
+      // Determine direction: 1 means from right, -1 means from left
+      const dir = transitionDirection.current;
+      const screenWidth = Dimensions.get('window').width;
       
-      if (slideValue !== 0) {
-        // Set initial position based on slide direction
-        translateX.value = slideValue;
+      if (dir !== 0) {
+        // Set initial position based on direction
+        translateX.value = dir > 0 ? screenWidth : -screenWidth;
         opacity.value = 0;
         
         // Synchronized slide and fade animation - both use same duration and timing
         translateX.value = withTiming(0, {
-          duration: 200,
+          duration: 280,
           easing: Easing.out(Easing.cubic),
         });
         opacity.value = withTiming(1, {
-          duration: 500,
+          duration: 320,
           easing: Easing.out(Easing.cubic),
         });
       } else {
         // No slide animation needed, just fade in
         translateX.value = 0;
         opacity.value = withTiming(1, {
-          duration: 600,
+          duration: 320,
           easing: Easing.out(Easing.cubic),
         });
       }
@@ -52,7 +53,7 @@ export const AnimatedScreen: React.FC<AnimatedScreenProps> = ({ children, route,
       translateX.value = 0;
       opacity.value = 0;
     }
-  }, [currentRoute, route, slideAnimation, translateX, opacity]);
+  }, [currentRoute, route, transitionDirection, translateX, opacity]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return {
