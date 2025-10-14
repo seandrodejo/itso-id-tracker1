@@ -142,6 +142,7 @@ function LandingPage() {
             </div>
             <div>
               <div className="nav-logo-text" style={{
+                fontFamily: 'montserrat',
                 color: '#fde047',
                 fontWeight: 'bold',
                 fontSize: 'clamp(14px, min(3vw, 18px), 18px)',
@@ -150,6 +151,7 @@ function LandingPage() {
                 NU Dasmarinas
               </div>
               <div className="nav-logo-text" style={{
+                fontFamily: 'montserrat',
                 color: '#fde047',
                 fontSize: 'clamp(12px, min(2.5vw, 16px), 16px)',
                 whiteSpace: 'nowrap',
@@ -1315,7 +1317,7 @@ function LandingPage() {
                 fontSize: '14px', 
                 lineHeight: '1.6'
                }}>
-                Paliparan III, Bridge SM Dasmariñas, Governor's Dr. Dasmariñas, Cavite, Philippines<br/>
+                Sampaloc 1 Bridge, SM Dasmarinas, Governor's Dr, Dasmariñas, 4114 Cavite<br/>
               </p>
             </div>
 
@@ -1341,12 +1343,14 @@ function LandingPage() {
               </div>
               <div>
                 <h3 style={{ 
+                  fontFamily: 'montserrat',
                   fontWeight: 'bold',
                   fontSize: '18px',
                   color: '#fbbf24',
                   margin: '0 0 4px 0'
                 }}>NU Dasmarinas</h3>
                 <p style={{ 
+                  fontFamily: 'montserrat',
                   color: '#fbbf24',
                   fontSize: '16px',
                   fontWeight: '600',
