@@ -116,6 +116,7 @@ function AdminDashboard() {
   const [annLinks, setAnnLinks] = useState("");  // comma separated
   const [annTags, setAnnTags] = useState("");    // comma separated
   const [annEditId, setAnnEditId] = useState(null);
+  const [annUploadedImages, setAnnUploadedImages] = useState([]); // Array of uploaded image URLs
 
   // Analytics state
   const [analyticsTimePeriod, setAnalyticsTimePeriod] = useState('all-time');
@@ -125,9 +126,22 @@ function AdminDashboard() {
     appointmentStatusBreakdown: []
   });
 
+  // Student Accounts state
+  const [studentAccounts, setStudentAccounts] = useState([]);
+  const [studentSearch, setStudentSearch] = useState("");
+
+  // ID Printing stats state
+  const [printingStats, setPrintingStats] = useState({
+    dailyLimit: 200,
+    todayPrinted: 0,
+    todayForPrinting: 0,
+    remainingToday: 200,
+    weeklyStats: []
+  });
+
   useEffect(() => {
     const token = localStorage.getItem("token");
-    
+
     if (!token) {
       setLoading(false);
       navigate("/");
@@ -136,25 +150,27 @@ function AdminDashboard() {
 
     try {
       const decoded = jwtDecode(token);
-      
+
       // Check if user is admin
       console.log('AdminDashboard: Token decoded:', decoded);
       console.log('AdminDashboard: User role:', decoded.role);
       console.log('AdminDashboard: Is admin?', decoded.role === 'admin');
-      
+
       if (decoded.role !== 'admin') {
         console.log('User is not admin, redirecting to dashboard');
         setLoading(false);
         navigate("/dashboard");
         return;
       }
-      
+
       console.log('User is admin, staying on admin dashboard');
-      
+
       setAdmin(decoded);
       fetchAppointments();
       fetchUsers();
       fetchClosuresForMonth(calendarCurrentDate);
+      loadStudentAccounts();
+      fetchPrintingStats();
       setLoading(false);
     } catch (err) {
       console.error("Invalid token", err);
@@ -198,7 +214,7 @@ function AdminDashboard() {
       const body = {
         title: annTitle.trim(),
         content: annContent,
-        images: annImages.split(',').map(s => s.trim()).filter(Boolean),
+        images: [...annImages.split(',').map(s => s.trim()).filter(Boolean), ...annUploadedImages],
         links: annLinks.split(',').map(s => s.trim()).filter(Boolean),
         tags: annTags.split(',').map(s => s.trim()).filter(Boolean),
         isPublished: publish,
@@ -221,11 +237,59 @@ function AdminDashboard() {
         setAnnLinks("");
         setAnnTags("");
         setAnnEditId(null);
+        setAnnUploadedImages([]);
         fetchAnnouncements(annSearch);
       }
     } catch (err) {
       console.error("Error submitting announcement:", err);
     }
+  };
+
+  const handleImageUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (5MB limit)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size must be less than 5MB');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem("token");
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await fetch(`${API_URL}/announcements/upload-image`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAnnUploadedImages(prev => [...prev, data.url]);
+        alert('Image uploaded successfully!');
+      } else {
+        const error = await response.json();
+        alert(`Upload failed: ${error.message}`);
+      }
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading image. Please try again.');
+    }
+  };
+
+  const removeUploadedImage = (index) => {
+    setAnnUploadedImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const editAnnouncement = async (id) => {
@@ -238,7 +302,13 @@ function AdminDashboard() {
         const item = await res.json();
         setAnnTitle(item.title || "");
         setAnnContent(item.content || "");
-        setAnnImages((item.images || []).join(', '));
+
+        // Separate uploaded images from manual URLs
+        const uploadedImages = (item.images || []).filter(img => img.includes('/uploads/'));
+        const manualUrls = (item.images || []).filter(img => !img.includes('/uploads/'));
+
+        setAnnImages(manualUrls.join(', '));
+        setAnnUploadedImages(uploadedImages);
         setAnnLinks((item.links || []).join(', '));
         setAnnTags((item.tags || []).join(', '));
         setAnnEditId(item._id);
@@ -768,6 +838,119 @@ insights.innerHTML = `
     navigate("/");
   };
 
+  // Student Accounts functions
+  const loadStudentAccounts = async () => {
+    // First try to load from server
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/auth/admin/student-accounts`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setStudentAccounts(data.students);
+        // Also save to localStorage as backup
+        localStorage.setItem("studentAccounts", JSON.stringify(data.students));
+        return;
+      }
+    } catch (error) {
+      console.error('Error loading from server, falling back to localStorage:', error);
+    }
+
+    // Fallback to localStorage
+    const saved = localStorage.getItem("studentAccounts");
+    if (saved) {
+      setStudentAccounts(JSON.parse(saved));
+    }
+  };
+
+  const saveStudentAccounts = (accounts) => {
+    localStorage.setItem("studentAccounts", JSON.stringify(accounts));
+    setStudentAccounts(accounts);
+  };
+
+  const parseCSV = (csvText) => {
+    const lines = csvText.trim().split('\n');
+    const headers = lines[0].split(',').map(h => h.trim());
+
+    return lines.slice(1).map(line => {
+      const values = line.split(',').map(v => v.trim());
+      const obj = {};
+      headers.forEach((header, index) => {
+        obj[header] = values[index] || '';
+      });
+      return obj;
+    });
+  };
+
+  const handleCSVUpload = async (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const csvText = e.target.result;
+        const parsedData = parseCSV(csvText);
+
+        // Upload to server
+        const token = localStorage.getItem("token");
+        const response = await fetch(`${API_URL}/auth/admin/upload-student-accounts`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ csvData: csvText })
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          saveStudentAccounts(parsedData);
+          alert(`Successfully uploaded ${result.recordCount} student accounts to server!`);
+        } else {
+          const error = await response.json();
+          alert(`Failed to upload to server: ${error.message}`);
+        }
+      } catch (error) {
+        console.error('Error uploading CSV:', error);
+        alert('Error uploading CSV file. Please try again.');
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  const filteredStudentAccounts = React.useMemo(() => {
+    if (!studentSearch.trim()) return studentAccounts;
+    return studentAccounts.filter(student =>
+      Object.values(student).some(value =>
+        value.toLowerCase().includes(studentSearch.toLowerCase())
+      )
+    );
+  }, [studentAccounts, studentSearch]);
+
+  // Fetch printing statistics
+  const fetchPrintingStats = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_URL}/appointments/admin/printing-stats`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setPrintingStats(data);
+      }
+    } catch (error) {
+      console.error('Error fetching printing stats:', error);
+    }
+  };
+
   const updateAppointmentStatus = async (appointmentId, newStatus, remarks = "") => {
     try {
       const token = localStorage.getItem("token");
@@ -1252,6 +1435,67 @@ insights.innerHTML = `
               Awaiting processing or approval
             </div>
           </div>
+
+          <div style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: '20px',
+            padding: '32px',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.08)',
+            border: '1px solid rgba(255, 255, 255, 0.3)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              position: 'absolute',
+              top: '-20px',
+              right: '-20px',
+              width: '80px',
+              height: '80px',
+              background: printingStats.remainingToday <= 20
+                ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(220, 38, 38, 0.1))'
+                : 'linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(22, 163, 74, 0.1))',
+              borderRadius: '50%'
+            }}></div>
+            <h3 style={{
+              fontSize: '18px',
+              fontWeight: '700',
+              color: '#374151',
+              margin: '0 0 16px 0',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>🖨️ Daily ID Printing</h3>
+            <p style={{
+              fontSize: '48px',
+              fontWeight: '900',
+              background: printingStats.remainingToday <= 20
+                ? 'linear-gradient(135deg, #ef4444, #dc2626)'
+                : 'linear-gradient(135deg, #22c55e, #16a34a)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+              margin: '0 0 8px 0',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
+            }}>{printingStats.todayPrinted}/{printingStats.dailyLimit}</p>
+            <div style={{
+              fontSize: '14px',
+              color: printingStats.remainingToday <= 20 ? '#dc2626' : '#16a34a',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+              fontWeight: '600'
+            }}>
+              {printingStats.remainingToday} remaining today
+            </div>
+            <div style={{
+              fontSize: '12px',
+              color: '#64748b',
+              fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
+              marginTop: '8px'
+            }}>
+              {printingStats.todayForPrinting} marked for printing
+            </div>
+          </div>
           
           <div style={{
             background: 'rgba(255, 255, 255, 0.95)',
@@ -1309,6 +1553,7 @@ insights.innerHTML = `
               {[
                 { key: 'appointments', label: 'Appointments', icon: <FiCalendar aria-hidden /> },
                 { key: 'users', label: 'Users', icon: <FiUsers aria-hidden /> },
+                { key: 'student-accounts', label: 'Student Accounts', icon: <FiUsers aria-hidden /> },
                 { key: 'calendar', label: 'Calendar', icon: <FiCalendar aria-hidden /> },
                 { key: 'announcements', label: 'Announcements', icon: <FiBell aria-hidden /> },
                 { key: 'analytics', label: 'Analytics', icon: <FiBarChart2 aria-hidden /> },
@@ -1374,6 +1619,45 @@ insights.innerHTML = `
                         value={annImages}
                         onChange={(e) => setAnnImages(e.target.value)}
                       />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Upload Images</label>
+                      <div className="space-y-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="w-full border rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        />
+                        <p className="text-xs text-gray-500">Supported formats: JPG, PNG, GIF. Max size: 5MB</p>
+
+                        {/* Display uploaded images */}
+                        {annUploadedImages.length > 0 && (
+                          <div className="space-y-2">
+                            <p className="text-sm font-medium text-gray-700">Uploaded Images:</p>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                              {annUploadedImages.map((url, index) => (
+                                <div key={index} className="relative group">
+                                  <img
+                                    src={url}
+                                    alt={`Uploaded ${index + 1}`}
+                                    className="w-full h-20 object-cover rounded border"
+                                  />
+                                  <button
+                                    type="button"
+                                    onClick={() => removeUploadedImage(index)}
+                                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                                    title="Remove image"
+                                  >
+                                    ×
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Links (comma separated)</label>
@@ -2480,6 +2764,114 @@ insights.innerHTML = `
                     </table>
                   </div>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Student Accounts Tab */}
+        {activeTab === 'student-accounts' && (
+          <div className="bg-white rounded-lg shadow-md overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+              <h2 className="text-lg font-semibold text-[#B8860B]">Student Accounts Management</h2>
+              <p className="text-sm text-gray-600 mt-1">Upload and manage student account data from CSV files</p>
+            </div>
+
+            <div className="p-6">
+              {/* Upload Section */}
+              <div className="mb-6">
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                  <FiUsers className="mx-auto h-12 w-12 text-gray-400" />
+                  <div className="mt-4">
+                    <label htmlFor="csv-upload" className="cursor-pointer">
+                      <span className="mt-2 block text-sm font-medium text-gray-900">
+                        Upload Student Accounts CSV
+                      </span>
+                      <span className="mt-1 block text-sm text-gray-500">
+                        Select a CSV file containing student IDs, emails, and passwords
+                      </span>
+                    </label>
+                    <input
+                      id="csv-upload"
+                      name="csv-upload"
+                      type="file"
+                      accept=".csv"
+                      onChange={handleCSVUpload}
+                      className="sr-only"
+                    />
+                  </div>
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById('csv-upload').click()}
+                      className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    >
+                      <FiUsers className="mr-2 h-4 w-4" />
+                      Choose CSV File
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Search and Stats */}
+              <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex-1 max-w-md">
+                  <input
+                    type="text"
+                    placeholder="Search student accounts..."
+                    value={studentSearch}
+                    onChange={(e) => setStudentSearch(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                </div>
+                <div className="text-sm text-gray-600">
+                  Total Accounts: {filteredStudentAccounts.length}
+                </div>
+              </div>
+
+              {/* Student Accounts Table */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Student ID
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Email
+                      </th>
+                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Password
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {filteredStudentAccounts.length > 0 ? (
+                      filteredStudentAccounts.map((student, index) => (
+                        <tr key={index}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                            {student.student_id || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {student.email || 'N/A'}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {student.password ? '••••••••' : 'N/A'}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="3" className="px-6 py-4 text-center text-sm text-gray-500">
+                          {studentAccounts.length === 0
+                            ? "No student accounts uploaded yet. Upload a CSV file to get started."
+                            : "No student accounts match your search."
+                          }
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>

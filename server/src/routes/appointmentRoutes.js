@@ -230,26 +230,48 @@ router.patch("/:id/status", authenticateToken, async (req, res) => {
 router.patch("/:id", authenticateToken, async (req, res) => {
   try {
     const { status, adminRemarks, statusUpdatedAt, statusUpdatedBy } = req.body;
-    
-   
+
+
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied. Admin only." });
     }
-    
+
     const appointment = await Appointment.findById(req.params.id).populate("userId").populate("slotId");
-    
+
     if (!appointment) {
       return res.status(404).json({ message: "Appointment not found" });
     }
 
     const previousStatus = appointment.status;
-    
-   
+
+    // Check daily printing limit (200 IDs per day) when status changes to "for-printing"
+    if (status === "for-printing" && previousStatus !== "for-printing") {
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+      const dailyPrintCount = await Appointment.countDocuments({
+        printedAt: {
+          $gte: new Date(today + 'T00:00:00.000Z'),
+          $lt: new Date(today + 'T23:59:59.999Z')
+        }
+      });
+
+      if (dailyPrintCount >= 200) {
+        return res.status(400).json({
+          message: "Daily ID printing limit reached (200 IDs per day). Cannot mark more appointments for printing today."
+        });
+      }
+
+      // Mark as printed when status changes to for-printing
+      appointment.printedAt = new Date();
+      appointment.printedBy = req.user.email || req.user.student_id || 'Admin';
+    }
+
+
     if (status) appointment.status = status;
     if (adminRemarks !== undefined) appointment.adminRemarks = adminRemarks;
     if (statusUpdatedAt) appointment.statusUpdatedAt = statusUpdatedAt;
     if (statusUpdatedBy) appointment.statusUpdatedBy = statusUpdatedBy;
-    
+
     await appointment.save();
     
     const updatedAppointment = await Appointment.findById(req.params.id)
@@ -469,6 +491,70 @@ router.post("/test-email", authenticateToken, async (req, res) => {
     res.json({ success: true, result });
   } catch (err) {
     res.status(500).json({ message: "Test failed", error: err.message });
+  }
+});
+
+// Get daily printing statistics
+router.get("/admin/printing-stats", authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Admin only." });
+    }
+
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    // Count today's printed IDs
+    const todayPrinted = await Appointment.countDocuments({
+      printedAt: {
+        $gte: new Date(today + 'T00:00:00.000Z'),
+        $lt: new Date(today + 'T23:59:59.999Z')
+      }
+    });
+
+    // Count appointments marked for printing today
+    const todayForPrinting = await Appointment.countDocuments({
+      status: "for-printing",
+      statusUpdatedAt: {
+        $gte: new Date(today + 'T00:00:00.000Z'),
+        $lt: new Date(today + 'T23:59:59.999Z')
+      }
+    });
+
+    // Get recent printing activity (last 7 days)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const weeklyStats = await Appointment.aggregate([
+      {
+        $match: {
+          printedAt: { $gte: sevenDaysAgo }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$printedAt" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { "_id": 1 }
+      }
+    ]);
+
+    res.json({
+      message: "Printing statistics retrieved successfully",
+      dailyLimit: 200,
+      todayPrinted,
+      todayForPrinting,
+      remainingToday: Math.max(0, 200 - todayPrinted),
+      weeklyStats
+    });
+
+  } catch (error) {
+    console.error("Get printing stats error:", error);
+    res.status(500).json({ message: "Failed to get printing statistics", error: error.message });
   }
 });
 
