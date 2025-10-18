@@ -93,9 +93,9 @@ const styles = StyleSheet.create({
     overflow: 'visible',
   },
   bottomNavIOS: {
-    paddingBottom: 28, // extra space for iOS home indicator/safe area
+    paddingBottom: 24,
   },
   bottomNavAndroid: {
-    paddingBottom: 28, // extra space for Android gesture/navigation bar
+    paddingBottom: 24,
   },
 });
