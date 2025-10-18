@@ -89,7 +89,19 @@ function AuthenticatedAboutUs() {
         zIndex: 10
       }}>
         <div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', height: '80px', overflowX: 'auto', scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap', padding: '0 16px' }}>
+            <style jsx>{`
+              div::-webkit-scrollbar {
+                display: none;
+              }
+              div {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+              div::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
             {/* Logo and Brand */}
             <div style={{ 
                                     display: 'flex', 
@@ -117,12 +129,30 @@ function AuthenticatedAboutUs() {
                                   </div>
 
             {/* Navigation Links */}
-            <div style={{ 
-              display: 'flex', 
-              gap: '32px', 
-              justifyContent: 'center',
-              alignItems: 'center'
+            <div style={{
+              display: 'flex',
+              gap: 'clamp(16px, 4vw, 32px)',
+              justifyContent: 'flex-start',
+              alignItems: 'center',
+              overflowX: 'auto',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
+              WebkitOverflowScrolling: 'touch',
+              whiteSpace: 'nowrap',
+              padding: '0 16px'
             }}>
+              <style jsx>{`
+                div::-webkit-scrollbar {
+                  display: none;
+                }
+                div {
+                  scrollbar-width: none;
+                  -ms-overflow-style: none;
+                }
+                div::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
               <Link to="/dashboard" className="link-underline" style={{
                 color: location.pathname === '/dashboard' ? '#fde047' : '#93c5fd',
                 textDecoration: 'none',
@@ -459,15 +489,15 @@ function AuthenticatedAboutUs() {
       <main style={{
         maxWidth: '1280px',
         margin: '0 auto',
-        padding: '48px 24px',
+        padding: 'clamp(24px, 6vw, 48px) clamp(16px, 4vw, 24px)',
         position: 'relative',
         zIndex: 1
       }}>
         <div className="modern-card slide-up" style={{
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
-          borderRadius: '24px',
-          padding: '48px',
+          borderRadius: 'clamp(16px, 4vw, 24px)',
+          padding: 'clamp(24px, 6vw, 48px)',
           boxShadow: '0 20px 60px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.05)',
           border: '1px solid rgba(255, 255, 255, 0.3)'
         }}>
@@ -475,25 +505,26 @@ function AuthenticatedAboutUs() {
             {/* Header Section */}
             <div style={{
               textAlign: 'center',
-              marginBottom: '48px'
+              marginBottom: 'clamp(24px, 6vw, 48px)'
             }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '16px',
-                marginBottom: '16px'
+                gap: 'clamp(12px, 3vw, 16px)',
+                marginBottom: 'clamp(12px, 3vw, 16px)',
+                flexWrap: 'wrap'
               }}>
                 <div style={{
                   background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
                   borderRadius: '16px',
-                  padding: '12px',
+                  padding: 'clamp(8px, 2vw, 12px)',
                   boxShadow: '0 8px 32px rgba(40, 73, 208, 0.3)'
                 }}>
-                  <FaInfoCircle style={{ color: 'white', fontSize: '24px' }} />
+                  <FaInfoCircle style={{ color: 'white', fontSize: 'clamp(18px, 4vw, 24px)' }} />
                 </div>
                 <h1 style={{
-                  fontSize: 'clamp(32px, 5vw, 48px)',
+                  fontSize: 'clamp(24px, 6vw, 48px)',
                   fontWeight: '900',
                   background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
                   WebkitBackgroundClip: 'text',
@@ -510,27 +541,28 @@ function AuthenticatedAboutUs() {
             
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-              gap: '32px',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: 'clamp(20px, 5vw, 32px)',
               alignItems: 'start',
-              marginBottom: '40px'
+              marginBottom: 'clamp(24px, 6vw, 40px)'
             }}>
               <div>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '20px'
+                  gap: 'clamp(8px, 2vw, 12px)',
+                  marginBottom: 'clamp(16px, 4vw, 20px)',
+                  flexWrap: 'wrap'
                 }}>
                   <div style={{
                     background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
                     borderRadius: '12px',
-                    padding: '8px'
+                    padding: 'clamp(6px, 1vw, 8px)'
                   }}>
-                    <FaBuilding style={{ color: 'white', fontSize: '18px' }} />
+                    <FaBuilding style={{ color: 'white', fontSize: 'clamp(14px, 3vw, 18px)' }} />
                   </div>
                   <h2 style={{
-                    fontSize: '24px',
+                    fontSize: 'clamp(18px, 4vw, 24px)',
                     fontWeight: '700',
                     color: '#1f2937',
                     margin: '0',
@@ -541,46 +573,47 @@ function AuthenticatedAboutUs() {
                 </div>
                 <p style={{
                   color: '#64748b',
-                  fontSize: '16px',
+                  fontSize: 'clamp(14px, 2vw, 16px)',
                   lineHeight: '1.7',
-                  marginBottom: '24px',
+                  marginBottom: 'clamp(16px, 4vw, 24px)',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                 }}>
-                  The Information Technology Services Office (ITSO) at NU Dasmarinas is dedicated to providing 
-                  comprehensive IT support and services to our university community. We manage student ID cards, 
+                  The Information Technology Services Office (ITSO) at NU Dasmarinas is dedicated to providing
+                  comprehensive IT support and services to our university community. We manage student ID cards,
                   technical support, and digital infrastructure to ensure seamless academic operations.
                 </p>
                 <p style={{
                   color: '#64748b',
-                  fontSize: '16px',
+                  fontSize: 'clamp(14px, 2vw, 16px)',
                   lineHeight: '1.7',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                 }}>
-                  Our ID Tracker system streamlines the process of ID card applications, renewals, and status 
+                  Our ID Tracker system streamlines the process of ID card applications, renewals, and status
                   tracking, making it easier for students to manage their identification needs.
                 </p>
               </div>
               <div style={{
                 background: 'linear-gradient(135deg, rgba(40, 73, 208, 0.05), rgba(59, 130, 246, 0.05))',
-                padding: '32px',
+                padding: 'clamp(20px, 5vw, 32px)',
                 borderRadius: '20px',
                 border: '1px solid rgba(40, 73, 208, 0.1)'
               }}>
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '12px',
-                  marginBottom: '24px'
+                  gap: 'clamp(8px, 2vw, 12px)',
+                  marginBottom: 'clamp(16px, 4vw, 24px)',
+                  flexWrap: 'wrap'
                 }}>
                   <div style={{
                     background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
                     borderRadius: '12px',
-                    padding: '8px'
+                    padding: 'clamp(6px, 1vw, 8px)'
                   }}>
-                    <FaInfoCircle style={{ color: 'white', fontSize: '18px' }} />
+                    <FaInfoCircle style={{ color: 'white', fontSize: 'clamp(14px, 3vw, 18px)' }} />
                   </div>
                   <h3 style={{
-                    fontSize: '20px',
+                    fontSize: 'clamp(16px, 3vw, 20px)',
                     fontWeight: '600',
                     color: '#2849D0',
                     margin: '0',
@@ -589,59 +622,59 @@ function AuthenticatedAboutUs() {
                     Office Information
                   </h3>
                 </div>
-                <div style={{ display: 'grid', gap: '16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ display: 'grid', gap: 'clamp(12px, 3vw, 16px)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(8px, 2vw, 12px)' }}>
                     <div style={{
                       background: '#2849D0',
                       borderRadius: '8px',
-                      padding: '6px',
+                      padding: 'clamp(4px, 1vw, 6px)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      <FaBuilding style={{ color: 'white', fontSize: '14px' }} />
+                      <FaBuilding style={{ color: 'white', fontSize: 'clamp(12px, 2vw, 14px)' }} />
                     </div>
                     <span style={{
                       color: '#1f2937',
-                      fontSize: '14px',
+                      fontSize: 'clamp(12px, 2vw, 14px)',
                       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                     }}>
                       5th Floor, NU Dasmarinas
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(8px, 2vw, 12px)' }}>
                     <div style={{
                       background: '#2849D0',
                       borderRadius: '8px',
-                      padding: '6px',
+                      padding: 'clamp(4px, 1vw, 6px)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      <FaClock style={{ color: 'white', fontSize: '14px' }} />
+                      <FaClock style={{ color: 'white', fontSize: 'clamp(12px, 2vw, 14px)' }} />
                     </div>
                     <span style={{
                       color: '#1f2937',
-                      fontSize: '14px',
+                      fontSize: 'clamp(12px, 2vw, 14px)',
                       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                     }}>
                       Mon-Fri: 8:00 AM - 5:00 PM
                     </span>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(8px, 2vw, 12px)' }}>
                     <div style={{
                       background: '#2849D0',
                       borderRadius: '8px',
-                      padding: '6px',
+                      padding: 'clamp(4px, 1vw, 6px)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center'
                     }}>
-                      <FaClock style={{ color: 'white', fontSize: '14px' }} />
+                      <FaClock style={{ color: 'white', fontSize: 'clamp(12px, 2vw, 14px)' }} />
                     </div>
                     <span style={{
                       color: '#1f2937',
-                      fontSize: '14px',
+                      fontSize: 'clamp(12px, 2vw, 14px)',
                       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                     }}>
                       Saturday: 8:00 AM - 12:00 NN
@@ -654,47 +687,50 @@ function AuthenticatedAboutUs() {
             {/* Services Section */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '24px',
-              marginBottom: '40px'
+              gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+              gap: 'clamp(16px, 4vw, 24px)',
+              marginBottom: 'clamp(24px, 6vw, 40px)',
+              justifyItems: 'center'
             }}>
               <div className="modern-card hover-pop scale-in" style={{
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: '20px',
-                padding: '32px',
+                padding: 'clamp(20px, 5vw, 32px)',
                 textAlign: 'center',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
                 transition: 'all 0.3s ease',
-                animationDelay: '0.1s'
+                animationDelay: '0.1s',
+                width: '100%',
+                maxWidth: '350px'
               }}>
                 <div style={{
                   background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
                   borderRadius: '16px',
-                  padding: '16px',
-                  width: '64px',
-                  height: '64px',
+                  padding: 'clamp(12px, 3vw, 16px)',
+                  width: 'clamp(48px, 12vw, 64px)',
+                  height: 'clamp(48px, 12vw, 64px)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  margin: '0 auto 20px auto',
+                  margin: '0 auto clamp(16px, 4vw, 20px) auto',
                   boxShadow: '0 8px 32px rgba(40, 73, 208, 0.3)'
                 }}>
-                  <FaIdCard style={{ color: 'white', fontSize: '24px' }} />
+                  <FaIdCard style={{ color: 'white', fontSize: 'clamp(18px, 4vw, 24px)' }} />
                 </div>
                 <h3 style={{
-                  fontSize: '20px',
+                  fontSize: 'clamp(16px, 3vw, 20px)',
                   fontWeight: '600',
                   color: '#1f2937',
-                  marginBottom: '12px',
+                  marginBottom: 'clamp(8px, 2vw, 12px)',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                 }}>
                   ID Card Services
                 </h3>
                 <p style={{
                   color: '#64748b',
-                  fontSize: '14px',
+                  fontSize: 'clamp(12px, 2vw, 14px)',
                   lineHeight: '1.6',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                 }}>
@@ -706,39 +742,41 @@ function AuthenticatedAboutUs() {
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: '20px',
-                padding: '32px',
+                padding: 'clamp(20px, 5vw, 32px)',
                 textAlign: 'center',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
                 transition: 'all 0.3s ease',
-                animationDelay: '0.2s'
+                animationDelay: '0.2s',
+                width: '100%',
+                maxWidth: '350px'
               }}>
                 <div style={{
                   background: 'linear-gradient(135deg, #10b981, #059669)',
                   borderRadius: '16px',
-                  padding: '16px',
-                  width: '64px',
-                  height: '64px',
+                  padding: 'clamp(12px, 3vw, 16px)',
+                  width: 'clamp(48px, 12vw, 64px)',
+                  height: 'clamp(48px, 12vw, 64px)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  margin: '0 auto 20px auto',
+                  margin: '0 auto clamp(16px, 4vw, 20px) auto',
                   boxShadow: '0 8px 32px rgba(16, 185, 129, 0.3)'
                 }}>
-                  <FaShieldAlt style={{ color: 'white', fontSize: '24px' }} />
+                  <FaShieldAlt style={{ color: 'white', fontSize: 'clamp(18px, 4vw, 24px)' }} />
                 </div>
                 <h3 style={{
-                  fontSize: '20px',
+                  fontSize: 'clamp(16px, 3vw, 20px)',
                   fontWeight: '600',
                   color: '#1f2937',
-                  marginBottom: '12px',
+                  marginBottom: 'clamp(8px, 2vw, 12px)',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                 }}>
                   Online Tracking
                 </h3>
                 <p style={{
                   color: '#64748b',
-                  fontSize: '14px',
+                  fontSize: 'clamp(12px, 2vw, 14px)',
                   lineHeight: '1.6',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                 }}>
@@ -750,39 +788,41 @@ function AuthenticatedAboutUs() {
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: '20px',
-                padding: '32px',
+                padding: 'clamp(20px, 5vw, 32px)',
                 textAlign: 'center',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
                 transition: 'all 0.3s ease',
-                animationDelay: '0.3s'
+                animationDelay: '0.3s',
+                width: '100%',
+                maxWidth: '350px'
               }}>
                 <div style={{
                   background: 'linear-gradient(135deg, #f59e0b, #d97706)',
                   borderRadius: '16px',
-                  padding: '16px',
-                  width: '64px',
-                  height: '64px',
+                  padding: 'clamp(12px, 3vw, 16px)',
+                  width: 'clamp(48px, 12vw, 64px)',
+                  height: 'clamp(48px, 12vw, 64px)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  margin: '0 auto 20px auto',
+                  margin: '0 auto clamp(16px, 4vw, 20px) auto',
                   boxShadow: '0 8px 32px rgba(245, 158, 11, 0.3)'
                 }}>
-                  <FaTools style={{ color: 'white', fontSize: '24px' }} />
+                  <FaTools style={{ color: 'white', fontSize: 'clamp(18px, 4vw, 24px)' }} />
                 </div>
                 <h3 style={{
-                  fontSize: '20px',
+                  fontSize: 'clamp(16px, 3vw, 20px)',
                   fontWeight: '600',
                   color: '#1f2937',
-                  marginBottom: '12px',
+                  marginBottom: 'clamp(8px, 2vw, 12px)',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                 }}>
                   Technical Support
                 </h3>
                 <p style={{
                   color: '#64748b',
-                  fontSize: '14px',
+                  fontSize: 'clamp(12px, 2vw, 14px)',
                   lineHeight: '1.6',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                 }}>
@@ -791,27 +831,36 @@ function AuthenticatedAboutUs() {
               </div>
             </div>
 
-            <div className="bg-gray-50 p-8 rounded-lg">
+            <div className="bg-gray-50 p-8 rounded-lg" style={{
+              padding: 'clamp(20px, 5vw, 32px)',
+              borderRadius: 'clamp(12px, 3vw, 16px)'
+            }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '12px',
-                marginBottom: '16px'
+                gap: 'clamp(8px, 2vw, 12px)',
+                marginBottom: 'clamp(12px, 3vw, 16px)',
+                flexWrap: 'wrap'
               }}>
                 <div style={{
                   background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
                   borderRadius: '12px',
-                  padding: '8px'
+                  padding: 'clamp(6px, 1vw, 8px)'
                 }}>
-                  <FaBullseye style={{ color: 'white', fontSize: '20px' }} />
+                  <FaBullseye style={{ color: 'white', fontSize: 'clamp(16px, 3vw, 20px)' }} />
                 </div>
-                <h2 className="text-2xl font-semibold text-gray-800 mb-0 text-center">Our Mission</h2>
+                <h2 className="text-2xl font-semibold text-gray-800 mb-0 text-center" style={{
+                  fontSize: 'clamp(18px, 4vw, 24px)'
+                }}>Our Mission</h2>
               </div>
-              <p className="text-gray-600 text-center leading-relaxed max-w-3xl mx-auto">
-                To provide efficient, reliable, and user-friendly IT services that support the academic 
-                excellence and administrative efficiency of NU Dasmarinas. We are committed to leveraging 
-                technology to enhance the educational experience and streamline administrative processes 
+              <p className="text-gray-600 text-center leading-relaxed max-w-3xl mx-auto" style={{
+                fontSize: 'clamp(14px, 2vw, 16px)',
+                lineHeight: '1.7'
+              }}>
+                To provide efficient, reliable, and user-friendly IT services that support the academic
+                excellence and administrative efficiency of NU Dasmarinas. We are committed to leveraging
+                technology to enhance the educational experience and streamline administrative processes
                 for our university community.
               </p>
             </div>

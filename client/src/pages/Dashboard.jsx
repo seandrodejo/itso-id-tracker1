@@ -547,12 +547,30 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            height: 'clamp(60px, 8vh, 80px)'
+            height: 'clamp(60px, 8vh, 80px)',
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            whiteSpace: 'nowrap',
+            padding: '0 16px'
           }}>
+            <style>{`
+              .dashboard-nav::-webkit-scrollbar {
+                display: none;
+              }
+              .dashboard-nav {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+              .dashboard-nav::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
             {/* Enhanced Logo and Brand */}
-            <div style={{ 
-                        display: 'flex', 
-                        alignItems: 'center', 
+            <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
                         justifyContent: 'flex-start'
                       }}>
                         <div style={{
@@ -579,7 +597,7 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
             <div className="dashboard-nav-links" style={{
               display: 'flex',
               gap: 'clamp(16px, 4vw, 32px)',
-              justifyContent: 'center',
+              justifyContent: 'flex-start',
               alignItems: 'center'
             }}>
               <Link to="/dashboard" className="link-underline" style={{
@@ -631,7 +649,7 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   Hi, {userDetails?.first_name || user?.email?.split('@')[0] || "User"}!
                 </span>
               </div>
-              <div 
+              <button
                 style={{
                   width: '56px',
                   height: '56px',
@@ -645,9 +663,17 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   boxShadow: '0 8px 32px rgba(253, 224, 71, 0.4), 0 0 0 1px rgba(255, 255, 255, 0.1)',
                   border: '2px solid rgba(255, 255, 255, 0.2)',
                   position: 'relative',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  padding: 0,
+                  border: 'none',
+                  outline: 'none'
                 }}
-                onClick={() => setShowProfileDropdown(!showProfileDropdown)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('Profile button clicked, current state:', showProfileDropdown);
+                  setShowProfileDropdown(!showProfileDropdown);
+                }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-3px) scale(1.08)';
                   e.target.style.boxShadow = '0 12px 40px rgba(253, 224, 71, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.2)';
@@ -688,21 +714,21 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                     {(userDetails?.first_name || user?.email || "U").charAt(0).toUpperCase()}
                   </span>
                 </div>
-              </div>
+              </button>
               
               {/* Enhanced Modern Profile Dropdown */}
               {showProfileDropdown && (
                 <div style={{
-                  position: 'absolute',
-                  right: '0',
-                  top: '70px',
+                  position: 'fixed',
+                  right: '24px',
+                  top: '120px',
                   width: '360px',
                   background: 'rgba(255, 255, 255, 0.98)',
                   backdropFilter: 'blur(40px)',
                   borderRadius: '24px',
                   boxShadow: '0 32px 80px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.1)',
                   border: '1px solid rgba(255, 255, 255, 0.2)',
-                  zIndex: 50,
+                  zIndex: 9999,
                   overflow: 'hidden',
                   animation: 'dropdownSlideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
                 }}>
@@ -862,7 +888,7 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                       }}
                     >
                       <svg style={{ width: '22px', height: '22px', marginRight: '12px' }} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1721 9z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
                       </svg>
                       Change Password
                     </button>
@@ -916,7 +942,7 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
 
       {/* Modern Main Content */}
       <main style={{
-        maxWidth: '1280px',
+        maxWidth: '1400px',
         margin: '0 auto',
         padding: '40px 24px',
         position: 'relative',
@@ -959,7 +985,14 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
           gap: 'clamp(16px, 3vw, 25px)',
           alignItems: 'start'
         }}>
-          {/* Modern Calendar Section - Left Side (Expanded) */}
+          <style>{`
+            @media (max-width: 1024px) {
+              .dashboard-layout {
+                grid-template-columns: 1fr !important;
+              }
+            }
+          `}</style>
+          {/* Modern Calendar Section */}
           <div className="modern-card fade-in" style={{
             background: 'rgba(255, 255, 255, 0.95)',
             backdropFilter: 'blur(20px)',
@@ -971,7 +1004,8 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
             overflow: 'hidden',
             animationDelay: '0.2s',
             width: '100%',
-            maxWidth: '100%'
+            maxWidth: '100%',
+            gridColumn: '1 / -1' // Span full width on mobile/tablet
           }}>
             {/* Modern Calendar Header */}
             <div className="calendar-header" style={{
@@ -982,7 +1016,7 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
               background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
               padding: 'clamp(16px, 4vh, 24px) clamp(20px, 4vw, 32px)',
               borderRadius: '20px',
-              margin: '-32px -32px 32px -32px',
+              margin: 'clamp(-16px, -4vw, -32px) clamp(-16px, -4vw, -32px) 32px clamp(-16px, -4vw, -32px)',
               boxShadow: '0 8px 32px rgba(40, 73, 208, 0.2)'
             }}>
               <button
@@ -991,9 +1025,9 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   background: 'rgba(255, 255, 255, 0.2)',
                   border: 'none',
                   color: 'white',
-                  fontSize: '20px',
+                  fontSize: 'clamp(14px, 3vw, 20px)',
                   cursor: 'pointer',
-                  padding: '12px 16px',
+                  padding: 'clamp(8px, 2vw, 12px) clamp(12px, 2vw, 16px)',
                   borderRadius: '12px',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   backdropFilter: 'blur(10px)',
@@ -1013,7 +1047,7 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
               
               <h2 style={{
                 color: 'white',
-                fontSize: '28px',
+                fontSize: 'clamp(20px, 4vw, 28px)',
                 fontWeight: '800',
                 margin: '0',
                 fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
@@ -1029,9 +1063,9 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   background: 'rgba(255, 255, 255, 0.2)',
                   border: 'none',
                   color: 'white',
-                  fontSize: '20px',
+                  fontSize: 'clamp(14px, 3vw, 20px)',
                   cursor: 'pointer',
-                  padding: '12px 16px',
+                  padding: 'clamp(8px, 2vw, 12px) clamp(12px, 2vw, 16px)',
                   borderRadius: '12px',
                   transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                   backdropFilter: 'blur(10px)',
@@ -1054,18 +1088,19 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
             <div style={{
               display: 'flex',
               justifyContent: 'center',
-              gap: '24px',
+              gap: 'clamp(12px, 4vw, 24px)',
               marginBottom: '24px',
-              padding: '16px',
+              padding: 'clamp(12px, 3vw, 16px)',
               background: 'rgba(255, 255, 255, 0.8)',
               borderRadius: '12px',
-              border: '1px solid rgba(0, 0, 0, 0.05)'
+              border: '1px solid rgba(0, 0, 0, 0.05)',
+              flexWrap: 'wrap'
             }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                fontSize: '14px',
+                fontSize: 'clamp(12px, 2vw, 14px)',
                 fontWeight: '500',
                 color: '#374151',
                 fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
@@ -1083,7 +1118,7 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                 display: 'flex',
                 alignItems: 'center',
                 gap: '8px',
-                fontSize: '14px',
+                fontSize: 'clamp(12px, 2vw, 14px)',
                 fontWeight: '500',
                 color: '#374151',
                 fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
@@ -1100,25 +1135,26 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
             </div>
 
             {/* Modern Calendar Grid */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(7, 1fr)',
-              gap: '2px',
-              background: 'linear-gradient(135deg, #e2e8f0, #cbd5e1)',
-              borderRadius: '16px',
-              overflow: 'hidden',
-              padding: '2px'
-            }}>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(7, 1fr)',
+            gap: '2px',
+            background: 'linear-gradient(135deg, #e2e8f0, #cbd5e1)',
+            borderRadius: '16px',
+            overflow: 'hidden',
+            padding: '2px',
+            fontSize: 'clamp(12px, 2vw, 16px)'
+          }}>
               {/* Modern Day Headers */}
               {['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'].map((day, index) => (
                 <div
                   key={day}
                   style={{
                     background: 'linear-gradient(135deg, #f8fafc, #f1f5f9)',
-                    padding: '16px 8px',
+                    padding: 'clamp(12px, 3vw, 16px) clamp(4px, 1vw, 8px)',
                     textAlign: 'center',
                     fontWeight: '700',
-                    fontSize: '14px',
+                    fontSize: 'clamp(12px, 2vw, 14px)',
                     color: '#374151',
                     fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
                     borderRadius: index === 0 ? '14px 0 0 0' : index === 6 ? '0 14px 0 0' : '0'
@@ -1139,31 +1175,31 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   <div
                     key={index}
                     style={{
-                      padding: '16px 8px',
+                      padding: 'clamp(12px, 3vw, 16px) clamp(4px, 1vw, 8px)',
                       textAlign: 'center',
-                      minHeight: '60px',
+                      minHeight: 'clamp(50px, 8vw, 60px)',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      color: dayObj.isCurrentMonth ? 
-                             (dayObj.isToday ? 'white' : '#1f2937') : 
-                             '#9ca3af',
+                      color: dayObj.isCurrentMonth ?
+                            (dayObj.isToday ? 'white' : '#1f2937') :
+                            '#9ca3af',
                       fontWeight: dayObj.isToday ? '700' : '600',
-                      fontSize: '16px',
+                      fontSize: 'clamp(14px, 2vw, 16px)',
                       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                      background: dayObj.isToday ? 
-                                 'linear-gradient(135deg, #2849D0, #3b82f6)' :
-                                 isSelected ?
-                                 'linear-gradient(135deg, #fbbf24, #f59e0b)' :
-                                 dayObj.hasAppointment ?
-                                 'linear-gradient(135deg, #dcfce7, #bbf7d0)' :
-                                 'white',
+                      background: dayObj.isToday ?
+                                'linear-gradient(135deg, #2849D0, #3b82f6)' :
+                                isSelected ?
+                                'linear-gradient(135deg, #fbbf24, #f59e0b)' :
+                                dayObj.hasAppointment ?
+                                'linear-gradient(135deg, #dcfce7, #bbf7d0)' :
+                                'white',
                       cursor: dayObj.isCurrentMonth && !dayObj.isPastDate ? 'pointer' : 'default',
                       position: 'relative',
                       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                       borderRadius: '8px',
-                      boxShadow: dayObj.isToday || isSelected ? 
-                                '0 4px 12px rgba(40, 73, 208, 0.3)' : 
+                      boxShadow: dayObj.isToday || isSelected ?
+                                '0 4px 12px rgba(40, 73, 208, 0.3)' :
                                 dayObj.hasAppointment ?
                                 '0 2px 8px rgba(34, 197, 94, 0.2)' :
                                 'none',
@@ -1231,15 +1267,27 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
           </div>
 
           {/* Right Side - Two Cards */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '24px',
+            gridColumn: '1 / -1' // Span full width on mobile/tablet, below calendar
+          }}>
             {/* User Profile Section - Top Right Card */}
             <div className="modern-card slide-in-right" style={{ animationDelay: '0.3s' }}>
               {/* Profile Header */}
               <div className="gradient-bg-primary rounded-t-2xl p-6">
                 <div className="flex items-center">
                   {/* Profile Picture */}
-                  <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mr-5">
-                    <svg className="w-14 h-14 text-blue-300" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mr-5" style={{
+                    width: 'clamp(60px, 15vw, 80px)',
+                    height: 'clamp(60px, 15vw, 80px)',
+                    marginRight: 'clamp(12px, 3vw, 20px)'
+                  }}>
+                    <svg className="w-14 h-14 text-blue-300" fill="currentColor" viewBox="0 0 20 20" style={{
+                      width: 'clamp(40px, 10vw, 56px)',
+                      height: 'clamp(40px, 10vw, 56px)'
+                    }}>
                       <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                     </svg>
                   </div>
@@ -1247,7 +1295,9 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   {/* User Info */}
                   <div>
                     {/* User Name */}
-                    <h3 className="text-2xl font-bold text-white">
+                    <h3 className="text-2xl font-bold text-white" style={{
+                      fontSize: 'clamp(18px, 4vw, 24px)'
+                    }}>
                       {userDetails?.first_name && userDetails?.last_name
                         ? `${userDetails.first_name} ${userDetails.last_name}`
                         : userDetails?.first_name || user?.email?.split('@')[0] || "Juan Dela Cruz"
@@ -1255,12 +1305,16 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                     </h3>
 
                     {/* Student ID */}
-                    <p className="text-gray-200 text-base font-medium mt-1">
+                    <p className="text-gray-200 text-base font-medium mt-1" style={{
+                      fontSize: 'clamp(14px, 3vw, 16px)'
+                    }}>
                       {userDetails?.student_id || "2023-123456"}
                     </p>
 
                     {/* Email */}
-                    <p className="text-gray-300 text-sm mt-1">
+                    <p className="text-gray-300 text-sm mt-1" style={{
+                      fontSize: 'clamp(12px, 2vw, 14px)'
+                    }}>
                       {userDetails?.personal_email || user?.email || "juandelacruz@gmail.com"}
                     </p>
                   </div>
@@ -1268,7 +1322,9 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
               </div>
 
               {/* Appointments Status */}
-              <div className="py-6 px-6">
+              <div className="py-6 px-6" style={{
+                padding: 'clamp(16px, 4vw, 24px) clamp(16px, 4vw, 24px)'
+              }}>
                 {(() => {
                   console.log("Dashboard: Rendering appointments section, appointments:", appointments);
                   return null;
@@ -1280,7 +1336,9 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   className="w-full flex items-center justify-between px-4 py-3 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
                   onClick={() => setShowAppointments(prev => !prev)}
                 >
-                  <span className="text-lg font-semibold text-gray-800">Your Appointments</span>
+                  <span className="text-lg font-semibold text-gray-800" style={{
+                    fontSize: 'clamp(16px, 3vw, 18px)'
+                  }}>Your Appointments</span>
                   <svg
                     className={`w-5 h-5 text-gray-600 transform transition-transform ${showAppointments ? 'rotate-180' : ''}`}
                     fill="none"
@@ -1294,49 +1352,54 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                 {/* Collapsible content with fixed height and scroll */}
                 {showAppointments && (
                   appointments && appointments.length > 0 ? (
-                    <div 
-                      className="mt-4"
+                    <div
+                      className="mt-4 appointment-scroll"
                       style={{
-                        maxHeight: '220px',
+                        maxHeight: 'clamp(150px, 30vh, 220px)',
                         overflowY: 'auto',
                         paddingRight: '8px',
                         scrollbarWidth: 'thin',
                         scrollbarColor: '#cbd5e1 #f1f5f9'
                       }}
                     >
-                      <style jsx>{`
-                        div::-webkit-scrollbar {
+                      <style>{`
+                        .appointment-scroll::-webkit-scrollbar {
                           width: 6px;
                         }
-                        div::-webkit-scrollbar-track {
+                        .appointment-scroll::-webkit-scrollbar-track {
                           background: #f1f5f9;
                           border-radius: 3px;
                         }
-                        div::-webkit-scrollbar-thumb {
+                        .appointment-scroll::-webkit-scrollbar-thumb {
                           background: #cbd5e1;
                           border-radius: 3px;
                         }
-                        div::-webkit-scrollbar-thumb:hover {
+                        .appointment-scroll::-webkit-scrollbar-thumb:hover {
                           background: #94a3b8;
                         }
                       `}</style>
                       {appointments.map((appointment, index) => (
                         <div 
                           key={appointment.id || index} 
-                          className="mb-4 p-4 bg-gray-50 rounded-lg hover-pop scale-in" 
-                          style={{ 
+                          className="mb-4 p-4 bg-gray-50 rounded-lg hover-pop scale-in"
+                          style={{
                             animationDelay: `${0.1 * index}s`,
-                            minHeight: '180px'
+                            minHeight: 'clamp(140px, 25vh, 180px)',
+                            padding: 'clamp(12px, 3vw, 16px)'
                           }}
                         >
                           <div className="mb-2">
-                            <p className="text-sm text-gray-600 mb-1">Date & Time</p>
-                            <p className="text-base text-gray-800">
-                              {appointment.date ? appointment.date.toLocaleDateString('en-US', { 
-                                weekday: 'long', 
-                                year: 'numeric', 
-                                month: 'long', 
-                                day: 'numeric' 
+                            <p className="text-sm text-gray-600 mb-1" style={{
+                              fontSize: 'clamp(12px, 2vw, 14px)'
+                            }}>Date & Time</p>
+                            <p className="text-base text-gray-800" style={{
+                              fontSize: 'clamp(14px, 2vw, 16px)'
+                            }}>
+                              {appointment.date ? appointment.date.toLocaleDateString('en-US', {
+                                weekday: 'long',
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
                               }) : 'Date not set'}
                               <br />
                               {appointment.timeSlot}
@@ -1344,22 +1407,31 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                           </div>
                           
                           <div className="mb-2">
-                            <p className="text-sm text-gray-600 mb-1">Type</p>
-                            <p className="text-base text-gray-800">
+                            <p className="text-sm text-gray-600 mb-1" style={{
+                              fontSize: 'clamp(12px, 2vw, 14px)'
+                            }}>Type</p>
+                            <p className="text-base text-gray-800" style={{
+                              fontSize: 'clamp(14px, 2vw, 16px)'
+                            }}>
                               {appointment.type === 'term-renewal' && 'Term Renewal'}
                               {appointment.type === 'school-year-renewal' && 'School Year Renewal'}
                               {appointment.type === 'lost-id' && 'Lost ID'}
                               {appointment.type === 'new-id' && 'New ID'}
-                              {appointment.pictureOption && 
+                              {appointment.pictureOption &&
                                ` (${appointment.pictureOption === 'new-picture' ? 'New Picture' : 'Retain Picture'})`}
                             </p>
                           </div>
                           
                           <div className="mb-2">
-                            <p className="text-sm text-gray-600 mb-1">Status</p>
+                            <p className="text-sm text-gray-600 mb-1" style={{
+                              fontSize: 'clamp(12px, 2vw, 14px)'
+                            }}>Status</p>
                             <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
                               getStatusColor(appointment.status)
-                            }`}>
+                            }`} style={{
+                              fontSize: 'clamp(12px, 2vw, 14px)',
+                              padding: 'clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px)'
+                            }}>
                               {formatAppointmentStatus(appointment.status)}
                             </span>
                           </div>
@@ -1367,14 +1439,24 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                           {/* QR Code Display for Confirmed Appointments */}
                           {appointment.status === 'confirmed' && appointment.qrData && (
                             <div className="mb-2">
-                              <p className="text-sm text-gray-600 mb-1">QR Code for Check-in</p>
-                              <div className="bg-green-50 border border-green-200 rounded-md p-3">
+                              <p className="text-sm text-gray-600 mb-1" style={{
+                                fontSize: 'clamp(12px, 2vw, 14px)'
+                              }}>QR Code for Check-in</p>
+                              <div className="bg-green-50 border border-green-200 rounded-md p-3" style={{
+                                padding: 'clamp(8px, 2vw, 12px)'
+                              }}>
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center">
-                                    <svg className="h-5 w-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="h-5 w-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" style={{
+                                      width: 'clamp(16px, 3vw, 20px)',
+                                      height: 'clamp(16px, 3vw, 20px)',
+                                      marginRight: 'clamp(6px, 1vw, 8px)'
+                                    }}>
                                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M12 15h4.01M12 21h4.01M12 12h4.01M12 15h4.01M12 21h4.01M12 12h4.01M12 15h4.01M12 21h4.01" />
                                     </svg>
-                                    <span className="text-sm text-green-800">Show QR Code</span>
+                                    <span className="text-sm text-green-800" style={{
+                                      fontSize: 'clamp(12px, 2vw, 14px)'
+                                    }}>Show QR Code</span>
                                   </div>
                                   <button
                                     onClick={() => {
@@ -1400,6 +1482,10 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                                       document.body.appendChild(qrModal);
                                     }}
                                     className="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 transition-colors"
+                                    style={{
+                                      padding: 'clamp(4px, 1vw, 6px) clamp(8px, 2vw, 12px)',
+                                      fontSize: 'clamp(10px, 2vw, 12px)'
+                                    }}
                                   >
                                     View QR
                                   </button>
@@ -1411,20 +1497,34 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                           {/* Admin Remarks */}
                           {appointment.adminRemarks && (
                             <div className="mb-2">
-                              <p className="text-sm text-gray-600 mb-1">Admin Remarks</p>
-                              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3">
+                              <p className="text-sm text-gray-600 mb-1" style={{
+                                fontSize: 'clamp(12px, 2vw, 14px)'
+                              }}>Admin Remarks</p>
+                              <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3" style={{
+                                padding: 'clamp(8px, 2vw, 12px)'
+                              }}>
                                 <div className="flex">
                                   <div className="flex-shrink-0">
-                                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor" style={{
+                                      width: 'clamp(16px, 3vw, 20px)',
+                                      height: 'clamp(16px, 3vw, 20px)'
+                                    }}>
                                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                                     </svg>
                                   </div>
-                                  <div className="ml-3">
-                                    <p className="text-sm text-yellow-800">
+                                  <div className="ml-3" style={{
+                                    marginLeft: 'clamp(8px, 2vw, 12px)'
+                                  }}>
+                                    <p className="text-sm text-yellow-800" style={{
+                                      fontSize: 'clamp(12px, 2vw, 14px)'
+                                    }}>
                                       {appointment.adminRemarks}
                                     </p>
                                     {appointment.statusUpdatedBy && (
-                                      <p className="text-xs text-yellow-700 mt-2">
+                                      <p className="text-xs text-yellow-700 mt-2" style={{
+                                        fontSize: 'clamp(10px, 2vw, 12px)',
+                                        marginTop: 'clamp(4px, 1vw, 8px)'
+                                      }}>
                                         Updated by: {appointment.statusUpdatedBy}
                                         {appointment.statusUpdatedAt && (
                                           <span className="ml-1">
@@ -1443,7 +1543,9 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                     </div>
                   ) : (
                     <div className="mt-4 text-center py-4">
-                      <p className="text-gray-700 text-lg">No appointment yet.</p>
+                      <p className="text-gray-700 text-lg" style={{
+                        fontSize: 'clamp(16px, 3vw, 18px)'
+                      }}>No appointment yet.</p>
                     </div>
                   )
                 )}
@@ -1457,8 +1559,13 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
 
               {/* Date Details or Instructions */}
               {selectedDate ? (
-                <div className="py-8 px-6">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                <div className="py-8 px-6" style={{
+                  padding: 'clamp(16px, 4vw, 32px) clamp(16px, 4vw, 24px)'
+                }}>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4" style={{
+                    fontSize: 'clamp(16px, 3vw, 18px)',
+                    marginBottom: 'clamp(12px, 3vw, 16px)'
+                  }}>
                     {formatSelectedDate(selectedDate)}
                   </h3>
                   
@@ -1466,15 +1573,19 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   {getAppointmentForDate(selectedDate) ? (
                     <>
                       <div className="mb-4">
-                        <p className="text-sm text-gray-600 mb-1">Appointment</p>
-                        <p className="text-base text-gray-800">
+                        <p className="text-sm text-gray-600 mb-1" style={{
+                          fontSize: 'clamp(12px, 2vw, 14px)'
+                        }}>Appointment</p>
+                        <p className="text-base text-gray-800" style={{
+                          fontSize: 'clamp(14px, 2vw, 16px)'
+                        }}>
                           {formatSelectedDate(selectedDate)}
                           <br />
                           {getAppointmentForDate(selectedDate).type === 'term-renewal' && 'Term Renewal'}
                           {getAppointmentForDate(selectedDate).type === 'school-year-renewal' && 'SY Renewal'}
                           {getAppointmentForDate(selectedDate).type === 'lost-id' && 'Lost ID'}
-                          {getAppointmentForDate(selectedDate).type === 'school-year-renewal' && 
-                           getAppointmentForDate(selectedDate).pictureOption && 
+                          {getAppointmentForDate(selectedDate).type === 'school-year-renewal' &&
+                           getAppointmentForDate(selectedDate).pictureOption &&
                            ` (${getAppointmentForDate(selectedDate).pictureOption === 'new-picture' ? 'New Picture' : 'Retain Picture'})`}
                           <br />
                           {getAppointmentForDate(selectedDate).timeSlot}
@@ -1482,21 +1593,34 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                       </div>
                       
                       <div className="mb-6">
-                        <p className="text-sm text-gray-600 mb-1">Status</p>
+                        <p className="text-sm text-gray-600 mb-1" style={{
+                          fontSize: 'clamp(12px, 2vw, 14px)'
+                        }}>Status</p>
                         <span className={`inline-block px-4 py-1 rounded-full text-sm font-medium ${
                           getStatusColor(getAppointmentForDate(selectedDate).status)
-                        }`}>
+                        }`} style={{
+                          fontSize: 'clamp(12px, 2vw, 14px)',
+                          padding: 'clamp(4px, 1vw, 6px) clamp(12px, 3vw, 16px)'
+                        }}>
                           {formatAppointmentStatus(getAppointmentForDate(selectedDate).status)}
                         </span>
                       </div>
                       
-                      <p className="text-red-500 text-sm mt-6">
+                      <p className="text-red-500 text-sm mt-6" style={{
+                        fontSize: 'clamp(12px, 2vw, 14px)',
+                        marginTop: 'clamp(16px, 4vw, 24px)'
+                      }}>
                         You already have an active appointment.
                       </p>
                       
-                      <button 
+                      <button
                         className="w-full py-3 px-4 bg-gray-200 text-gray-500 font-medium rounded-lg mt-4 cursor-not-allowed"
                         disabled
+                        style={{
+                          padding: 'clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px)',
+                          marginTop: 'clamp(12px, 3vw, 16px)',
+                          fontSize: 'clamp(14px, 2vw, 16px)'
+                        }}
                       >
                         Book Now
                       </button>
@@ -1504,17 +1628,27 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   ) : (
                     <>
                       <div className="mb-4">
-                        <p className="text-sm text-gray-600 mb-1">Event</p>
-                        <p className="text-base text-gray-800">ID Claiming Schedule</p>
+                        <p className="text-sm text-gray-600 mb-1" style={{
+                          fontSize: 'clamp(12px, 2vw, 14px)'
+                        }}>Event</p>
+                        <p className="text-base text-gray-800" style={{
+                          fontSize: 'clamp(14px, 2vw, 16px)'
+                        }}>ID Claiming Schedule</p>
                       </div>
-                      
+
                       <div className="mb-4">
-                        <p className="text-sm text-gray-600 mb-1">Location</p>
-                        <p className="text-base text-gray-800">{checkOfficeStatus(selectedDate).schedule}</p>
+                        <p className="text-sm text-gray-600 mb-1" style={{
+                          fontSize: 'clamp(12px, 2vw, 14px)'
+                        }}>Location</p>
+                        <p className="text-base text-gray-800" style={{
+                          fontSize: 'clamp(14px, 2vw, 16px)'
+                        }}>{checkOfficeStatus(selectedDate).schedule}</p>
                       </div>
-                      
+
                       <div className="mb-6">
-                        <p className="text-sm text-gray-600 mb-1">Status</p>
+                        <p className="text-sm text-gray-600 mb-1" style={{
+                          fontSize: 'clamp(12px, 2vw, 14px)'
+                        }}>Status</p>
                         {(() => {
                           const today = new Date();
                           today.setHours(0, 0, 0, 0);
@@ -1523,7 +1657,10 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                           const sameDay = d.getTime() === today.getTime();
                           if (sameDay) {
                             return (
-                              <span className="inline-block px-4 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                              <span className="inline-block px-4 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800" style={{
+                                fontSize: 'clamp(12px, 2vw, 14px)',
+                                padding: 'clamp(4px, 1vw, 6px) clamp(12px, 3vw, 16px)'
+                              }}>
                                 Same-day booking not allowed
                               </span>
                             );
@@ -1532,7 +1669,10 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                           return (
                             <span className={`inline-block px-4 py-1 rounded-full text-sm font-medium ${
                               status.isOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                            }`}>
+                            }`} style={{
+                              fontSize: 'clamp(12px, 2vw, 14px)',
+                              padding: 'clamp(4px, 1vw, 6px) clamp(12px, 3vw, 16px)'
+                            }}>
                               {status.message}
                             </span>
                           );
@@ -1540,16 +1680,24 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                       </div>
                       
                       {checkOfficeStatus(selectedDate).isOpen ? (
-                        <button 
+                        <button
                           className="w-full py-3 px-4 bg-yellow-400 text-blue-800 font-medium rounded-lg hover:bg-yellow-500 transition-colors"
                           onClick={() => setShowBookingModal(true)}
+                          style={{
+                            padding: 'clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px)',
+                            fontSize: 'clamp(14px, 2vw, 16px)'
+                          }}
                         >
                           Book Now
                         </button>
                       ) : (
-                        <button 
+                        <button
                           className="w-full py-3 px-4 bg-gray-200 text-gray-500 font-medium rounded-lg cursor-not-allowed"
                           disabled
+                          style={{
+                            padding: 'clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px)',
+                            fontSize: 'clamp(14px, 2vw, 16px)'
+                          }}
                         >
                           Office Closed
                         </button>
@@ -1558,8 +1706,12 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   )}
                 </div>
               ) : (
-                <div className="py-10 px-6 text-center">
-                  <p className="text-gray-500 text-base">
+                <div className="py-10 px-6 text-center" style={{
+                  padding: 'clamp(20px, 5vw, 40px) clamp(16px, 4vw, 24px)'
+                }}>
+                  <p className="text-gray-500 text-base" style={{
+                    fontSize: 'clamp(14px, 2vw, 16px)'
+                  }}>
                     Select a date from the calendar<br />
                     to view details here.
                   </p>

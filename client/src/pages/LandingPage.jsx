@@ -166,9 +166,27 @@ function LandingPage() {
           <div className="nav-links" style={{
             display: 'flex',
             gap: 'clamp(16px, 4vw, 32px)',
-            justifyContent: 'center',
-            alignItems: 'center'
+            justifyContent: 'flex-start',
+            alignItems: 'center',
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            whiteSpace: 'nowrap',
+            padding: '0 16px'
           }}>
+            <style jsx>{`
+              .nav-links::-webkit-scrollbar {
+                display: none;
+              }
+              .nav-links {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+              .nav-links::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
             <Link to="/" className="link-underline" style={{
               color: location.pathname === '/' ? '#fde047' : '#93c5fd',
               textDecoration: 'none',
