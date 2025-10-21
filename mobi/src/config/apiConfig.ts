@@ -21,10 +21,9 @@ const STAGING_CONFIG = {
 
 // Local network configuration (for testing on physical devices)
 const LOCAL_NETWORK_CONFIG = {
-  API_BASE_URL: 'http://192.168.1.20:5000/api', // Update this IP as needed
-  TIMEOUT: 10000,
-};
-
+  API_BASE_URL: 'http://192.168.137.247:5000/api', // Update this IP as needed
+   TIMEOUT: 10000,
+ };
 // Environment detection
 const isDevelopment = __DEV__; // Expo's built-in development flag
 const isStaging = false; // Set to true when deploying to staging

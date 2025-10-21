@@ -115,12 +115,30 @@ function AuthenticatedAnnouncements() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            height: '80px'
+            height: '80px',
+            overflowX: 'auto',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+            WebkitOverflowScrolling: 'touch',
+            whiteSpace: 'nowrap',
+            padding: '0 16px'
           }}>
+            <style jsx>{`
+              div::-webkit-scrollbar {
+                display: none;
+              }
+              div {
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+              }
+              div::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
             {/* Logo and Brand */}
-            <div style={{ 
-                                    display: 'flex', 
-                                    alignItems: 'center', 
+            <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
                                     justifyContent: 'flex-start'
                                   }}>
                                     <div style={{
@@ -144,10 +162,10 @@ function AuthenticatedAnnouncements() {
                                   </div>
 
             {/* Navigation Links */}
-            <div style={{ 
-              display: 'flex', 
-              gap: '32px', 
-              justifyContent: 'center',
+            <div style={{
+              display: 'flex',
+              gap: 'clamp(16px, 4vw, 32px)',
+              justifyContent: 'flex-start',
               alignItems: 'center'
             }}>
               <Link to="/dashboard" className="link-underline" style={{
@@ -486,7 +504,7 @@ function AuthenticatedAnnouncements() {
       <main className="slide-in-up" style={{
         maxWidth: '1280px',
         margin: '0 auto',
-        padding: '38px 24px',
+        padding: 'clamp(20px, 5vw, 38px) clamp(16px, 4vw, 24px)',
         position: 'relative',
         zIndex: 2,
         animationDelay: '0.2s'
@@ -512,7 +530,7 @@ function AuthenticatedAnnouncements() {
               <FaBullhorn style={{ color: 'white', fontSize: '24px' }} />
             </div>
             <h1 className="slide-in-up" style={{
-              fontSize: 'clamp(32px, 4vw, 48px)',
+              fontSize: 'clamp(24px, 6vw, 48px)',
               fontWeight: '900',
               background: 'linear-gradient(135deg, #2849D0, #3b82f6, #1e40af)',
               WebkitBackgroundClip: 'text',
@@ -527,7 +545,7 @@ function AuthenticatedAnnouncements() {
             </h1>
           </div>
           <p className="slide-in-up" style={{
-            fontSize: '18px',
+            fontSize: 'clamp(14px, 3vw, 18px)',
             color: '#64748b',
             maxWidth: '600px',
             margin: '0',
@@ -544,8 +562,8 @@ function AuthenticatedAnnouncements() {
           background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           borderRadius: '20px',
-          padding: '24px',
-          marginBottom: '40px',
+          padding: 'clamp(16px, 4vw, 24px)',
+          marginBottom: 'clamp(24px, 6vw, 40px)',
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
           border: '1px solid rgba(255, 255, 255, 0.3)',
           animationDelay: '0.3s'
@@ -556,10 +574,10 @@ function AuthenticatedAnnouncements() {
               placeholder="Search announcements..."
               style={{
                 width: '100%',
-                padding: '16px 20px 16px 56px',
+                padding: 'clamp(12px, 3vw, 16px) clamp(16px, 4vw, 20px) clamp(12px, 3vw, 16px) clamp(40px, 8vw, 56px)',
                 borderRadius: '16px',
                 border: '2px solid rgba(40, 73, 208, 0.1)',
-                fontSize: '16px',
+                fontSize: 'clamp(14px, 2vw, 16px)',
                 fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
                 background: 'white',
                 transition: 'all 0.3s ease',
@@ -578,12 +596,12 @@ function AuthenticatedAnnouncements() {
             />
             <div style={{
               position: 'absolute',
-              left: '20px',
+              left: 'clamp(16px, 3vw, 20px)',
               top: '50%',
               transform: 'translateY(-50%)',
               color: '#64748b'
             }}>
-              <FaSearch style={{ fontSize: '16px' }} />
+              <FaSearch style={{ fontSize: 'clamp(14px, 2vw, 16px)' }} />
             </div>
           </div>
         </div>
@@ -598,19 +616,19 @@ function AuthenticatedAnnouncements() {
               background: 'rgba(255, 255, 255, 0.95)',
               backdropFilter: 'blur(20px)',
               borderRadius: '20px',
-              padding: '48px',
+              padding: 'clamp(24px, 6vw, 48px)',
               textAlign: 'center',
               boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
               border: '1px solid rgba(255, 255, 255, 0.3)'
             }}>
-              <FaBullhorn style={{ 
-                fontSize: '48px', 
-                color: '#cbd5e1', 
-                marginBottom: '16px' 
+              <FaBullhorn style={{
+                fontSize: 'clamp(32px, 8vw, 48px)',
+                color: '#cbd5e1',
+                marginBottom: 'clamp(12px, 3vw, 16px)'
               }} />
               <p style={{
                 color: '#64748b',
-                fontSize: '18px',
+                fontSize: 'clamp(14px, 3vw, 18px)',
                 fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
               }}>
                 No announcements available at the moment.
@@ -618,14 +636,14 @@ function AuthenticatedAnnouncements() {
             </div>
           )}
           {announcements.map((item, index) => (
-            <div 
+            <div
               key={item._id}
               className="modern-card hover-pop scale-in"
               style={{
                 background: 'rgba(255, 255, 255, 0.95)',
                 backdropFilter: 'blur(20px)',
                 borderRadius: '20px',
-                padding: '32px',
+                padding: 'clamp(20px, 5vw, 32px)',
                 cursor: 'pointer',
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
                 border: '1px solid rgba(255, 255, 255, 0.3)',
@@ -640,22 +658,23 @@ function AuthenticatedAnnouncements() {
               <div style={{
                 display: 'flex',
                 alignItems: 'flex-start',
-                gap: '20px'
+                gap: 'clamp(16px, 4vw, 20px)',
+                flexDirection: window.innerWidth < 768 ? 'column' : 'row'
               }}>
                 <div style={{
                   background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
                   borderRadius: '12px',
-                  padding: '12px',
+                  padding: 'clamp(8px, 2vw, 12px)',
                   flexShrink: 0
                 }}>
-                  <FaBullhorn style={{ color: 'white', fontSize: '20px' }} />
+                  <FaBullhorn style={{ color: 'white', fontSize: 'clamp(16px, 4vw, 20px)' }} />
                 </div>
                 <div style={{ flex: 1 }}>
                   <h2 style={{
-                    fontSize: '24px',
+                    fontSize: 'clamp(18px, 4vw, 24px)',
                     fontWeight: '700',
                     color: '#1f2937',
-                    marginBottom: '12px',
+                    marginBottom: 'clamp(8px, 2vw, 12px)',
                     fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
                     lineHeight: '1.3'
                   }}>
@@ -663,9 +682,9 @@ function AuthenticatedAnnouncements() {
                   </h2>
                   <p style={{
                     color: '#64748b',
-                    fontSize: '16px',
+                    fontSize: 'clamp(14px, 2vw, 16px)',
                     lineHeight: '1.6',
-                    marginBottom: '20px',
+                    marginBottom: 'clamp(16px, 4vw, 20px)',
                     fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                   }}>
                     {item.content?.length > 200 ? item.content.slice(0, 200) + '...' : item.content}
@@ -675,17 +694,17 @@ function AuthenticatedAnnouncements() {
                     justifyContent: 'space-between',
                     alignItems: 'center',
                     flexWrap: 'wrap',
-                    gap: '16px'
+                    gap: 'clamp(12px, 3vw, 16px)'
                   }}>
                     <div style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '8px',
+                      gap: 'clamp(6px, 1vw, 8px)',
                       color: '#64748b',
-                      fontSize: '14px',
+                      fontSize: 'clamp(12px, 2vw, 14px)',
                       fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif'
                     }}>
-                      <FaCalendarAlt style={{ fontSize: '14px' }} />
+                      <FaCalendarAlt style={{ fontSize: 'clamp(12px, 2vw, 14px)' }} />
                       <span>
                         {new Date(item.publishedAt || item.createdAt).toLocaleDateString('en-US', {
                           year: 'numeric',
@@ -694,7 +713,7 @@ function AuthenticatedAnnouncements() {
                         })}
                       </span>
                     </div>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setSelectedAnnouncement(item);
@@ -704,22 +723,22 @@ function AuthenticatedAnnouncements() {
                       style={{
                         background: 'linear-gradient(135deg, #fde047, #fbbf24)',
                         color: '#1e40af',
-                        padding: '12px 20px',
+                        padding: 'clamp(8px, 2vw, 12px) clamp(16px, 4vw, 20px)',
                         borderRadius: '12px',
                         border: 'none',
                         cursor: 'pointer',
                         fontWeight: '600',
-                        fontSize: '14px',
+                        fontSize: 'clamp(12px, 2vw, 14px)',
                         fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '8px',
+                        gap: 'clamp(6px, 1vw, 8px)',
                         transition: 'all 0.3s ease',
                         boxShadow: '0 4px 12px rgba(253, 224, 71, 0.3)'
                       }}
                     >
                       Read More
-                      <FaArrowRight style={{ fontSize: '12px' }} />
+                      <FaArrowRight style={{ fontSize: 'clamp(10px, 2vw, 12px)' }} />
                     </button>
                   </div>
                 </div>

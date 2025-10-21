@@ -1,21 +1,3 @@
-/*
-  ITSO ID Tracker - Backend Entry
-
-  How to run (development):
-  1) Copy server/.env.example to server/.env and fill values:
-     - PORT: backend port (default 5000)
-     - MONGODB_URI: your MongoDB connection string
-     - JWT_SECRET: strong random string for tokens
-     - GOOGLE_*: only if using Google Calendar features
-     - FRONTEND_URL: your frontend dev URL (e.g., http://localhost:5173)
-  2) From server/: npm install
-  3) Start dev server: npm run dev  (or: npm start for prod)
-
-  Notes:
-  - CORS allows http://localhost:5173 and http://localhost:5174 by default; adjust if needed.
-  - Static uploads served under /uploads
-  - All API routes are prefixed with /api
-*/
 import express from "express";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
