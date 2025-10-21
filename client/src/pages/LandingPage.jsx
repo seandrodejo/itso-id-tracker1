@@ -75,20 +75,20 @@ function LandingPage() {
       {/* Background decorative elements */}
       <div style={{
         position: 'absolute',
-        top: '8%',
-        right: '12%',
-        width: '400px',
-        height: '400px',
+        top: '15%',
+        right: '8%',
+        width: '300px',
+        height: '300px',
         background: 'radial-gradient(circle, rgba(40, 73, 208, 0.04) 0%, transparent 70%)',
         borderRadius: '50%',
         animation: 'float 20s ease-in-out infinite'
       }}></div>
       <div style={{
         position: 'absolute',
-        bottom: '15%',
-        left: '8%',
-        width: '300px',
-        height: '300px',
+        bottom: '20%',
+        left: '5%',
+        width: '220px',
+        height: '220px',
         background: 'radial-gradient(circle, rgba(251, 191, 36, 0.06) 0%, transparent 70%)',
         borderRadius: '50%',
         animation: 'float 16s ease-in-out infinite reverse'
@@ -105,63 +105,72 @@ function LandingPage() {
       }}></div>
 
       {/* Modern Navigation Header*/}
-      <nav style={{
-        background: 'rgba(40, 73, 208, 0.95)',
-        backdropFilter: 'blur(20px)',
-        padding: '0 clamp(16px, 4vw, 24px)',
-        boxShadow: '0 8px 32px rgba(40, 73, 208, 0.2)',
-        border: '1px solid rgba(255, 255, 255, 0.1)',
-        position: 'relative',
-        zIndex: 10
+     <nav style={{
+      background: 'rgba(40, 73, 208, 0.95)',
+      backdropFilter: 'blur(20px)',
+      padding: '0 clamp(16px, 4vw, 24px)',
+      boxShadow: '0 8px 32px rgba(40, 73, 208, 0.2)',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+      position: 'relative',
+      zIndex: 10
+    }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        alignItems: 'center',
+        height: '80px',
+        maxWidth: '1280px',
+        width: '100%',
+        margin: '0 auto',
+        gap: 'clamp(12px, 3vw, 24px)'
       }}>
-        <div className="nav-grid" style={{
-          display: 'grid',
-          gridTemplateColumns: 'minmax(0, 1fr) auto minmax(0, 1fr)',
-          alignItems: 'center',
-          height: 'clamp(60px, 8vh, 80px)',
-          maxWidth: '1280px',
-          width: '100%',
-          margin: '0 auto',
-          gap: 'clamp(12px, 3vw, 24px)'
+        {/* Left: Logo and Brand */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'flex-start'
         }}>
-          {/* Left: Logo and Brand */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'flex-start'
+          <div style={{
+            width: 'clamp(36px, 8vw, 48px)',
+            height: 'clamp(36px, 8vw, 48px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginRight: 'clamp(8px, 2vw, 12px)',
+            position: 'relative',
+            flexShrink: 0
           }}>
-            <div style={{
-              width: 'min(48px, max(32px, 6vw))',
-              height: 'min(48px, max(32px, 6vw))',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginRight: 'min(12px, max(8px, 2vw))'
-            }}>
-              <img src={nuLogo} alt="NU Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-            </div>
-            <div>
-              <div className="nav-logo-text" style={{
-                fontFamily: 'montserrat',
-                color: '#fde047',
-                fontWeight: 'bold',
-                fontSize: 'clamp(14px, min(3vw, 18px), 18px)',
-                whiteSpace: 'nowrap'
-              }}>
-                NU Dasmarinas
-              </div>
-              <div className="nav-logo-text" style={{
-                fontFamily: 'montserrat',
-                color: '#fde047',
-                fontSize: 'clamp(12px, min(2.5vw, 16px), 16px)',
-                whiteSpace: 'nowrap',
-                fontWeight: 'bold'
-              }}>
-                ITSO ID Tracker
-              </div>
-            </div>
-          </div>
-
+            <img 
+              src={nuLogo} 
+              alt="NU Logo" 
+              style={{ 
+                width: '100%', 
+                height: '100%', 
+                objectFit: 'contain'
+              }} 
+        />
+      </div>
+      <div>
+        <div style={{ 
+          color: '#fde047', 
+          fontFamily: 'montserrat', 
+          fontWeight: 'bold', 
+          fontSize: 'clamp(14px, 3.5vw, 18px)', 
+          whiteSpace: 'nowrap' 
+        }}>
+          NU Dasmarinas
+        </div>
+        <div style={{ 
+          color: '#fde047', 
+          fontFamily: 'montserrat', 
+          fontSize: 'clamp(14px, 3.5vw, 18px)', 
+          whiteSpace: 'nowrap', 
+          fontWeight: 'bold' 
+        }}>
+          ITSO ID Tracker
+        </div>
+      </div>
+    </div>
           {/* Center: Navigation Links */}
           <div className="nav-links" style={{
             display: 'flex',
@@ -303,23 +312,24 @@ function LandingPage() {
       <section className="hero-section" style={{
         backgroundImage: `url(${landingBackground})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'right center',
+        backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
-        minHeight: 'clamp(400px, 80vh, 700px)',
-        height: 'clamp(400px, 80vh, 700px)',
+        minHeight: '100vh',
+        height: 'auto',
         display: 'flex',
         alignItems: 'center',
-        position: 'relative'
+        position: 'relative',
+        padding: 'clamp(40px, 8vh, 80px) 0'
       }}>
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
-          padding: '0 clamp(16px, 4vw, 20px)',
+          padding: '0 clamp(20px, 5vw, 40px)',
           width: '100%',
           display: 'flex',
           alignItems: 'center',
-          justifyContent: 'flex-end',
-          marginLeft: 'clamp(0px, 25vw, 310px)'
+          justifyContent: window.innerWidth <= 768 ? 'center' : 'flex-end',
+          marginLeft: '180px',
         }}>
           {/* Right side - Text content */}
           <div className="slide-up hero-content" style={{
