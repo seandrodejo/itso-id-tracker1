@@ -19,7 +19,8 @@ function Dashboard() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [showProfileDropdown, setShowProfileDropdown] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
-
+  const [googleAuthUrl, setGoogleAuthUrl] = useState(null);
+  const [isGoogleConnected, setIsGoogleConnected] = useState(false);
 
   const [appointmentType, setAppointmentType] = useState(null);
   const [pictureOption, setPictureOption] = useState(null);
@@ -64,11 +65,40 @@ function Dashboard() {
     // Check for Google OAuth token in URL params first
     const urlToken = searchParams.get("token");
     const source = searchParams.get("source");
+    const googleConnected = searchParams.get("google_connected");
+    const googleError = searchParams.get("google_error");
 
     if (urlToken && source === "google") {
       // Store the Google OAuth token
       localStorage.setItem("token", urlToken);
       // Clean up URL by removing query params
+      window.history.replaceState({}, document.title, "/dashboard");
+    }
+
+    // Handle Google Calendar connection success
+    if (googleConnected) {
+      console.log('🎉 Google Calendar connected successfully!');
+      setIsGoogleConnected(true);
+      setToast({
+        message: 'Google Calendar connected successfully! Your appointments will now sync automatically.',
+        type: 'success',
+      });
+      // Clean up URL
+      window.history.replaceState({}, document.title, "/dashboard");
+      // Refresh user data to get updated connection status
+      if (user?.id) {
+        fetchGoogleAuthStatus(user.id);
+      }
+    }
+
+    // Handle Google Calendar connection error
+    if (googleError) {
+      console.error('❌ Google Calendar connection failed:', googleError);
+      setToast({
+        message: `Failed to connect Google Calendar: ${googleError}`,
+        type: 'error',
+      });
+      // Clean up URL
       window.history.replaceState({}, document.title, "/dashboard");
     }
 
@@ -86,6 +116,7 @@ function Dashboard() {
       fetchUserData(decoded.id);
       fetchUserAppointments(decoded.id);
       fetchClosuresForMonth(currentDate);
+      fetchGoogleAuthStatus(decoded.id);
       setLoading(false);
     } catch (err) {
       console.error("Invalid token", err);
@@ -132,6 +163,63 @@ function Dashboard() {
       }
     } catch (err) {
       console.error("Error fetching user data:", err);
+    }
+  };
+
+  const fetchGoogleAuthStatus = async (userId) => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log('Fetching Google auth status with token:', token ? 'present' : 'missing');
+
+      // Check if user is already connected by checking user data first
+      const userRes = await fetch(`${API_URL}/auth/user/${userId}`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      console.log('User response status:', userRes.status);
+
+      if (userRes.ok) {
+        const userData = await userRes.json();
+        console.log('User data for Google check:', {
+          hasGoogleTokens: !!userData.googleTokens,
+          isGoogleUser: userData.isGoogleUser,
+          googleId: userData.googleId,
+          fullUserData: userData
+        });
+        // Check if user has Google tokens or is a Google user
+        const hasTokens = !!userData.googleTokens;
+        const isGoogleUser = !!userData.isGoogleUser;
+        const hasGoogleId = !!(userData.googleId && userData.googleId !== null && userData.googleId !== undefined);
+
+        const isConnected = hasTokens || isGoogleUser || hasGoogleId;
+        console.log('Connection check details:', {
+          hasTokens,
+          isGoogleUser,
+          hasGoogleId,
+          googleTokens: userData.googleTokens,
+          googleId: userData.googleId,
+          isConnected
+        });
+        setIsGoogleConnected(isConnected);
+      } else {
+        const userErrorText = await userRes.text();
+        console.error('Failed to get user data:', userRes.status, userErrorText);
+        setIsGoogleConnected(false);
+      }
+
+      // Set the direct auth URL for the link
+      const authUrl = `${API_URL}/google/auth/google`;
+      console.log('Setting Google auth URL to:', authUrl);
+      setGoogleAuthUrl(authUrl);
+
+    } catch (err) {
+      console.error("Error fetching Google auth status:", err);
+      setIsGoogleConnected(false);
+      // Still set the URL even if user check fails
+      setGoogleAuthUrl(`${API_URL}/google/auth/google`);
     }
   };
 
@@ -200,6 +288,25 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
   const handleLogout = () => {
     localStorage.removeItem("token");
     navigate("/");
+  };
+
+  const handleGoogleConnect = () => {
+    console.log('Connect button clicked');
+    console.log('Current googleAuthUrl:', googleAuthUrl);
+    console.log('Is Google connected:', isGoogleConnected);
+
+    if (googleAuthUrl) {
+      console.log('Redirecting to:', googleAuthUrl);
+      window.location.href = googleAuthUrl;
+    } else {
+      console.error('No Google auth URL available');
+      console.log('Fetching auth status again...');
+      fetchGoogleAuthStatus(user?.id);
+      setToast({
+        message: 'Unable to connect to Google. Please try again.',
+        type: 'error',
+      });
+    }
   };
 
   // Calendar helper functions
@@ -644,9 +751,10 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
                   fontSize: '16px',
                   fontWeight: '600',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                  textAlign: 'center'
                 }}>
-                  Hi, {userDetails?.first_name || user?.email?.split('@')[0] || "User"}!
+                  Hi, {user?.email?.split('@')[0] || "Student"}!
                 </span>
               </div>
               <button
@@ -1275,6 +1383,143 @@ timeSlot = `${formatTime(appointment.appointmentStartTime)} - ${formatTime(appoi
           }}>
             {/* User Profile Section - Top Right Card */}
             <div className="modern-card slide-in-right" style={{ animationDelay: '0.3s' }}>
+              {/* Google Calendar Connection Section */}
+              <div className="p-6 border-b border-gray-200">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div style={{
+                      width: '48px',
+                      height: '48px',
+                      background: 'linear-gradient(135deg, #4285f4, #34a853)',
+                      borderRadius: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 4px 12px rgba(66, 133, 244, 0.3)'
+                    }}>
+                      <svg style={{ width: '28px', height: '28px' }} viewBox="0 0 24 24" fill="white">
+                        <path d="M18.316 5.684h-2.316v-2.316c0-.552-.448-1-1-1s-1 .448-1 1v2.316h-2.316c-.552 0-1 .448-1 1s.448 1 1 1h2.316v2.316c0 .552.448 1 1 1s1-.448 1-1v-2.316h2.316c.552 0 1-.448 1-1s-.448-1-1-1z"/>
+                        <path d="M12 2c-5.523 0-10 4.477-10 10s4.477 10 10 10 10-4.477 10-10-4.477-10-10-10zm5 11h-4v4c0 .552-.448 1-1 1s-1-.448-1-1v-4h-4c-.552 0-1-.448-1-1s.448-1 1-1h4v-4c0-.552.448-1 1-1s1 .448 1 1v4h4c.552 0 1 .448 1 1s-.448 1-1 1z"/>
+                      </svg>
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">Google Calendar Sync</h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {isGoogleConnected ? 'Active • Appointments auto-sync' : 'Connect to sync appointments'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status Badge */}
+                  <div className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${
+                    isGoogleConnected
+                      ? 'bg-green-100 text-green-800 border border-green-200'
+                      : 'bg-gray-100 text-gray-700 border border-gray-200'
+                  }`}>
+                    <div className={`w-3 h-3 rounded-full ${
+                      isGoogleConnected ? 'bg-green-500 animate-pulse' : 'bg-gray-400'
+                    }`}></div>
+                    {isGoogleConnected ? 'Connected' : 'Not Connected'}
+                  </div>
+                </div>
+
+                {/* Action Section */}
+                <div className="mt-6">
+                  {isGoogleConnected ? (
+                    <div className="space-y-4">
+                      <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="text-green-800 font-medium">Calendar Sync Active</span>
+                        </div>
+                        <p className="text-green-700 text-sm ml-8">
+                          Your appointments are automatically synced to Google Calendar with email and popup reminders.
+                        </p>
+                      </div>
+
+                      <button
+                        onClick={async () => {
+                          try {
+                            const token = localStorage.getItem("token");
+                            const res = await fetch(`${API_URL}/auth/user/${user.id}`, {
+                              method: 'PATCH',
+                              headers: {
+                                "Authorization": `Bearer ${token}`,
+                                "Content-Type": "application/json"
+                              },
+                              body: JSON.stringify({
+                                googleId: null,
+                                googleTokens: null,
+                                isGoogleUser: false,
+                                profilePicture: null
+                              })
+                            });
+
+                            if (res.ok) {
+                              setIsGoogleConnected(false);
+                              setToast({
+                                message: 'Google Calendar disconnected successfully.',
+                                type: 'success',
+                              });
+                              // Refresh status
+                              fetchGoogleAuthStatus(user.id);
+                            } else {
+                              setToast({
+                                message: 'Failed to disconnect Google Calendar.',
+                                type: 'error',
+                              });
+                            }
+                          } catch (error) {
+                            console.error('Error disconnecting Google account:', error);
+                            setToast({
+                              message: 'Error disconnecting Google Calendar.',
+                              type: 'error',
+                            });
+                          }
+                        }}
+                        className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 text-red-700 border border-red-200 rounded-lg hover:bg-red-100 transition-colors text-sm font-medium"
+                      >
+                        <span>🔌</span>
+                        <span>Disconnect Google Calendar</span>
+                      </button>
+                      <p className="text-xs text-gray-500 text-center">This will stop syncing appointments to your Google Calendar</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3 mb-2">
+                          <div className="w-5 h-5 bg-blue-500 rounded-full flex items-center justify-center">
+                            <svg className="w-3 h-3 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                          <span className="text-blue-800 font-medium">Connect Your Calendar</span>
+                        </div>
+                        <p className="text-blue-700 text-sm ml-8">
+                          Sync appointments automatically with reminders. Secure OAuth connection with Google.
+                        </p>
+                      </div>
+
+                      <a
+                        href={`${API_URL}/google/auth/google?userId=${user?.id}`}
+                        className="inline-block w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium text-center shadow-lg"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <div className="flex items-center justify-center gap-2">
+                          <span>🔗</span>
+                          <span>Connect Google Calendar</span>
+                        </div>
+                      </a>
+                      <p className="text-xs text-gray-500 text-center">Secure OAuth • Calendar events with reminders</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Profile Header */}
               <div className="gradient-bg-primary rounded-t-2xl p-6">
                 <div className="flex items-center">

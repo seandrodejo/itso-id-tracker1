@@ -597,9 +597,9 @@ function LandingPage() {
               maxWidth: '500px',
               flex: '1 1 auto'
             }}>
-              <div style={{ 
-                color: '#fde047', 
-                fontSize: '18px', 
+              <div style={{
+                color: '#fde047',
+                fontSize: '18px',
                 marginBottom: '8px',
                 display: 'flex',
                 alignItems: 'center',
@@ -615,12 +615,12 @@ function LandingPage() {
                   borderRadius: '50%',
                   animation: 'pulse 2s infinite'
                 }}></div>
-                Seamlessly Synced with
+                Efficient Scheduling System
               </div>
-              <div style={{ 
-                fontSize: 'clamp(28px, 4vw, 36px)', 
-                fontWeight: '800', 
-                color: 'white', 
+              <div style={{
+                fontSize: 'clamp(28px, 4vw, 36px)',
+                fontWeight: '800',
+                color: 'white',
                 marginBottom: '20px',
                 background: 'linear-gradient(135deg, #ffffff, #fde047)',
                 WebkitBackgroundClip: 'text',
@@ -629,10 +629,10 @@ function LandingPage() {
                 fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
                 letterSpacing: '-0.01em'
               }}>
-                Google Calendar
+                Smart Calendar
               </div>
-              <div style={{ 
-                color: '#e0e7ff', 
+              <div style={{
+                color: '#e0e7ff',
                 fontSize: '16px',
                 lineHeight: '1.6',
                 maxWidth: '420px',
@@ -640,8 +640,8 @@ function LandingPage() {
                 fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
                 fontWeight: '400'
               }}>
-                Your appointments are automatically synced to your Google Calendar and maintained by the 
-                <span style={{ color: '#fde047', fontWeight: '500' }}> ITSO Department</span> of NU Dasmarinas 
+                Book your appointments easily through our intelligent scheduling system managed by the
+                <span style={{ color: '#fde047', fontWeight: '500' }}> ITSO Department</span> of NU Dasmarinas
                 to make your life easier and more convenient.
               </div>
             </div>
@@ -1102,7 +1102,7 @@ function LandingPage() {
               letterSpacing: '-0.02em',
               textShadow: '0 2px 4px rgba(0, 0, 0, 0.1)'
             }}>
-              Latest Announcements
+              ITSO Announcements
             </h2>
             <p style={{
               fontSize: '18px',
@@ -1110,9 +1110,10 @@ function LandingPage() {
               maxWidth: '600px',
               margin: '0 auto',
               fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-              lineHeight: '1.6'
+              lineHeight: '1.6',
+              textAlign: 'center'
             }}>
-              Stay updated with the latest news and important information from ITSO.
+              Stay updated with the latest news and important information from the ITSO office.
             </p>
           </div>
 

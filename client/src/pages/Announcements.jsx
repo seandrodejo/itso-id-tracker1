@@ -220,7 +220,8 @@ function Announcements() {
               background: 'linear-gradient(135deg, #2849D0, #3b82f6)',
               borderRadius: '16px',
               padding: '12px',
-              boxShadow: '0 8px 32px rgba(40, 73, 208, 0.3)'
+              boxShadow: '0 8px 32px rgba(40, 73, 208, 0.3)',
+              
             }}>
               <FaBullhorn style={{ color: 'white', fontSize: '24px' }} />
             </div>
@@ -234,7 +235,8 @@ function Announcements() {
               margin: '0',
               fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
               letterSpacing: '-0.02em',
-              animationDelay: '0.1s'
+              animationDelay: '0.1s',
+              textAlign: 'center'
             }}>
               ITSO Announcements
             </h1>
@@ -246,7 +248,8 @@ function Announcements() {
             margin: '0 auto',
             fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
             lineHeight: '1.6',
-            animationDelay: '0.2s'
+            animationDelay: '0.2s',
+            textAlign: 'center'
           }}>
             Stay updated with the latest news and important information from the ITSO office.
           </p>

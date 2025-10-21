@@ -15,18 +15,46 @@ function AuthenticatedAnnouncements() {
   const [userDetails, setUserDetails] = useState(null);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
   const [showAnnouncementModal, setShowAnnouncementModal] = useState(false);
-  
+
   // Get user info from token
   const token = localStorage.getItem("token");
-  let user = null;
-  
-  if (token) {
-    try {
-      user = jwtDecode(token);
-    } catch (error) {
-      console.error("Invalid token", error);
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUser(decoded);
+      } catch (error) {
+        console.error("Invalid token", error);
+      }
     }
-  }
+  }, [token]);
+
+  // Fetch user details
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        if (token) {
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setUserDetails(data);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch user details:', error);
+      }
+    };
+
+    if (user) {
+      fetchUserDetails();
+    }
+  }, [user, token]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -212,9 +240,10 @@ function AuthenticatedAnnouncements() {
                   fontSize: '16px',
                   fontWeight: '600',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                  textAlign: 'center'
                 }}>
-                  Hi, {userDetails?.first_name || user?.email?.split('@')[0] || "User"}!
+                  Hi, {user?.email?.split('@')[0] || "Student"}!
                 </span>
               </div>
               <div 
@@ -511,13 +540,14 @@ function AuthenticatedAnnouncements() {
       }}>
         {/* Modern Page Header */}
         <div className="fade-in" style={{
-          textAlign: 'left',
+          textAlign: 'center',
           marginBottom: '48px',
           position: 'relative'
         }}>
           <div style={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: '16px',
             marginBottom: '16px'
           }}>
@@ -548,7 +578,7 @@ function AuthenticatedAnnouncements() {
             fontSize: 'clamp(14px, 3vw, 18px)',
             color: '#64748b',
             maxWidth: '600px',
-            margin: '0',
+            margin: '0 auto',
             fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
             lineHeight: '1.6',
             animationDelay: '0.2s'

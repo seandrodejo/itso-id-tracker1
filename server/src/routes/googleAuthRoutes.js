@@ -17,84 +17,129 @@ const router = express.Router();
 
 router.get("/auth/google", (req, res) => {
   try {
-    const authUrl = generateAuthUrl();
-    res.json({ authUrl });
+    console.log('🔄 Generating Google auth URL and redirecting...');
+
+    // Get user ID from query parameter (passed from frontend)
+    const userId = req.query.userId;
+    if (!userId) {
+      console.error('❌ No user ID provided for Google auth');
+      const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?google_error=${encodeURIComponent('User session required')}`;
+      return res.redirect(errorUrl);
+    }
+
+    console.log('🔄 Initiating Google auth for user:', userId);
+
+    // Use the state parameter to securely pass the user ID
+    const clientId = process.env.GOOGLE_CLIENT_ID || '325480167453-sca7pklfbggmd2e7ea0tn7vj3g0olvch.apps-googleusercontent.com';
+    const redirectUri = encodeURIComponent('http://localhost:5000/api/google/auth/google/callback');
+
+    const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+      `access_type=offline&` +
+      `scope=${encodeURIComponent('https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/calendar.events')}&` +
+      `prompt=consent&` +
+      `response_type=code&` +
+      `client_id=${clientId}&` +
+      `redirect_uri=${redirectUri}&` +
+      `state=${encodeURIComponent(userId)}`; // Pass user ID in state parameter
+
+    console.log('✅ Generated auth URL, redirecting to:', authUrl);
+    res.redirect(authUrl);
   } catch (error) {
-    console.error("Error generating auth URL:", error);
-    res.status(500).json({ message: "Failed to generate auth URL" });
+    console.error("❌ Error generating auth URL:", error);
+    const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?google_error=${encodeURIComponent('Failed to connect to Google')}`;
+    res.redirect(errorUrl);
   }
 });
 
 router.get("/auth/google/callback", async (req, res) => {
   try {
-    const { code } = req.query;
-    
-    if (!code) {
-      return res.status(400).json({ message: "Authorization code is required" });
+    console.log('🔄 Google OAuth callback received');
+    console.log('Query params:', req.query);
+
+    const { code, error: oauthError, state: userIdFromState } = req.query;
+
+    // Handle OAuth errors
+    if (oauthError) {
+      console.error('❌ OAuth error:', oauthError);
+      const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?google_error=${encodeURIComponent('OAuth access denied')}`;
+      return res.redirect(errorUrl);
     }
 
-   
-    const tokens = await getTokensFromCode(code);
-    
-   
-    const googleProfile = await getUserProfile(tokens.access_token);
+    if (!code) {
+      console.error('❌ No authorization code provided');
+      const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?google_error=${encodeURIComponent('No authorization code')}`;
+      return res.redirect(errorUrl);
+    }
 
-   
-    let user = await User.findOne({ 
-      personal_email: googleProfile.email,
-      student_id: { $not: /^GOOGLE_/ }
-    });
+    console.log('🔄 Exchanging code for tokens...');
+    const tokens = await getTokensFromCode(code);
+    console.log('✅ Tokens received');
+
+    console.log('🔄 Getting user profile...');
+    const googleProfile = await getUserProfile(tokens.access_token);
+    console.log('✅ Profile received:', googleProfile.email);
+
+    // Get the user ID from the state parameter (passed securely through OAuth)
+    if (!userIdFromState) {
+      console.error('❌ No user ID in state parameter');
+      const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?google_error=${encodeURIComponent('Invalid session state')}`;
+      return res.redirect(errorUrl);
+    }
+
+    console.log('🔄 Connecting Google account to user ID from state:', userIdFromState);
+
+    // Find the specific user by ID (from the state parameter)
+    let user = await User.findById(userIdFromState);
 
     if (!user) {
-     
-      const invalidUser = await User.findOne({ 
-        personal_email: googleProfile.email,
-        student_id: { $regex: /^GOOGLE_/ }
-      });
-      
-      if (invalidUser) {
-       
-        const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}?error=invalid_account&message=${encodeURIComponent('Your account has invalid student ID data. Please contact support.')}`;
-        return res.redirect(redirectUrl);
-      }
-      
-     
-      const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}?google_email=${encodeURIComponent(googleProfile.email)}&google_name=${encodeURIComponent(googleProfile.name)}&google_id=${googleProfile.id}&google_picture=${encodeURIComponent(googleProfile.picture)}&action=complete_signup`;
-      return res.redirect(redirectUrl);
-    } else {
-     
-      user.googleId = googleProfile.id;
-      user.profilePicture = googleProfile.picture;
-      user.isGoogleUser = true;
-      await user.save();
+      console.error('❌ User not found with ID:', userIdFromState);
+      const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?google_error=${encodeURIComponent('User session expired')}`;
+      return res.redirect(errorUrl);
     }
 
-   
-    const token = jwt.sign(
-      { 
-        id: user._id, 
-        role: user.role,
-        email: user.personal_email 
-      },
-      process.env.JWT_SECRET,
-      { expiresIn: "7d" }
-    );
+    console.log('✅ Found user to connect Google account to:', user.name, user.personal_email, user.student_id);
 
-   
+    console.log('✅ Found user:', user.name, user.personal_email);
+
+    // Update user with Google tokens and info
+    user.googleId = googleProfile.id;
+    user.profilePicture = googleProfile.picture;
+    user.isGoogleUser = true;
     user.googleTokens = {
       access_token: tokens.access_token,
       refresh_token: tokens.refresh_token,
       expiry_date: tokens.expiry_date
     };
-    await user.save();
 
-   
-    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?token=${token}&source=google`;
+    await user.save();
+    console.log('✅ User Google account connected successfully');
+    console.log('Updated user data:', {
+      googleId: user.googleId,
+      isGoogleUser: user.isGoogleUser,
+      hasTokens: !!user.googleTokens
+    });
+
+    // Generate JWT token for the user
+    const token = jwt.sign(
+      {
+        id: user._id,
+        role: user.role,
+        email: user.personal_email
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    console.log('🔄 Redirecting to dashboard with success...');
+    const redirectUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?token=${token}&google_connected=true&source=google`;
+    console.log('Redirecting to:', redirectUrl);
     res.redirect(redirectUrl);
 
   } catch (error) {
-    console.error("Google OAuth callback error:", error);
-    res.status(500).json({ message: "Authentication failed", error: error.message });
+    console.error("❌ Google OAuth callback error:", error);
+    console.error("Error details:", error.response?.data || error.message);
+    const errorUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/dashboard?google_error=${encodeURIComponent(error.message)}`;
+    res.redirect(errorUrl);
   }
 });
 

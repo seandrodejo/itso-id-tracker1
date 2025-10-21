@@ -199,7 +199,7 @@ router.get("/user/:userId", authenticateToken, async (req, res) => {
   try {
     const { userId } = req.params;
 
-   
+
     if (req.user.id !== userId && req.user.role !== "admin") {
       return res.status(403).json({ message: "Access denied" });
     }
@@ -214,6 +214,47 @@ router.get("/user/:userId", authenticateToken, async (req, res) => {
   } catch (err) {
     console.error("Error fetching user:", err);
     res.status(500).json({ message: "Error fetching user data" });
+  }
+});
+
+// PATCH endpoint to update user data (for disconnecting Google)
+router.patch("/user/:userId", authenticateToken, async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const updates = req.body;
+
+    // Ensure user can only update their own data (or admin can update any)
+    if (req.user.id !== userId && req.user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied" });
+    }
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      updates,
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Return updated user data (excluding sensitive info)
+    const userResponse = {
+      _id: user._id,
+      name: user.name,
+      student_id: user.student_id,
+      personal_email: user.personal_email,
+      role: user.role,
+      googleId: user.googleId,
+      googleTokens: user.googleTokens,
+      isGoogleUser: user.isGoogleUser,
+      profilePicture: user.profilePicture
+    };
+
+    res.json(userResponse);
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({ message: "Failed to update user", error: error.message });
   }
 });
 
@@ -787,6 +828,32 @@ router.get("/admin/student-accounts", authenticateToken, async (req, res) => {
   } catch (error) {
     console.error("Get student accounts error:", error);
     res.status(500).json({ message: "Failed to get student accounts", error: error.message });
+  }
+});
+
+router.get("/me", authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password -resetPasswordToken -resetPasswordExpires");
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.json({
+      id: user._id,
+      name: user.name,
+      first_name: user.name ? user.name.split(' ')[0] : '',
+      last_name: user.name ? user.name.split(' ').slice(1).join(' ') : '',
+      student_id: user.student_id,
+      personal_email: user.personal_email,
+      role: user.role,
+      googleId: user.googleId,
+      isGoogleUser: user.isGoogleUser,
+      profilePicture: user.profilePicture
+    });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ message: "Failed to fetch user profile", error: error.message });
   }
 });
 

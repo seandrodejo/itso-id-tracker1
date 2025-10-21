@@ -12,6 +12,32 @@ function AuthenticatedAboutUs() {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
   const [userDetails, setUserDetails] = useState(null);
+
+  // Fetch user details
+  useEffect(() => {
+    const fetchUserDetails = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        if (token) {
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+          if (response.ok) {
+            const data = await response.json();
+            setUserDetails(data);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch user details:', error);
+      }
+    };
+
+    if (user) {
+      fetchUserDetails();
+    }
+  }, [user]);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -197,9 +223,10 @@ function AuthenticatedAboutUs() {
                   fontSize: '16px',
                   fontWeight: '600',
                   fontFamily: '"Inter", "Segoe UI", system-ui, sans-serif',
-                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+                  textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                  textAlign: 'center'
                 }}>
-                  Hi, {userDetails?.first_name || user?.email?.split('@')[0] || "User"}!
+                  Hi, {user?.email?.split('@')[0] || "Student"}!
                 </span>
               </div>
               <div 
